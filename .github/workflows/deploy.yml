@@ -1,0 +1,57 @@
+# This file goes in your FRONTEND repository at: .github/workflows/deploy-frontend.yml
+name: CI/CD Pipeline for Frontend
+
+on:
+  push:
+    branches:
+      - main # Trigger on every push to the main branch of THIS repository
+
+env:
+  # Define the Docker Hub image name for the frontend
+  DOCKER_IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/hostel-xpert-fe
+
+jobs:
+  build-and-push-frontend:
+    name: Build and Push Frontend Image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile # Use the frontend Dockerfile
+          push: true
+          tags: ${{ env.DOCKER_IMAGE_NAME }}:latest
+
+  deploy-frontend:
+    name: Deploy Frontend to Server
+    runs-on: ubuntu-latest
+    needs: build-and-push-frontend
+    steps:
+      - name: Deploy Frontend to Server via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            # Navigate to the directory holding your compose files on the server
+            cd /var/www/hostel-xpert-frontend
+
+            # Pull the new frontend image from Docker Hub
+            docker pull ${{ env.DOCKER_IMAGE_NAME }}:latest
+
+            # Use the frontend-specific Docker Compose file to restart the service
+            docker compose -f docker-compose.frontend.yml up -d
+
+            # Clean up old images to save disk space
+            docker image prune -af

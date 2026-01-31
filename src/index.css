@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+/* Hide scrollbars cross-browser */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+/* Style the dropdown panel */
+.custom-select option {
+  background: white;
+  color: #4d44b5;
+  padding: 12px;
+}
+
+.custom-select option:hover {
+  background-color: #f3f4f6 !important;
+}
+
+/* Remove default arrow in IE */
+.custom-select::-ms-expand {
+  display: none;
+}
+
+/* Firefox specific fixes */
+@-moz-document url-prefix() {
+  .custom-select {
+    color: #4d44b5 !important;
+    text-indent: 2px;
+  }
+  .custom-select option {
+    background-color: white;
+  }
+}
+
+/* Safari/Chrome fixes */
+@media not all and (min-resolution: 0.001dpcm) {
+  @supports (-webkit-appearance: none) {
+    .custom-select {
+      color: #4d44b5;
+    }
+  }
+}
