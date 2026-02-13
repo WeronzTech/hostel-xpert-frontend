@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from "react";
+import React, {useState, useEffect} from "react";
 import {
   FiSearch,
   FiPlus,
@@ -13,7 +12,7 @@ import PageHeader from "../../components/common/PageHeader";
 import AddAsset from "../../modals/property/AddAsset";
 import UpdateAsset from "../../modals/property/UpdateAsset";
 import ConfirmModal from "../../modals/common/ConfirmModal";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {useQuery, useMutation, useQueryClient} from "@tanstack/react-query";
 import {
   getAllAssets,
   updateAssetStatus,
@@ -23,11 +22,11 @@ import {
   getRoomsByFloorId,
   getAssetCategory,
 } from "../../hooks/property/useProperty.js";
-import { Image, Select, Button, message, Modal } from "antd";
-import { EyeOutlined, DownloadOutlined } from "@ant-design/icons";
-import { useSelector } from "react-redux";
+import {Image, Select, Button, message, Modal} from "antd";
+import {EyeOutlined, DownloadOutlined} from "@ant-design/icons";
+import {useSelector} from "react-redux";
 
-const { Option } = Select;
+const {Option} = Select;
 
 const Assets = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -49,8 +48,9 @@ const Assets = () => {
   const [statusFilter, setStatusFilter] = useState("");
   const [floorFilter, setFloorFilter] = useState("");
   const [roomFilter, setRoomFilter] = useState("");
-  const [selectedFloorForRoomFilter, setSelectedFloorForRoomFilter] = useState("");
-  
+  const [selectedFloorForRoomFilter, setSelectedFloorForRoomFilter] =
+    useState("");
+
   const queryClient = useQueryClient();
 
   // Get selected property from Redux
@@ -64,14 +64,21 @@ const Assets = () => {
   });
 
   // Fetch assets using React Query - filter by selected property if available
-  const { data: assetsData, isLoading, error } = useQuery({
+  const {
+    data: assetsData,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["assets", selectedProperty?.id],
-    queryFn: () => getAllAssets(selectedProperty?.id ? { propertyId: selectedProperty.id } : {}),
+    queryFn: () =>
+      getAllAssets(
+        selectedProperty?.id ? {propertyId: selectedProperty.id} : {},
+      ),
   });
 
   // Fetch categories
-  const { data: categoriesData, isLoading: loadingCategories } = useQuery({
-    queryKey: ['assetCategories'],
+  const {data: categoriesData, isLoading: loadingCategories} = useQuery({
+    queryKey: ["assetCategories"],
     queryFn: async () => {
       const response = await getAssetCategory();
       return response?.data || response || [];
@@ -79,8 +86,8 @@ const Assets = () => {
   });
 
   // Fetch floors for the selected property
-  const { data: floors = [], isLoading: loadingFloors } = useQuery({
-    queryKey: ['floors', selectedProperty?.id],
+  const {data: floors = [], isLoading: loadingFloors} = useQuery({
+    queryKey: ["floors", selectedProperty?.id],
     queryFn: async () => {
       if (!selectedProperty?.id) return [];
       const response = await getFloorsByPropertyId(selectedProperty.id);
@@ -90,19 +97,20 @@ const Assets = () => {
   });
 
   // Fetch rooms for the selected floor (for room filter)
-  const { data: roomsForFilter = [], isLoading: loadingRoomsForFilter } = useQuery({
-    queryKey: ['roomsForFilter', selectedFloorForRoomFilter],
-    queryFn: async () => {
-      if (!selectedFloorForRoomFilter) return [];
-      const response = await getRoomsByFloorId(selectedFloorForRoomFilter);
-      return response?.data || response || [];
-    },
-    enabled: !!selectedFloorForRoomFilter,
-  });
+  const {data: roomsForFilter = [], isLoading: loadingRoomsForFilter} =
+    useQuery({
+      queryKey: ["roomsForFilter", selectedFloorForRoomFilter],
+      queryFn: async () => {
+        if (!selectedFloorForRoomFilter) return [];
+        const response = await getRoomsByFloorId(selectedFloorForRoomFilter);
+        return response?.data || response || [];
+      },
+      enabled: !!selectedFloorForRoomFilter,
+    });
 
   // Fetch rooms for assets table display (keep this for display logic)
-  const { data: rooms = [], isLoading: loadingRooms } = useQuery({
-    queryKey: ['rooms', selectedFloorId],
+  const {data: rooms = [], isLoading: loadingRooms} = useQuery({
+    queryKey: ["rooms", selectedFloorId],
     queryFn: async () => {
       if (!selectedFloorId) return [];
       const response = await getRoomsByFloorId(selectedFloorId);
@@ -114,7 +122,7 @@ const Assets = () => {
   // Create a floor map for quick lookup
   const floorMap = React.useMemo(() => {
     const map = {};
-    floors.forEach(floor => {
+    floors.forEach((floor) => {
       map[floor._id] = floor.floorName;
       map[floor.id] = floor.floorName;
     });
@@ -124,10 +132,10 @@ const Assets = () => {
   // Create a room map for quick lookup (for all rooms across all floors)
   const roomMap = React.useMemo(() => {
     const map = {};
-    assetsData?.data?.forEach(asset => {
+    assetsData?.data?.forEach((asset) => {
       if (asset.roomId?._id) {
         map[asset.roomId._id] = asset.roomId.roomNo;
-      } else if (asset.roomId && typeof asset.roomId === 'string') {
+      } else if (asset.roomId && typeof asset.roomId === "string") {
         // If roomId is a string, we might not have the room name
         // We'll use the ID as a fallback until we have proper room data
         if (!map[asset.roomId]) {
@@ -141,7 +149,7 @@ const Assets = () => {
   // Create a category map for quick lookup
   const categoryMap = React.useMemo(() => {
     const map = {};
-    categoriesData?.forEach(cat => {
+    categoriesData?.forEach((cat) => {
       map[cat._id] = cat.name;
       map[cat.id] = cat.name;
     });
@@ -158,25 +166,25 @@ const Assets = () => {
     onSuccess: (response) => {
       try {
         console.log("PDF download successful, creating blob...");
-        
+
         // Create blob from the response data
-        const blob = new Blob([response.data], { type: 'application/pdf' });
+        const blob = new Blob([response.data], {type: "application/pdf"});
         const url = window.URL.createObjectURL(blob);
-        
+
         // Create download link
-        const link = document.createElement('a');
+        const link = document.createElement("a");
         link.href = url;
         link.download = `asset-labels-${new Date().getTime()}.pdf`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        
+
         // Clean up
         window.URL.revokeObjectURL(url);
-        
+
         message.success("Asset labels downloaded successfully!");
         setDownloadModalOpen(false);
-        setDownloadFilters({ propertyId: "", floorId: "", roomId: "" });
+        setDownloadFilters({propertyId: "", floorId: "", roomId: ""});
         setSelectedFloorId(null);
       } catch (error) {
         console.error("Error processing download:", error);
@@ -203,10 +211,10 @@ const Assets = () => {
   // Reset floor selection when property changes
   useEffect(() => {
     setSelectedFloorId(null);
-    setDownloadFilters(prev => ({
+    setDownloadFilters((prev) => ({
       ...prev,
       floorId: "",
-      roomId: ""
+      roomId: "",
     }));
     // Also reset floor and room filters
     setFloorFilter("");
@@ -228,7 +236,7 @@ const Assets = () => {
 
   const handleStatusChange = (assetId, newStatus) => {
     setOpenDropdownId(null);
-    updateStatusMutation.mutate({ assetId, newStatus });
+    updateStatusMutation.mutate({assetId, newStatus});
   };
 
   // Handle edit asset
@@ -259,8 +267,8 @@ const Assets = () => {
   // Handle download labels
   const handleDownloadLabels = () => {
     // If a property is selected in Redux, use it as default filter
-    const filters = { ...downloadFilters };
-    
+    const filters = {...downloadFilters};
+
     // Ensure we have at least one filter criteria
     if (!filters.propertyId && !filters.floorId && !filters.roomId) {
       if (selectedProperty?.id) {
@@ -278,7 +286,7 @@ const Assets = () => {
   // Open download modal
   const handleOpenDownloadModal = () => {
     // Pre-populate with selected property if available
-    const initialFilters = { propertyId: "", floorId: "", roomId: "" };
+    const initialFilters = {propertyId: "", floorId: "", roomId: ""};
     if (selectedProperty?.id) {
       initialFilters.propertyId = selectedProperty.id;
     }
@@ -289,7 +297,7 @@ const Assets = () => {
   // Close download modal
   const handleCloseDownloadModal = () => {
     setDownloadModalOpen(false);
-    setDownloadFilters({ propertyId: "", floorId: "", roomId: "" });
+    setDownloadFilters({propertyId: "", floorId: "", roomId: ""});
     setSelectedFloorId(null);
   };
 
@@ -297,31 +305,31 @@ const Assets = () => {
   const handleFilterChange = (key, value) => {
     if (key === "propertyId") {
       // Reset floor and room when property changes
-      setDownloadFilters(prev => ({
+      setDownloadFilters((prev) => ({
         ...prev,
         propertyId: value,
         floorId: "",
-        roomId: ""
+        roomId: "",
       }));
       setSelectedFloorId(null);
     } else if (key === "floorId") {
-      setDownloadFilters(prev => ({
+      setDownloadFilters((prev) => ({
         ...prev,
         floorId: value,
-        roomId: ""
+        roomId: "",
       }));
       setSelectedFloorId(value);
     } else {
-      setDownloadFilters(prev => ({
+      setDownloadFilters((prev) => ({
         ...prev,
-        [key]: value
+        [key]: value,
       }));
     }
   };
 
   // Get available floors for the selected property in download modal
-  const { data: downloadFloors = [] } = useQuery({
-    queryKey: ['downloadFloors', downloadFilters.propertyId],
+  const {data: downloadFloors = []} = useQuery({
+    queryKey: ["downloadFloors", downloadFilters.propertyId],
     queryFn: async () => {
       if (!downloadFilters.propertyId) return [];
       const response = await getFloorsByPropertyId(downloadFilters.propertyId);
@@ -331,8 +339,8 @@ const Assets = () => {
   });
 
   // Get available rooms for the selected floor in download modal
-  const { data: downloadRooms = [] } = useQuery({
-    queryKey: ['downloadRooms', downloadFilters.floorId],
+  const {data: downloadRooms = []} = useQuery({
+    queryKey: ["downloadRooms", downloadFilters.floorId],
     queryFn: async () => {
       if (!downloadFilters.floorId) return [];
       const response = await getRoomsByFloorId(downloadFilters.floorId);
@@ -347,13 +355,13 @@ const Assets = () => {
     if (asset.floorId?.floorName) {
       return asset.floorId.floorName;
     }
-    
+
     // If floorId is just an ID string or object with _id
     const floorId = asset.floorId?._id || asset.floorId;
     if (floorId && floorMap[floorId]) {
       return floorMap[floorId];
     }
-    
+
     return "N/A";
   };
 
@@ -363,13 +371,13 @@ const Assets = () => {
     if (asset.roomId?.roomNo) {
       return asset.roomId.roomNo;
     }
-    
+
     // If roomId is just an ID string or object with _id
     const roomId = asset.roomId?._id || asset.roomId;
     if (roomId && roomMap[roomId]) {
       return roomMap[roomId];
     }
-    
+
     return "N/A";
   };
 
@@ -379,13 +387,13 @@ const Assets = () => {
     if (asset.categoryId?.name) {
       return asset.categoryId.name;
     }
-    
+
     // If categoryId is just an ID string or object with _id
     const categoryId = asset.categoryId?._id || asset.categoryId;
     if (categoryId && categoryMap[categoryId]) {
       return categoryMap[categoryId];
     }
-    
+
     return "N/A";
   };
 
@@ -423,12 +431,14 @@ const Assets = () => {
 
   // Check if any filter is active
   const isAnyFilterActive = () => {
-    return searchTerm || categoryFilter || statusFilter || floorFilter || roomFilter;
+    return (
+      searchTerm || categoryFilter || statusFilter || floorFilter || roomFilter
+    );
   };
 
   // Mutation for updating asset status
   const updateStatusMutation = useMutation({
-    mutationFn: ({ assetId, newStatus }) =>
+    mutationFn: ({assetId, newStatus}) =>
       updateAssetStatus({
         id: assetId,
         status: newStatus,
@@ -472,14 +482,18 @@ const Assets = () => {
           asset.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           asset.assetId.toLowerCase().includes(searchTerm.toLowerCase()) ||
           getRoomNo(asset).toLowerCase().includes(searchTerm.toLowerCase()) ||
-          getFloorName(asset).toLowerCase().includes(searchTerm.toLowerCase()) ||
-          getCategoryName(asset).toLowerCase().includes(searchTerm.toLowerCase()) ||
+          getFloorName(asset)
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          getCategoryName(asset)
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
           asset.propertyId?.propertyName
             ?.toLowerCase()
             .includes(searchTerm.toLowerCase()) ||
           asset.purchaseDetails?.vendor
             ?.toLowerCase()
-            .includes(searchTerm.toLowerCase())
+            .includes(searchTerm.toLowerCase()),
       );
     }
 
@@ -487,37 +501,31 @@ const Assets = () => {
     if (categoryFilter) {
       const categoryId = categoryFilter;
       filtered = filtered.filter(
-        (asset) => 
-          (asset.categoryId?._id === categoryId) || 
-          (asset.categoryId === categoryId)
+        (asset) =>
+          asset.categoryId?._id === categoryId ||
+          asset.categoryId === categoryId,
       );
     }
 
     // Apply status filter
     if (statusFilter) {
-      filtered = filtered.filter(
-        (asset) => asset.status === statusFilter
-      );
+      filtered = filtered.filter((asset) => asset.status === statusFilter);
     }
 
     // Apply floor filter
     if (floorFilter) {
-      filtered = filtered.filter(
-        (asset) => {
-          const assetFloorId = asset.floorId?._id || asset.floorId;
-          return assetFloorId === floorFilter;
-        }
-      );
+      filtered = filtered.filter((asset) => {
+        const assetFloorId = asset.floorId?._id || asset.floorId;
+        return assetFloorId === floorFilter;
+      });
     }
 
     // Apply room filter
     if (roomFilter) {
-      filtered = filtered.filter(
-        (asset) => {
-          const assetRoomId = asset.roomId?._id || asset.roomId;
-          return assetRoomId === roomFilter;
-        }
-      );
+      filtered = filtered.filter((asset) => {
+        const assetRoomId = asset.roomId?._id || asset.roomId;
+        return assetRoomId === roomFilter;
+      });
     }
 
     // Apply sorting
@@ -532,9 +540,13 @@ const Assets = () => {
         case "floor":
           return getFloorName(a).localeCompare(getFloorName(b));
         case "price_high_low":
-          return (b.purchaseDetails?.price || 0) - (a.purchaseDetails?.price || 0);
+          return (
+            (b.purchaseDetails?.price || 0) - (a.purchaseDetails?.price || 0)
+          );
         case "price_low_high":
-          return (a.purchaseDetails?.price || 0) - (b.purchaseDetails?.price || 0);
+          return (
+            (a.purchaseDetails?.price || 0) - (b.purchaseDetails?.price || 0)
+          );
         case "warranty_ends":
           return (
             new Date(a.warrantyDetails?.expiryDate || 0) -
@@ -544,12 +556,23 @@ const Assets = () => {
           return 0;
       }
     });
-  }, [assetsData?.data, searchTerm, categoryFilter, statusFilter, floorFilter, roomFilter, sortBy, floorMap, roomMap, categoryMap]);
+  }, [
+    assetsData?.data,
+    searchTerm,
+    categoryFilter,
+    statusFilter,
+    floorFilter,
+    roomFilter,
+    sortBy,
+    floorMap,
+    roomMap,
+    categoryMap,
+  ]);
 
   // Calculate total amount
   const calculateTotalAmount = React.useCallback(() => {
     if (!filteredAndSortedAssets.length) return 0;
-    
+
     return filteredAndSortedAssets.reduce((total, asset) => {
       const price = asset.purchaseDetails?.price || 0;
       return total + price;
@@ -557,26 +580,30 @@ const Assets = () => {
   }, [filteredAndSortedAssets]);
 
   const totalAmount = calculateTotalAmount();
-  const originalTotalAmount = assetsData?.data?.reduce((total, asset) => total + (asset.purchaseDetails?.price || 0), 0) || 0;
+  const originalTotalAmount =
+    assetsData?.data?.reduce(
+      (total, asset) => total + (asset.purchaseDetails?.price || 0),
+      0,
+    ) || 0;
 
   // Get unique categories for filter dropdown
   const uniqueCategories = React.useMemo(() => {
     const categories = new Set();
     const categoryList = [];
-    
-    assetsData?.data?.forEach(asset => {
+
+    assetsData?.data?.forEach((asset) => {
       const categoryId = asset.categoryId?._id || asset.categoryId;
       const categoryName = getCategoryName(asset);
-      
+
       if (categoryId && categoryName && !categories.has(categoryId)) {
         categories.add(categoryId);
         categoryList.push({
           id: categoryId,
-          name: categoryName
+          name: categoryName,
         });
       }
     });
-    
+
     return categoryList.sort((a, b) => a.name.localeCompare(b.name));
   }, [assetsData?.data, categoryMap]);
 
@@ -584,20 +611,25 @@ const Assets = () => {
   const uniqueFloors = React.useMemo(() => {
     const floorIds = new Set();
     const floorList = [];
-    
-    assetsData?.data?.forEach(asset => {
+
+    assetsData?.data?.forEach((asset) => {
       const floorId = asset.floorId?._id || asset.floorId;
       const floorName = getFloorName(asset);
-      
-      if (floorId && floorName && floorName !== "N/A" && !floorIds.has(floorId)) {
+
+      if (
+        floorId &&
+        floorName &&
+        floorName !== "N/A" &&
+        !floorIds.has(floorId)
+      ) {
         floorIds.add(floorId);
         floorList.push({
           id: floorId,
-          name: floorName
+          name: floorName,
         });
       }
     });
-    
+
     return floorList.sort((a, b) => a.name.localeCompare(b.name));
   }, [assetsData?.data, floorMap]);
 
@@ -605,31 +637,31 @@ const Assets = () => {
   const uniqueRooms = React.useMemo(() => {
     const roomIds = new Set();
     const roomList = [];
-    
-    assetsData?.data?.forEach(asset => {
+
+    assetsData?.data?.forEach((asset) => {
       const roomId = asset.roomId?._id || asset.roomId;
       const roomNo = getRoomNo(asset);
-      
+
       if (roomId && roomNo && roomNo !== "N/A" && !roomIds.has(roomId)) {
         roomIds.add(roomId);
         roomList.push({
           id: roomId,
-          name: roomNo
+          name: roomNo,
         });
       }
     });
-    
+
     return roomList.sort((a, b) => a.name.localeCompare(b.name));
   }, [assetsData?.data, roomMap]);
 
   // Status options for filter
   const statusOptions = [
-    { value: "", label: "All Status" },
-    { value: "Active", label: "Active" },
-    { value: "In-Repair", label: "In Repair" },
-    { value: "Retired", label: "Retired" },
-    { value: "Sold", label: "Sold" },
-    { value: "In Inventory", label: "In Inventory" },
+    {value: "", label: "All Status"},
+    {value: "Active", label: "Active"},
+    {value: "In-Repair", label: "In Repair"},
+    {value: "Retired", label: "Retired"},
+    {value: "Sold", label: "Sold"},
+    {value: "In Inventory", label: "In Inventory"},
   ];
 
   if (error) {
@@ -657,29 +689,36 @@ const Assets = () => {
       <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-            <div className="text-sm text-blue-600 font-medium mb-1">Total Assets</div>
+            <div className="text-sm text-blue-600 font-medium mb-1">
+              Total Assets
+            </div>
             <div className="text-2xl font-bold text-blue-800">
               {assetsData?.data?.length || 0}
             </div>
           </div>
-          
+
           <div className="bg-green-50 p-4 rounded-lg border border-green-100">
-            <div className="text-sm text-green-600 font-medium mb-1">Total Asset Value</div>
+            <div className="text-sm text-green-600 font-medium mb-1">
+              Total Asset Value
+            </div>
             <div className="text-2xl font-bold text-green-800">
-             ₹ {originalTotalAmount.toLocaleString()}
+              ₹ {originalTotalAmount.toLocaleString()}
             </div>
             <div className="text-xs text-green-600 mt-1">
               All assets in {selectedProperty?.name || "all properties"}
             </div>
           </div>
-          
+
           <div className="bg-purple-50 p-4 rounded-lg border border-purple-100">
-            <div className="text-sm text-purple-600 font-medium mb-1">Filtered Asset Value</div>
+            <div className="text-sm text-purple-600 font-medium mb-1">
+              Filtered Asset Value
+            </div>
             <div className="text-2xl font-bold text-purple-800">
-             ₹ {totalAmount.toLocaleString()}
+              ₹ {totalAmount.toLocaleString()}
             </div>
             <div className="text-xs text-purple-600 mt-1">
-              {filteredAndSortedAssets.length} asset{filteredAndSortedAssets.length !== 1 ? 's' : ''} matching filters
+              {filteredAndSortedAssets.length} asset
+              {filteredAndSortedAssets.length !== 1 ? "s" : ""} matching filters
             </div>
           </div>
         </div>
@@ -698,7 +737,7 @@ const Assets = () => {
                 <input
                   type="text"
                   className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg
-                             focus:outline-none focus:ring-1 focus:ring-[#4d44b5] focus:border-[#4d44b5]"
+                             focus:outline-none focus:ring-1 focus:ring-[#059669] focus:border-[#059669]"
                   placeholder="Search assets by name, ID, category, vendor, room, floor..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -727,7 +766,7 @@ const Assets = () => {
               </button>
 
               <button
-                className="w-full sm:w-auto cursor-pointer flex items-center justify-center gap-2 px-4 py-2 bg-[#4d44b5] text-white rounded-lg hover:bg-[#3a32a0] transition-colors"
+                className="w-full sm:w-auto cursor-pointer flex items-center justify-center gap-2 px-4 py-2 bg-[#059669] text-white rounded-lg hover:bg-[#059669] transition-colors"
                 onClick={handleAddAsset}
               >
                 <FiPlus className="text-lg" />
@@ -745,7 +784,7 @@ const Assets = () => {
               </label>
               <select
                 className="block w-full pl-3 pr-8 py-2 text-sm border border-gray-300 rounded-lg bg-white
-                           focus:outline-none focus:ring-1 focus:ring-[#4d44b5] focus:border-[#4d44b5]"
+                           focus:outline-none focus:ring-1 focus:ring-[#059669] focus:border-[#059669]"
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
               >
@@ -765,7 +804,7 @@ const Assets = () => {
               </label>
               <select
                 className="block w-full pl-3 pr-8 py-2 text-sm border border-gray-300 rounded-lg bg-white
-                           focus:outline-none focus:ring-1 focus:ring-[#4d44b5] focus:border-[#4d44b5]"
+                           focus:outline-none focus:ring-1 focus:ring-[#059669] focus:border-[#059669]"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
               >
@@ -784,7 +823,7 @@ const Assets = () => {
               </label>
               <select
                 className="block w-full pl-3 pr-8 py-2 text-sm border border-gray-300 rounded-lg bg-white
-                           focus:outline-none focus:ring-1 focus:ring-[#4d44b5] focus:border-[#4d44b5]"
+                           focus:outline-none focus:ring-1 focus:ring-[#059669] focus:border-[#059669]"
                 value={floorFilter}
                 onChange={(e) => handleFloorFilterChange(e.target.value)}
                 disabled={!selectedProperty?.id}
@@ -805,27 +844,25 @@ const Assets = () => {
               </label>
               <select
                 className="block w-full pl-3 pr-8 py-2 text-sm border border-gray-300 rounded-lg bg-white
-                           focus:outline-none focus:ring-1 focus:ring-[#4d44b5] focus:border-[#4d44b5]"
+                           focus:outline-none focus:ring-1 focus:ring-[#059669] focus:border-[#059669]"
                 value={roomFilter}
                 onChange={(e) => setRoomFilter(e.target.value)}
                 disabled={floorFilter && roomsForFilter.length === 0}
               >
                 <option value="">All Rooms</option>
-                {floorFilter ? (
-                  // Show rooms for selected floor
-                  roomsForFilter.map((room) => (
-                    <option key={room._id} value={room._id}>
-                      {room.roomNo}
-                    </option>
-                  ))
-                ) : (
-                  // Show all rooms (from uniqueRooms)
-                  uniqueRooms.map((room) => (
-                    <option key={room.id} value={room.id}>
-                      {room.name}
-                    </option>
-                  ))
-                )}
+                {floorFilter
+                  ? // Show rooms for selected floor
+                    roomsForFilter.map((room) => (
+                      <option key={room._id} value={room._id}>
+                        {room.roomNo}
+                      </option>
+                    ))
+                  : // Show all rooms (from uniqueRooms)
+                    uniqueRooms.map((room) => (
+                      <option key={room.id} value={room.id}>
+                        {room.name}
+                      </option>
+                    ))}
               </select>
             </div>
 
@@ -836,7 +873,7 @@ const Assets = () => {
               </label>
               <select
                 className="block w-full pl-3 pr-8 py-2 text-sm border border-gray-300 rounded-lg bg-white
-                           focus:outline-none focus:ring-1 focus:ring-[#4d44b5] focus:border-[#4d44b5]"
+                           focus:outline-none focus:ring-1 focus:ring-[#059669] focus:border-[#059669]"
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
               >
@@ -878,39 +915,55 @@ const Assets = () => {
         <div className="overflow-x-auto">
           {isLoading ? (
             <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#4d44b5] mx-auto"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#059669] mx-auto"></div>
               <p className="mt-4 text-gray-500">Loading assets...</p>
             </div>
           ) : filteredAndSortedAssets.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
               <p>No assets found.</p>
-              {(searchTerm || categoryFilter || statusFilter || floorFilter || roomFilter) && (
+              {(searchTerm ||
+                categoryFilter ||
+                statusFilter ||
+                floorFilter ||
+                roomFilter) && (
                 <div className="mt-2">
                   <p>Try adjusting your filters or search terms.</p>
                   <button
                     onClick={handleClearFilters}
-                    className="mt-3 px-4 py-2 bg-[#4d44b5] text-white rounded-lg hover:bg-[#3a32a0] transition-colors"
+                    className="mt-3 px-4 py-2 bg-[#059669] text-white rounded-lg hover:bg-[#059669] transition-colors"
                   >
                     Clear All Filters
                   </button>
                 </div>
               )}
-              {selectedProperty && !searchTerm && !categoryFilter && !statusFilter && !floorFilter && !roomFilter && (
-                <p>No assets found for the selected property.</p>
-              )}
+              {selectedProperty &&
+                !searchTerm &&
+                !categoryFilter &&
+                !statusFilter &&
+                !floorFilter &&
+                !roomFilter && (
+                  <p>No assets found for the selected property.</p>
+                )}
             </div>
           ) : (
             <>
               <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                   <div className="text-sm text-gray-600">
-                    Showing <span className="font-semibold">{filteredAndSortedAssets.length}</span> of{" "}
-                    <span className="font-semibold">{assetsData?.data?.length || 0}</span> assets
+                    Showing{" "}
+                    <span className="font-semibold">
+                      {filteredAndSortedAssets.length}
+                    </span>{" "}
+                    of{" "}
+                    <span className="font-semibold">
+                      {assetsData?.data?.length || 0}
+                    </span>{" "}
+                    assets
                     {isAnyFilterActive() && (
                       <span className="ml-2">
                         <button
                           onClick={handleClearFilters}
-                          className="text-[#4d44b5] hover:text-[#3a32a0] hover:underline"
+                          className="text-[#059669] hover:text-[#059669] hover:underline"
                         >
                           Clear filters
                         </button>
@@ -956,7 +1009,7 @@ const Assets = () => {
                     const floorName = getFloorName(asset);
                     const roomNo = getRoomNo(asset);
                     const categoryName = getCategoryName(asset);
-                    
+
                     return (
                       <tr key={asset._id} className="hover:bg-gray-50">
                         {/* S.No Column */}
@@ -1006,14 +1059,18 @@ const Assets = () => {
                               />
                             </div>
                           ) : (
-                            <span className="text-sm text-gray-400">No Invoice</span>
+                            <span className="text-sm text-gray-400">
+                              No Invoice
+                            </span>
                           )}
                         </td>
 
                         {/* Property & Location Column */}
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">
-                            {asset.propertyId?.propertyName || selectedProperty?.name || "N/A"}
+                            {asset.propertyId?.propertyName ||
+                              selectedProperty?.name ||
+                              "N/A"}
                           </div>
                           <div className="text-sm text-gray-500">
                             Room: {roomNo}
@@ -1026,7 +1083,10 @@ const Assets = () => {
                         {/* Purchase Details Column */}
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-gray-900">
-                          ₹{(asset.purchaseDetails?.price || 0).toLocaleString()}
+                            ₹
+                            {(
+                              asset.purchaseDetails?.price || 0
+                            ).toLocaleString()}
                           </div>
                           <div className="text-sm text-gray-500">
                             {asset.purchaseDetails?.vendor || "N/A"}
@@ -1034,7 +1094,7 @@ const Assets = () => {
                           <div className="text-sm text-gray-500">
                             {asset.purchaseDetails?.purchaseDate
                               ? new Date(
-                                  asset.purchaseDetails.purchaseDate
+                                  asset.purchaseDetails.purchaseDate,
                                 ).toLocaleDateString()
                               : "N/A"}
                           </div>
@@ -1048,7 +1108,7 @@ const Assets = () => {
                           <div className="text-sm text-gray-500">
                             {asset.warrantyDetails?.expiryDate
                               ? new Date(
-                                  asset.warrantyDetails.expiryDate
+                                  asset.warrantyDetails.expiryDate,
                                 ).toLocaleDateString()
                               : "N/A"}
                           </div>
@@ -1059,8 +1119,8 @@ const Assets = () => {
                           <button
                             onClick={() => handleStatusClick(asset._id)}
                             className={`px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${getStatusColor(
-                              asset.status
-                            )} hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[#4d44b5] disabled:opacity-50 cursor-pointer`}
+                              asset.status,
+                            )} hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[#059669] disabled:opacity-50 cursor-pointer`}
                           >
                             {asset.status}
                             <FiChevronDown className="text-gray-500 text-sm" />
@@ -1083,7 +1143,7 @@ const Assets = () => {
                                   disabled={updateStatusMutation.isLoading}
                                   className={`block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 ${
                                     asset.status === statusOption
-                                      ? "text-[#4d44b5] font-semibold"
+                                      ? "text-[#059669] font-semibold"
                                       : "text-gray-700"
                                   }`}
                                 >
@@ -1098,7 +1158,7 @@ const Assets = () => {
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex items-center gap-2">
                             <button
-                              className="text-[#4d44b5] hover:text-[#3a32a0] transition-colors p-1 rounded hover:bg-gray-100 cursor-pointer"
+                              className="text-[#059669] hover:text-[#059669] transition-colors p-1 rounded hover:bg-gray-100 cursor-pointer"
                               title="Edit Asset"
                               onClick={() => handleEditAsset(asset)}
                             >
@@ -1125,11 +1185,14 @@ const Assets = () => {
       </div>
 
       {/* Add Asset Modal */}
-      <AddAsset isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} />
-      
+      <AddAsset
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+      />
+
       {/* Update Asset Modal */}
-      <UpdateAsset 
-        isOpen={isUpdateModalOpen} 
+      <UpdateAsset
+        isOpen={isUpdateModalOpen}
         onClose={() => {
           setIsUpdateModalOpen(false);
           setSelectedAsset(null);
@@ -1161,16 +1224,21 @@ const Assets = () => {
       >
         <div className="space-y-4 py-4">
           <p className="text-gray-600">
-            Download printable labels for your assets. You can filter by property, floor, or room to generate labels for specific assets.
+            Download printable labels for your assets. You can filter by
+            property, floor, or room to generate labels for specific assets.
           </p>
-          
+
           <div className="space-y-3">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Filter by Floor
               </label>
               <Select
-                placeholder={downloadFilters.propertyId ? "Select Floor" : "Select property first"}
+                placeholder={
+                  downloadFilters.propertyId
+                    ? "Select Floor"
+                    : "Select property first"
+                }
                 value={downloadFilters.floorId || undefined}
                 onChange={(value) => handleFilterChange("floorId", value)}
                 className="w-full"
@@ -1191,7 +1259,9 @@ const Assets = () => {
                 Filter by Room
               </label>
               <Select
-                placeholder={downloadFilters.floorId ? "Select Room" : "Select floor first"}
+                placeholder={
+                  downloadFilters.floorId ? "Select Room" : "Select floor first"
+                }
                 value={downloadFilters.roomId || undefined}
                 onChange={(value) => handleFilterChange("roomId", value)}
                 className="w-full"
@@ -1210,12 +1280,17 @@ const Assets = () => {
 
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
             <p className="text-sm text-blue-800">
-              <strong>Note:</strong> The labels will include asset names and IDs in a printable format suitable for physical labeling.
-              {!downloadFilters.propertyId && !downloadFilters.floorId && !downloadFilters.roomId && selectedProperty?.id && (
-                <span className="block mt-1">
-                  Using currently selected property: <strong>{selectedProperty.name}</strong>
-                </span>
-              )}
+              <strong>Note:</strong> The labels will include asset names and IDs
+              in a printable format suitable for physical labeling.
+              {!downloadFilters.propertyId &&
+                !downloadFilters.floorId &&
+                !downloadFilters.roomId &&
+                selectedProperty?.id && (
+                  <span className="block mt-1">
+                    Using currently selected property:{" "}
+                    <strong>{selectedProperty.name}</strong>
+                  </span>
+                )}
             </p>
           </div>
         </div>
@@ -1228,18 +1303,36 @@ const Assets = () => {
         message={
           assetToDelete ? (
             <>
-              Are you sure you want to delete the asset "<strong>{assetToDelete.name}</strong>"?
-              <br /><br />
+              Are you sure you want to delete the asset "
+              <strong>{assetToDelete.name}</strong>"?
+              <br />
+              <br />
               <div className="text-sm text-gray-600">
-                <div><strong>Asset ID:</strong> {assetToDelete.assetId}</div>
-                <div><strong>Category:</strong> {getCategoryName(assetToDelete)}</div>
-                <div><strong>Purchase Price:</strong> ₹{(assetToDelete.purchaseDetails?.price || 0).toLocaleString()}</div>
-                <div><strong>Location:</strong> {assetToDelete.propertyId?.propertyName || selectedProperty?.name} - Floor: {getFloorName(assetToDelete)} - Room: {getRoomNo(assetToDelete)}</div>
+                <div>
+                  <strong>Asset ID:</strong> {assetToDelete.assetId}
+                </div>
+                <div>
+                  <strong>Category:</strong> {getCategoryName(assetToDelete)}
+                </div>
+                <div>
+                  <strong>Purchase Price:</strong> ₹
+                  {(assetToDelete.purchaseDetails?.price || 0).toLocaleString()}
+                </div>
+                <div>
+                  <strong>Location:</strong>{" "}
+                  {assetToDelete.propertyId?.propertyName ||
+                    selectedProperty?.name}{" "}
+                  - Floor: {getFloorName(assetToDelete)} - Room:{" "}
+                  {getRoomNo(assetToDelete)}
+                </div>
               </div>
               <br />
-              This action cannot be undone and all associated data will be permanently removed.
+              This action cannot be undone and all associated data will be
+              permanently removed.
             </>
-          ) : "Are you sure you want to delete this asset?"
+          ) : (
+            "Are you sure you want to delete this asset?"
+          )
         }
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}

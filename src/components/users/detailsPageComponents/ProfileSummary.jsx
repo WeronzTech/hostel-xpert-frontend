@@ -226,7 +226,7 @@ const ProfileSummary = ({resident}) => {
       {contextHolder}
       <div className="lg:col-span-4 space-y-6">
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="bg-[#4d44b5] p-6 text-white">
+          <div className="bg-[#059669] p-6 text-white">
             <div className="flex items-start gap-6">
               <div className="flex-shrink-0">
                 <div className="relative">
@@ -374,10 +374,10 @@ const ProfileSummary = ({resident}) => {
                       resident.profileCompletion === 100
                         ? "#52c41a"
                         : resident.profileCompletion >= 75
-                        ? "#1890ff"
-                        : resident.profileCompletion >= 50
-                        ? "#faad14"
-                        : "#f5222d"
+                          ? "#1890ff"
+                          : resident.profileCompletion >= 50
+                            ? "#faad14"
+                            : "#f5222d"
                     }
                     format={(percent) => (
                       <span style={{color: "white", fontWeight: 600}}>
@@ -473,7 +473,7 @@ const ProfileSummary = ({resident}) => {
                   value={
                     resident.stayDetails?.checkInDate
                       ? dayjs(resident.stayDetails.checkInDate).format(
-                          "DD MMMM, YYYY"
+                          "DD MMMM, YYYY",
                         )
                       : "Not Provided"
                   }
@@ -486,17 +486,17 @@ const ProfileSummary = ({resident}) => {
                   value={
                     resident.stayDetails?.extendDate
                       ? `${dayjs(resident.stayDetails.extendDate).format(
-                          "DD MMMM, YYYY"
+                          "DD MMMM, YYYY",
                         )} 
              (Extended from ${dayjs(resident.stayDetails.checkOutDate).format(
-               "DD MMMM, YYYY"
+               "DD MMMM, YYYY",
              )})`
                       : resident.stayDetails?.checkOutDate
-                      ? `${dayjs(resident.stayDetails.checkOutDate).format(
-                          "DD MMMM, YYYY"
-                        )} 
+                        ? `${dayjs(resident.stayDetails.checkOutDate).format(
+                            "DD MMMM, YYYY",
+                          )} 
              (${resident.stayDetails?.noOfDays || 0} days)`
-                      : "Not Provided"
+                        : "Not Provided"
                   }
                   icon={<FiCalendar />}
                 />
@@ -508,7 +508,7 @@ const ProfileSummary = ({resident}) => {
                   value={
                     resident.messDetails?.messStartDate
                       ? dayjs(resident.messDetails.messStartDate).format(
-                          "DD MMMM, YYYY"
+                          "DD MMMM, YYYY",
                         )
                       : "Not Provided"
                   }
@@ -519,7 +519,7 @@ const ProfileSummary = ({resident}) => {
                   value={
                     resident.messDetails?.messEndDate
                       ? `${dayjs(resident.messDetails.messEndDate).format(
-                          "DD MMMM, YYYY"
+                          "DD MMMM, YYYY",
                         )} (${resident.messDetails?.noOfDays || 0} days)`
                       : "Not Provided"
                   }
@@ -532,7 +532,7 @@ const ProfileSummary = ({resident}) => {
                 value={
                   resident.stayDetails?.joinDate
                     ? dayjs(resident.stayDetails.joinDate).format(
-                        "DD MMMM, YYYY"
+                        "DD MMMM, YYYY",
                       )
                     : "Not Provided"
                 }
@@ -545,7 +545,7 @@ const ProfileSummary = ({resident}) => {
               <div className="flex space-x-2">
                 {/* Download button */}
                 <button
-                  className="cursor-pointer inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-[#4d44b5] hover:bg-[#3a32a0]"
+                  className="cursor-pointer inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-[#059669] hover:bg-[#059669]"
                   onClick={() => setDownloadModalVisible(true)}
                 >
                   <FiDownload className="mr-2" />

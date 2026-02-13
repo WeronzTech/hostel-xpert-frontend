@@ -245,7 +245,7 @@ const Dashboard = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#4d44b5] mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#059669] mx-auto"></div>
         </div>
       </div>
     );
@@ -262,7 +262,7 @@ const Dashboard = () => {
           </p>
           <button
             onClick={() => window.location.reload()}
-            className="mt-4 px-4 py-2 bg-[#4d44b5] text-white rounded-lg hover:bg-[#3a32a0]"
+            className="mt-4 px-4 py-2 bg-[#059669] text-white rounded-lg hover:bg-[#059669]"
           >
             Retry
           </button>
@@ -409,7 +409,7 @@ const Dashboard = () => {
                               <span>
                                 Reported At{" "}
                                 {dayjs(issue.reportedAt).format(
-                                  "MMM D, YYYY [at] hh:mm A"
+                                  "MMM D, YYYY [at] hh:mm A",
                                 )}
                               </span>
                             </div>

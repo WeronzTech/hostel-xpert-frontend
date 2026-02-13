@@ -142,29 +142,26 @@
 // };
 
 // export default EditKitchenModal;
-import React, { useEffect } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Form, Input, message, Modal, Select } from "antd";
-import {
-  getAllHeavensProperties
-} from "../../../hooks/property/useProperty.js"; // Assuming hooks are in this path
-import { updateKitchen } from "../../../hooks/inventory/useInventory"; // You will need to create this hook
-import { getAllStaff } from "../../../hooks/staff/useStaff.js";
+import React, {useEffect} from "react";
+import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
+import {Form, Input, message, Modal, Select} from "antd";
+import {getAllHeavensProperties} from "../../../hooks/property/useProperty.js"; // Assuming hooks are in this path
+import {updateKitchen} from "../../../hooks/inventory/useInventory"; // You will need to create this hook
+import {getAllStaff} from "../../../hooks/staff/useStaff.js";
 
-
-const EditKitchenModal = ({ open, onClose, initialData }) => {
+const EditKitchenModal = ({open, onClose, initialData}) => {
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
   const [messageApi, contextHolder] = message.useMessage();
 
   // Fetch staff and properties for the Select dropdowns
-  const { data: staffData, isLoading: staffLoading } = useQuery({
+  const {data: staffData, isLoading: staffLoading} = useQuery({
     queryKey: ["all-staff"],
     queryFn: () => getAllStaff(),
     enabled: open, // Fetch only when the modal is open
   });
 
-  const { data: propertiesData, isLoading: propertiesLoading } = useQuery({
+  const {data: propertiesData, isLoading: propertiesLoading} = useQuery({
     queryKey: ["all-properties"],
     queryFn: () => getAllHeavensProperties(),
     enabled: open, // Fetch only when the modal is open
@@ -188,11 +185,11 @@ const EditKitchenModal = ({ open, onClose, initialData }) => {
 
   // Mutation for updating an existing kitchen
   const EditKitchen = useMutation({
-    mutationFn: (values) => updateKitchen({ id: initialData._id, ...values }),
+    mutationFn: (values) => updateKitchen({id: initialData._id, ...values}),
     onSuccess: () => {
       messageApi.success("Kitchen updated successfully!");
       // Invalidate queries to refetch the updated kitchen list
-      queryClient.invalidateQueries({ queryKey: ["kitchens"] });
+      queryClient.invalidateQueries({queryKey: ["kitchens"]});
       onClose(); // Close the modal on success
     },
     onError: (error) => {
@@ -232,9 +229,7 @@ const EditKitchenModal = ({ open, onClose, initialData }) => {
           <Form.Item
             name="name"
             label="Kitchen Name"
-            rules={[
-              { required: true, message: "Please enter the kitchen name" },
-            ]}
+            rules={[{required: true, message: "Please enter the kitchen name"}]}
           >
             <Input placeholder="e.g., Main Kitchen" />
           </Form.Item>
@@ -242,7 +237,7 @@ const EditKitchenModal = ({ open, onClose, initialData }) => {
           <Form.Item
             name="location"
             label="Location"
-            rules={[{ required: true, message: "Please enter the location" }]}
+            rules={[{required: true, message: "Please enter the location"}]}
           >
             <Input placeholder="e.g., Jigani" />
           </Form.Item>
@@ -251,7 +246,7 @@ const EditKitchenModal = ({ open, onClose, initialData }) => {
             name="incharge"
             label="Incharge"
             rules={[
-              { required: true, message: "Please select an incharge person" },
+              {required: true, message: "Please select an incharge person"},
             ]}
           >
             <Select placeholder="Select a staff member" loading={staffLoading}>

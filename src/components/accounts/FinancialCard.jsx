@@ -20,10 +20,10 @@ const FinancialCard = ({
 
   const colorConfig = {
     monthly: {
-      border: "#4d44b5",
-      bg: "#4d44b5",
-      text: "#4d44b5",
-      hex: "#4d44b5",
+      border: "#059669",
+      bg: "#059669",
+      text: "#059669",
+      hex: "#059669",
     },
     daily: {
       border: "#38b2ac",
@@ -125,15 +125,15 @@ const FinancialCard = ({
                       isIncrease === "increase"
                         ? "#10B981" // green
                         : isIncrease === "decrease"
-                        ? "#F56565" // red
-                        : "#6B7280", // gray for neutral
+                          ? "#F56565" // red
+                          : "#6B7280", // gray for neutral
                   }}
                 >
                   {isIncrease === "increase"
                     ? "↑"
                     : isIncrease === "decrease"
-                    ? "↓"
-                    : "→"}{" "}
+                      ? "↓"
+                      : "→"}{" "}
                   {comparisonPercentage || 0}%
                 </span>
               )}
@@ -175,8 +175,8 @@ const FinancialCard = ({
                   isIncrease === "increase"
                     ? "#10B981" // green
                     : isIncrease === "decrease"
-                    ? "#F56565" // red
-                    : "#6B7280", // gray for neutral
+                      ? "#F56565" // red
+                      : "#6B7280", // gray for neutral
                 fontWeight: "bold",
                 fontSize: "14px",
               }}
@@ -192,8 +192,8 @@ const FinancialCard = ({
               {isIncrease === "increase"
                 ? "Increase"
                 : isIncrease === "decrease"
-                ? "Decrease"
-                : ""}
+                  ? "Decrease"
+                  : ""}
             </div>
 
             <div style={{fontSize: "12px", color: "#6B7280"}}>
@@ -201,8 +201,8 @@ const FinancialCard = ({
               {isIncrease === "increase"
                 ? "more"
                 : isIncrease === "decrease"
-                ? "less"
-                : "than"}{" "}
+                  ? "less"
+                  : "than"}{" "}
               last month
             </div>
           </div>

@@ -3,10 +3,7 @@ import apiClient from "../../utils/apiClient";
 export const registerClient = async (clientData) => {
   try {
     console.debug("Registering client:", clientData); // Debug log
-    const response = await apiClient.post(
-      "/client/api/client/register",
-      clientData
-    );
+    const response = await apiClient.post("/client/register-client", clientData);
     console.debug("Registration successful:", response.data);
     return response.data;
   } catch (error) {
@@ -37,9 +34,7 @@ export const getAllAgencies = async () => {
     const apiError = {
       message: error.response?.data?.message || "Failed to fetch agencies",
       details:
-        error.response?.data?.errors ||
-        error.response?.data ||
-        error.message,
+        error.response?.data?.errors || error.response?.data || error.message,
       status: error.response?.status,
     };
 

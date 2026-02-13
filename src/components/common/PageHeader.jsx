@@ -1,6 +1,6 @@
-import { FiCalendar } from "../../icons/index.js";
+import {FiCalendar} from "../../icons/index.js";
 
-const PageHeader = ({ title, subtitle, showCalendar = true }) => {
+const PageHeader = ({title, subtitle, showCalendar = true}) => {
   return (
     <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
       <div>
@@ -11,7 +11,7 @@ const PageHeader = ({ title, subtitle, showCalendar = true }) => {
       </div>
       {showCalendar && (
         <div className="flex items-center gap-2 text-gray-600">
-          <FiCalendar className="text-[#4d44b5]" />
+          <FiCalendar className="text-[#059669]" />
           <span>
             {new Date().toLocaleDateString("en-US", {
               weekday: "long",

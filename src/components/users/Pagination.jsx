@@ -34,7 +34,7 @@ const Pagination = ({
 
     return Array.from(
       {length: endPage - startPage + 1},
-      (_, i) => startPage + i
+      (_, i) => startPage + i,
     );
   };
 
@@ -102,7 +102,7 @@ const Pagination = ({
             onClick={() => onPageChange(page)}
             className={`px-3 cursor-pointer py-1 rounded-lg border min-w-[2.5rem] ${
               currentPage === page
-                ? "bg-[#4d44b5] text-white border-[#4d44b5]"
+                ? "bg-[#059669] text-white border-[#059669]"
                 : "border-gray-300 text-gray-700"
             }`}
           >

@@ -70,16 +70,16 @@ const NewOnboardingSection = () => {
   // Otherwise, show the requests
   return (
     <div className="mb-6 bg-white rounded-lg shadow-sm overflow-hidden">
-      <div className="border-l-4 border-[#4d44b5] bg-indigo-50 p-4">
+      <div className="border-l-4 border-[#059669] bg-indigo-50 p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <FiAlertTriangle className="text-[#4d44b5] text-xl" />
-            <h3 className="font-semibold text-[#4d44b5]">
+            <FiAlertTriangle className="text-[#059669] text-xl" />
+            <h3 className="font-semibold text-[#059669]">
               Onboarding Requests ({transformedRequests.length})
             </h3>
           </div>
           <button
-            className="cursor-pointer text-[#4d44b5] hover:text-[#3a32a0] text-sm font-medium flex items-center gap-1"
+            className="cursor-pointer text-[#059669] hover:text-[#059669] text-sm font-medium flex items-center gap-1"
             onClick={() => navigate("/onboarding")}
           >
             View All <FiArrowRight className="w-4 h-4" />

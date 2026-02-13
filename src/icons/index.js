@@ -68,6 +68,7 @@ export {
   FiCreditCard,
   FiBriefcase,
   FiAlertCircle,
+  FiInfo,
 } from "react-icons/fi";
 
 export {

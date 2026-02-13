@@ -1,108 +1,56 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { useSelector } from 'react-redux';
-import {
-  Row,
-  Col,
-  Card,
-  Button,
-  Input,
-  Select,
-  Pagination,
-  Empty,
-  Alert,
-  Spin,
-  Modal,
-  message
-} from 'antd';
-import {
-  PlusOutlined,
-  SearchOutlined,
-  ReloadOutlined,
-  ExclamationCircleOutlined
-} from '@ant-design/icons';
-import { getFloorsByPropertyId } from '../../../hooks/property/useProperty';
-import FloorStatistics from '../../../components/property/floor/FloorStatistics';
-import FloorModal from '../../../modals/property/FloorModal';
-import FloorCard from '../../../components/property/floor/FloorCard';
+import {useState, useMemo} from "react";
+import {useSelector} from "react-redux";
+import {useQuery, useQueryClient} from "@tanstack/react-query";
+import {Row, Col, Card, Button, Input, Empty, message} from "antd";
+import {PlusOutlined, SearchOutlined} from "@ant-design/icons";
+import {getFloorsByPropertyId} from "../../../hooks/property/useProperty";
+import FloorModal from "../../../modals/property/FloorModal";
+import FloorCard from "../../../components/property/floor/FloorCard";
+import {PageHeader} from "../../../components";
 
-const { Option } = Select;
-const { confirm } = Modal;
 const FloorManagement = () => {
-  const { user } = useSelector((state) => state.auth);
-  const { selectedProperty } = useSelector((state) => state.properties);
-  const [floors, setFloors] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(8);
+  const {user} = useSelector((state) => state.auth);
+  const {selectedProperty} = useSelector((state) => state.properties);
+  const queryClient = useQueryClient();
+  const [messageApi, contextHolder] = message.useMessage();
+
+  const [searchTerm, setSearchTerm] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingFloor, setEditingFloor] = useState(null);
 
-  // Fetch floors data
-  const fetchFloors = async () => {
-    console.log('Fetching floors for property:', selectedProperty);
-    
-    if (!selectedProperty?.id) {
-      setError('No property selected. Please select a property first.');
-      setFloors([]);
-      return;
-    }
+  // TanStack Query for fetching floors
+  const {
+    data: floorsData,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["floors", selectedProperty?.id],
+    queryFn: () => getFloorsByPropertyId(selectedProperty.id),
+    staleTime: 5 * 60 * 1000,
+    cacheTime: 10 * 60 * 1000,
+    retry: 1,
+    onError: (err) => {
+      message.error(err.message || "Failed to load floors");
+    },
+  });
 
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const response = await getFloorsByPropertyId(selectedProperty.id);
-      setFloors(response.data || []);
-    } catch (err) {
-      console.error('Error fetching floors:', err);
-      setError(err.message || 'Failed to fetch floors');
-      setFloors([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (selectedProperty?.id) {
-      fetchFloors();
-    } else {
-      setFloors([]);
-      setError('Please select a property first');
-    }
-  }, [selectedProperty?.id]);
+  const floors = floorsData || [];
 
   // Filtered and searched floors
   const filteredFloors = useMemo(() => {
-    return floors.filter(floor => {
-      const matchesSearch = floor.floorName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           floor.floorNo?.toString().includes(searchTerm) ||
-                           floor.description?.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesStatus = statusFilter === 'all' || floor.status === statusFilter;
-      
-      return matchesSearch && matchesStatus;
+    return floors.filter((floor) => {
+      const matchesSearch =
+        floor.floorName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        floor.floorNo?.toString().includes(searchTerm) ||
+        floor.description?.toLowerCase().includes(searchTerm.toLowerCase());
+
+      return matchesSearch;
     });
-  }, [floors, searchTerm, statusFilter]);
-
-  // Paginated floors
-  const paginatedFloors = useMemo(() => {
-    const startIndex = (currentPage - 1) * pageSize;
-    return filteredFloors.slice(startIndex, startIndex + pageSize);
-  }, [filteredFloors, currentPage, pageSize]);
-
-  // Handle page change to prevent empty pages after deletion
-  useEffect(() => {
-    if (paginatedFloors.length === 0 && currentPage > 1) {
-      setCurrentPage(prev => Math.max(1, prev - 1));
-    }
-  }, [paginatedFloors.length, currentPage]);
+  }, [floors, searchTerm]);
 
   const handleAddFloor = () => {
     if (!selectedProperty?.id) {
-      message.warning('Please select a property first');
+      messageApi.warning("Please select a property first");
       return;
     }
     setEditingFloor(null);
@@ -114,18 +62,20 @@ const FloorManagement = () => {
     setIsModalVisible(true);
   };
 
-  // Updated delete handler to remove floor from state immediately
   const handleDeleteFloor = (deletedFloor) => {
-    // Remove the floor from local state immediately for instant UI update
-    setFloors(prevFloors => prevFloors.filter(floor => floor._id !== deletedFloor._id));
-    
-    // Show success message
-    message.success(`Floor "${deletedFloor.floorName}" deleted successfully`);
+    queryClient.setQueryData(["floors", selectedProperty?.id], (oldData) => {
+      if (!oldData) return oldData;
+      return oldData.filter((floor) => floor._id !== deletedFloor._id);
+    });
+
+    messageApi.success(
+      `Floor "${deletedFloor.floorName}" deleted successfully`,
+    );
   };
 
   const handleModalSuccess = () => {
     setIsModalVisible(false);
-    fetchFloors(); // Refresh data after add/edit
+    queryClient.invalidateQueries(["floors", selectedProperty?.id]);
   };
 
   const handleModalCancel = () => {
@@ -133,182 +83,172 @@ const FloorManagement = () => {
     setEditingFloor(null);
   };
 
-  // Refresh floors data
-  const handleRefresh = () => {
-    fetchFloors();
-    message.info('Refreshing floors data...');
-  };
-
-  if (loading && floors.length === 0) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
-        <Spin size="large" tip="Loading floors..." />
-      </div>
-    );
-  }
-
   return (
-    <div style={{ padding: '24px' }}>
-      {/* Header Section */}
-      <Row justify="space-between" align="middle" style={{ marginBottom: '24px' }}>
-        <Col>
-          <h1 style={{ fontSize: '28px', fontWeight: 'bold', margin: 0 }}>Floor Management</h1>
-          {selectedProperty?.id ? (
-            <p style={{ color: '#666', margin: '4px 0 0 0' }}>
-              Property: <strong>{selectedProperty.name}</strong>
-            </p>
-          ) : (
-            <p style={{ color: '#ff4d4f', margin: '4px 0 0 0' }}>
-              No property selected. Please select a property from the properties list.
-            </p>
-          )}
-        </Col>
-      </Row>
+    <div className="min-h-screen bg-gray-50 xl:px-12 lg:px-4 lg:pt-6 lg:pb-12 px-4 pt-4 pb-8">
+      {contextHolder}
 
-      {/* Statistics Cards */}
-      <FloorStatistics floors={floors} selectedProperty={selectedProperty} />
-
-      {/* Property Selection Alert */}
-      {!selectedProperty?.id && (
-        <Alert
-          message="Property Not Selected"
-          description="Please select a property from the properties page to manage its floors."
-          type="warning"
-          showIcon
-          style={{ marginBottom: '24px' }}
-        />
-      )}
+      <PageHeader
+        title={
+          !selectedProperty?.id ||
+          selectedProperty.id === "null" ||
+          selectedProperty?.name === ""
+            ? "Floor Management"
+            : `Floor Management - ${selectedProperty.name.replace(`${user.companyName} - `, "")}`
+        }
+        subtitle={
+          !selectedProperty?.id ||
+          selectedProperty.id === "null" ||
+          selectedProperty?.name === ""
+            ? "Manage all floors across properties"
+            : `Manage floor for ${selectedProperty.name.replace(
+                `${user.companyName} - `,
+                "",
+              )}`
+        }
+      />
 
       {/* Filters Section */}
-      {selectedProperty?.id && (
-        <Card style={{ marginBottom: '24px' }}>
-          <Row gutter={[16, 16]} align="middle">
-            <Col xs={24} md={8}>
-              <Input
-                placeholder="Search floors by name, number, or description..."
-                prefix={<SearchOutlined />}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                size="large"
-                allowClear
-              />
-            </Col>
-            <Col xs={24} md={6}>
-              <Select
-                value={statusFilter}
-                onChange={setStatusFilter}
-                style={{ width: '100%' }}
-                size="large"
-                placeholder="Filter by status"
-              >
-                <Option value="all">All Status</Option>
-                <Option value="Active">Active</Option>
-                <Option value="Inactive">Inactive</Option>
-                <Option value="Maintenance">Maintenance</Option>
-              </Select>
-            </Col>
-            <Col xs={24} md={4}>
-              <div style={{ color: '#666' }}>
-                {filteredFloors.length} floor(s) found
-              </div>
-            </Col>
-            <Col xs={24} md={6}>
-              <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-              
-                <Button
-                  type="primary"
-                  icon={<PlusOutlined />}
-                  onClick={handleAddFloor}
-                  size="large"
-                >
-                  Add Floor
-                </Button>
-              </div>
-            </Col>
-          </Row>
-        </Card>
-      )}
+      <Card className="mb-6 shadow-sm" bodyStyle={{padding: "10px"}}>
+        <Row gutter={[16, 16]} align="middle">
+          <Col xs={24} md={8}>
+            <Input
+              placeholder="Search floors by name, number, or description..."
+              prefix={<SearchOutlined />}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              size="medium"
+              allowClear
+            />
+          </Col>
 
-      {/* Error Alert */}
-      {error && (
-        <Alert
-          message="Error"
-          description={error}
-          type="error"
-          showIcon
-          closable
-          onClose={() => setError(null)}
-          style={{ marginBottom: '24px' }}
-        />
-      )}
+          <Col xs={24} md={4}>
+            <div style={{color: isLoading ? "#999" : "#666"}}>
+              {!isLoading && `${filteredFloors.length} floor(s) found`}
+            </div>
+          </Col>
+          <Col xs={24} md={12} style={{textAlign: "right"}}>
+            <div
+              style={{
+                display: "flex",
+                gap: "8px",
+                justifyContent: "flex-end",
+              }}
+            >
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={handleAddFloor}
+                size="medium"
+                style={{backgroundColor: "#059669", borderColor: "#059669"}}
+              >
+                Add Floor
+              </Button>
+            </div>
+          </Col>
+        </Row>
+      </Card>
 
       {/* Floors Grid */}
-      {selectedProperty?.id ? (
-        <>
-          <Row gutter={[16, 16]}>
-            {paginatedFloors.length > 0 ? (
-              paginatedFloors.map((floor) => (
-                <Col xs={24} sm={12} lg={8} xl={6} key={floor._id}>
-                  <FloorCard
-                    floor={floor}
-                    onEdit={handleEditFloor}
-                    onDelete={handleDeleteFloor} // Pass the delete handler
-                  />
-                </Col>
-              ))
-            ) : (
-              <Col span={24}>
-                <Card>
-                  <Empty
-                    description={
-                      loading 
-                        ? 'Loading floors...' 
-                        : floors.length === 0 
-                          ? `No floors found for ${selectedProperty.name}. Click "Add Floor" to create the first floor.`
-                          : 'No floors match your search filters'
-                    }
-                    image={Empty.PRESENTED_IMAGE_SIMPLE}
-                  >
-                    {floors.length === 0 && (
-                      <Button type="primary" onClick={handleAddFloor}>
-                        Add First Floor
-                      </Button>
-                    )}
-                  </Empty>
-                </Card>
-              </Col>
-            )}
-          </Row>
+      <Row gutter={[16, 16]} style={{marginTop: 16}}>
+        {isLoading ? (
+          <Col span={24}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+              {[1, 2, 3, 4].map((item) => (
+                <div
+                  key={item}
+                  className="bg-white rounded-lg border border-gray-200 overflow-hidden h-full flex flex-col"
+                >
+                  {/* Header - matches FloorCard header */}
+                  <div className="flex justify-between items-center p-3 bg-gray-50 border-b">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-gray-200 rounded-lg animate-pulse"></div>
+                      <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
+                    </div>
+                    <div className="flex gap-1">
+                      <div className="w-7 h-7 bg-gray-200 rounded-full animate-pulse"></div>
+                      <div className="w-7 h-7 bg-gray-200 rounded-full animate-pulse"></div>
+                    </div>
+                  </div>
 
-          {/* Pagination */}
-          {filteredFloors.length > 0 && (
-            <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'center' }}>
-              <Pagination
-                current={currentPage}
-                pageSize={pageSize}
-                total={filteredFloors.length}
-                onChange={(page, size) => {
-                  setCurrentPage(page);
-                  setPageSize(size);
-                }}
-                showSizeChanger
-                showQuickJumper
-                showTotal={(total, range) => 
-                  `${range[0]}-${range[1]} of ${total} items`
-                }
-              />
+                  {/* Body - matches FloorCard content */}
+                  <div className="p-3 space-y-3 flex-1">
+                    {/* Floor Number skeleton */}
+                    <div className="flex items-center justify-between bg-gray-50 p-2 rounded-lg">
+                      <div className="h-3 w-16 bg-gray-200 rounded animate-pulse"></div>
+                      <div className="h-8 w-8 bg-gray-200 rounded animate-pulse"></div>
+                    </div>
+
+                    {/* Statistics Grid - 2x2 */}
+                    <div className="grid grid-cols-2 gap-2">
+                      {[1, 2, 3, 4].map((i) => (
+                        <div key={i} className="bg-gray-50 p-2 rounded">
+                          <div className="h-3 w-16 bg-gray-200 rounded animate-pulse mb-1"></div>
+                          <div className="h-6 w-8 bg-gray-200 rounded animate-pulse"></div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Room Types skeleton */}
+                    <div className="bg-gray-50 p-2 rounded">
+                      <div className="h-3 w-20 bg-gray-200 rounded animate-pulse mb-2"></div>
+                      <div className="flex gap-1">
+                        <div className="h-5 w-16 bg-gray-200 rounded-full animate-pulse"></div>
+                        <div className="h-5 w-16 bg-gray-200 rounded-full animate-pulse"></div>
+                      </div>
+                    </div>
+
+                    {/* Description skeleton - optional */}
+                    <div className="bg-gray-50 p-2 rounded">
+                      <div className="h-3 w-20 bg-gray-200 rounded animate-pulse mb-1"></div>
+                      <div className="h-3 w-full bg-gray-200 rounded animate-pulse mb-1"></div>
+                      <div className="h-3 w-3/4 bg-gray-200 rounded animate-pulse"></div>
+                    </div>
+                  </div>
+
+                  {/* Footer - matches FloorCard footer */}
+                  <div className="px-3 py-2 bg-gray-50 border-t">
+                    <div className="h-8 w-full bg-gray-200 rounded-lg animate-pulse"></div>
+                  </div>
+                </div>
+              ))}
             </div>
-          )}
-        </>
-      ) : (
-        // Show when no property is selected
-        <Card>
-          <Empty
-            description="No property selected. Please select a property from the properties list to manage floors."
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-          />
-        </Card>
-      )}
+          </Col>
+        ) : error ? (
+          <Col span={24}>
+            <Card>
+              <Empty
+                description={
+                  <span style={{color: "red"}}>{error?.message}</span>
+                }
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+              />
+            </Card>
+          </Col>
+        ) : filteredFloors.length > 0 ? (
+          filteredFloors.map((floor) => (
+            <Col xs={24} sm={12} lg={8} xl={6} key={floor._id}>
+              <FloorCard
+                floor={floor}
+                onEdit={handleEditFloor}
+                onDelete={handleDeleteFloor}
+              />
+            </Col>
+          ))
+        ) : (
+          <Col span={24}>
+            <Card>
+              <Empty
+                description={
+                  searchTerm
+                    ? "No floors match your search criteria"
+                    : "No floors available."
+                }
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+              ></Empty>
+            </Card>
+          </Col>
+        )}
+      </Row>
 
       {/* Floor Modal */}
       <FloorModal

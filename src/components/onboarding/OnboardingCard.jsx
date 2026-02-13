@@ -100,8 +100,8 @@ export default function OnboardingCard({
       {/* Footer */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-sm text-gray-600">
-          <FiCalendar className="text-[#4d44b5] text-lg" />
-          <span className="text-[#4d44b5] font-medium">{formatDate(date)}</span>
+          <FiCalendar className="text-[#059669] text-lg" />
+          <span className="text-[#059669] font-medium">{formatDate(date)}</span>
         </div>
         <ActionButton
           onClick={() => handleProcessOnboarding(residentId)}

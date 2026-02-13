@@ -32,7 +32,7 @@ const RoomOccupantsModal = ({roomId, visible, onClose}) => {
   };
 
   const occupants = data?.occupants?.filter((o) => o.occupantDetails) || [];
-  console.log(occupants);
+  // console.log(occupants);
   const getUserTypeTag = (userType) => {
     if (!userType) return <Tag color="orange">Daily</Tag>;
     const lowerType = userType.toLowerCase();

@@ -411,7 +411,7 @@
 //                 e.stopPropagation();
 //                 handlePaymentClick(record.originalData);
 //               }}
-//               style={{backgroundColor: "#4d44b5", border: "none"}} // green
+//               style={{backgroundColor: "#059669", border: "none"}} // green
 //               icon={<FaRupeeSign color="white" />} // use any payment icon
 //             />
 //             <Button
@@ -643,7 +643,7 @@ const ResidentsTable = ({
         resident.noOfDaysForMessOnly ??
         (messStart && messEnd
           ? Math.ceil(
-              (messEnd.getTime() - messStart.getTime()) / (1000 * 60 * 60 * 24)
+              (messEnd.getTime() - messStart.getTime()) / (1000 * 60 * 60 * 24),
             )
           : "N/A");
 
@@ -664,7 +664,7 @@ const ResidentsTable = ({
         paymentDate:
           resident.financialDetails?.nextDueDate || resident.nextDueDate
             ? new Date(
-                resident.financialDetails?.nextDueDate || resident.nextDueDate
+                resident.financialDetails?.nextDueDate || resident.nextDueDate,
               ).toLocaleDateString()
             : "N/A",
         contact: resident.contact || "N/A",
@@ -674,15 +674,15 @@ const ResidentsTable = ({
         checkedIn:
           resident.stayDetails?.checkInDate || resident.checkInDate
             ? new Date(
-                resident.stayDetails?.checkInDate || resident.checkInDate
+                resident.stayDetails?.checkInDate || resident.checkInDate,
               ).toLocaleDateString()
             : "N/A",
         ...(isDaily && {
           checkedOut: resident?.extendDate
             ? new Date(resident?.extendDate).toLocaleDateString()
             : resident?.checkOutDate
-            ? new Date(resident?.checkOutDate).toLocaleDateString()
-            : "N/A",
+              ? new Date(resident?.checkOutDate).toLocaleDateString()
+              : "N/A",
 
           daysStayed:
             resident.stayDetails?.noOfDays || resident.noOfDays || "N/A",
@@ -976,7 +976,7 @@ const ResidentsTable = ({
                 e.stopPropagation();
                 handlePaymentClick(record.originalData);
               }}
-              style={{backgroundColor: "#4d44b5", border: "none"}}
+              style={{backgroundColor: "#059669", border: "none"}}
               icon={<FaRupeeSign color="white" />}
             />
             <Button

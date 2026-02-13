@@ -1,4 +1,4 @@
-import { Avatar, Tag, Tabs, Card, Row, Col, Button, Spin } from "antd";
+import {Avatar, Tag, Tabs, Card, Row, Col, Button, Spin} from "antd";
 import {
   MailOutlined,
   PhoneOutlined,
@@ -8,22 +8,22 @@ import {
   TransactionOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
-import { useQuery } from "@tanstack/react-query";
-import { useParams, useLocation } from "react-router-dom";
-import { getManagerById, getStaffById } from "../../hooks/employee/useEmployee";
+import {useQuery} from "@tanstack/react-query";
+import {useParams, useLocation} from "react-router-dom";
+import {getManagerById, getStaffById} from "../../hooks/employee/useEmployee";
 
 const EmployeeDetail = () => {
-  const { id } = useParams();
+  const {id} = useParams();
   const location = useLocation();
   const employeeType = location.state?.type; // 'staff' or 'manager'
 
-  const { data: staffData, isLoading: isStaffLoading } = useQuery({
+  const {data: staffData, isLoading: isStaffLoading} = useQuery({
     queryKey: ["employee-detail", id],
     queryFn: () => getStaffById(id),
     enabled: !!id && employeeType === "staff", // Only fetch if it's a staff member
   });
 
-  const { data: managerData, isLoading: isManagerLoading } = useQuery({
+  const {data: managerData, isLoading: isManagerLoading} = useQuery({
     queryKey: ["employee-detail", id],
     queryFn: () => getManagerById(id),
     enabled: !!id && employeeType === "manager", // Only fetch if it's a manager
@@ -53,8 +53,8 @@ const EmployeeDetail = () => {
       label: "Date of Birth",
       value: dayjs(employee.dob).format("DD MMMM, YYYY"),
     },
-    { label: "Gender", value: employee.gender },
-    { label: "Address", value: employee.address },
+    {label: "Gender", value: employee.gender},
+    {label: "Address", value: employee.address},
   ];
 
   const financialDetailsItems = [
@@ -182,7 +182,7 @@ const EmployeeDetail = () => {
           {/* Left Column */}
           <Col xs={24} lg={8}>
             <Card className="shadow-sm">
-              <div className="text-center bg-[#4d44b5] text-white p-4 rounded-t-[20px]">
+              <div className="text-center bg-[#059669] text-white p-4 rounded-t-[20px]">
                 <Avatar
                   size={96}
                   src={employee.photo}

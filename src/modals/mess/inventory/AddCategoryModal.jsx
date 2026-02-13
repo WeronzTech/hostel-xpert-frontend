@@ -1,17 +1,17 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Form, Input, message, Modal, Select } from "antd";
-import { getAllHeavensProperties } from "../../../hooks/property/useProperty";
-import { addCategory } from "../../../hooks/inventory/useInventory";
+import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
+import {Form, Input, message, Modal, Select} from "antd";
+import {getAllHeavensProperties} from "../../../hooks/property/useProperty";
+import {addCategory} from "../../../hooks/inventory/useInventory";
 
-const { Option } = Select;
+const {Option} = Select;
 
-const AddCategoryModal = ({ open, onClose }) => {
+const AddCategoryModal = ({open, onClose}) => {
   const [form] = Form.useForm();
 
   const queryClient = useQueryClient();
   const [messageApi, contextHolder] = message.useMessage();
 
-  const { data: properties, isLoading: propertiesLoading } = useQuery({
+  const {data: properties, isLoading: propertiesLoading} = useQuery({
     queryKey: ["properties"],
     queryFn: () => getAllHeavensProperties(),
     enabled: open,
@@ -22,7 +22,7 @@ const AddCategoryModal = ({ open, onClose }) => {
     mutationFn: (categoryData) => addCategory(categoryData),
     onSuccess: (data) => {
       messageApi.success(data.message || "Category created successfully!");
-      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      queryClient.invalidateQueries({queryKey: ["categories"]});
       form.resetFields();
       onClose();
     },
@@ -47,7 +47,7 @@ const AddCategoryModal = ({ open, onClose }) => {
             name="name"
             label="Category Name"
             rules={[
-              { required: true, message: "Please enter the category name!" },
+              {required: true, message: "Please enter the category name!"},
             ]}
           >
             <Input placeholder="e.g., Vegetables" />
@@ -55,7 +55,7 @@ const AddCategoryModal = ({ open, onClose }) => {
           <Form.Item
             name="propertyId"
             label="Property"
-            rules={[{ required: true, message: "Please select a property!" }]}
+            rules={[{required: true, message: "Please select a property!"}]}
           >
             <Select placeholder="Select a property" loading={propertiesLoading}>
               {properties?.map((prop) => (

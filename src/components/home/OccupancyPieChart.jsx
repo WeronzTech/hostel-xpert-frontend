@@ -1,9 +1,9 @@
-import { Pie } from "react-chartjs-2";
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import {Pie} from "react-chartjs-2";
+import {Chart as ChartJS, ArcElement, Tooltip, Legend} from "chart.js";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-const OccupancyPieChart = ({ occupied, total }) => {
+const OccupancyPieChart = ({occupied, total}) => {
   const vacant = total - occupied;
   const occupancyRate = Math.round((occupied / total) * 100);
 
@@ -12,7 +12,7 @@ const OccupancyPieChart = ({ occupied, total }) => {
     datasets: [
       {
         data: [occupied, vacant],
-        backgroundColor: ["#4d44b5", "#e0e0e0"],
+        backgroundColor: ["#059669", "#e0e0e0"],
         borderWidth: 0,
       },
     ],
@@ -48,7 +48,7 @@ const OccupancyPieChart = ({ occupied, total }) => {
         </div>
         <div className="space-y-3">
           <div className="flex items-center gap-3">
-            <div className="w-4 h-4 rounded bg-[#4d44b5]"></div>
+            <div className="w-4 h-4 rounded bg-[#059669]"></div>
             <div>
               <span className="text-sm font-medium text-gray-700">
                 Occupied

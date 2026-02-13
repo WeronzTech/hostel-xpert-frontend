@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Button, Input, Select, Row, Col, Empty, Alert, Spin } from 'antd';
-import { ArrowLeftOutlined, SearchOutlined } from '@ant-design/icons';
-import { getRoomsByFloorId } from '../../../hooks/property/useProperty';
+import React, {useState, useEffect} from "react";
+import {useParams, useNavigate} from "react-router-dom";
+import {Button, Input, Select, Row, Col, Empty, Alert, Spin} from "antd";
+import {ArrowLeftOutlined, SearchOutlined} from "@ant-design/icons";
+import {getRoomsByFloorId} from "../../../hooks/property/useProperty";
 
 // Import icons
 import {
@@ -16,10 +16,10 @@ import {
   FiUsers,
 } from "../../../icons";
 
-const { Option } = Select;
+const {Option} = Select;
 
 // RoomCard Component (Integrated)
-const RoomCard = ({ room, onUpdate, onDelete }) => {
+const RoomCard = ({room, onUpdate, onDelete}) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const safeRoom = {
@@ -69,23 +69,23 @@ const RoomCard = ({ room, onUpdate, onDelete }) => {
       {/* Header with room number and quick actions */}
       <div className="flex justify-between items-center p-4 bg-gray-50 border-b">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-indigo-100 text-[#4d44b5] rounded-lg">
+          <div className="p-2 bg-indigo-100 text-[#059669] rounded-lg">
             <FiHome size={18} />
           </div>
           <h3 className="font-semibold text-gray-800">
-            Room <span className="text-[#4d44b5]">{safeRoom.roomNumber}</span>
+            Room <span className="text-[#059669]">{safeRoom.roomNumber}</span>
           </h3>
         </div>
         <div className="flex gap-2">
           <button
-            className="cursor-pointer p-1.5 text-gray-500 hover:text-[#4d44b5] hover:bg-indigo-50 rounded"
+            className="cursor-pointer p-1.5 text-gray-500 hover:text-[#059669] hover:bg-indigo-50 rounded"
             onClick={() => onUpdate && onUpdate(safeRoom)}
             aria-label="Update Room"
           >
             <FiEdit2 size={16} />
           </button>
           <button
-            className="cursor-pointer p-1 text-gray-500 hover:text-[#4d44b5] hover:bg-indigo-50 rounded"
+            className="cursor-pointer p-1 text-gray-500 hover:text-[#059669] hover:bg-indigo-50 rounded"
             aria-label="Delete Room"
             onClick={() => onDelete && onDelete(room)}
           >
@@ -146,7 +146,8 @@ const RoomCard = ({ room, onUpdate, onDelete }) => {
             <div className="flex justify-between text-xs text-gray-600">
               <span>Occupancy</span>
               <span className="font-semibold">
-                {((safeRoom.occupant / safeRoom.roomCapacity) * 100).toFixed(1)}%
+                {((safeRoom.occupant / safeRoom.roomCapacity) * 100).toFixed(1)}
+                %
               </span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
@@ -154,9 +155,12 @@ const RoomCard = ({ room, onUpdate, onDelete }) => {
                 className="h-2 rounded-full transition-all duration-300"
                 style={{
                   width: `${(safeRoom.occupant / safeRoom.roomCapacity) * 100}%`,
-                  backgroundColor: 
-                    (safeRoom.occupant / safeRoom.roomCapacity) >= 0.8 ? '#ef4444' :
-                    (safeRoom.occupant / safeRoom.roomCapacity) >= 0.5 ? '#f59e0b' : '#10b981'
+                  backgroundColor:
+                    safeRoom.occupant / safeRoom.roomCapacity >= 0.8
+                      ? "#ef4444"
+                      : safeRoom.occupant / safeRoom.roomCapacity >= 0.5
+                        ? "#f59e0b"
+                        : "#10b981",
                 }}
               />
             </div>
@@ -170,7 +174,9 @@ const RoomCard = ({ room, onUpdate, onDelete }) => {
         {/* Description */}
         {safeRoom.description && (
           <div className="pt-3 border-t border-gray-100">
-            <p className="text-xs text-gray-500 font-medium mb-1">Description</p>
+            <p className="text-xs text-gray-500 font-medium mb-1">
+              Description
+            </p>
             <p className="text-sm text-gray-700 line-clamp-2">
               {safeRoom.description}
             </p>
@@ -181,7 +187,7 @@ const RoomCard = ({ room, onUpdate, onDelete }) => {
       {/* Footer with view occupants */}
       <div className="px-4 py-3 bg-gray-50 border-t">
         <button
-          className="cursor-pointer w-full flex items-center justify-center gap-2 py-2 px-4 rounded-lg text-sm font-medium text-[#4d44b5] hover:text-[#3a32a0] transition-colors"
+          className="cursor-pointer w-full flex items-center justify-center gap-2 py-2 px-4 rounded-lg text-sm font-medium text-[#059669] hover:text-[#059669] transition-colors"
           onClick={() => setIsModalOpen(true)}
         >
           <FiUsers size={16} />
@@ -194,51 +200,50 @@ const RoomCard = ({ room, onUpdate, onDelete }) => {
 
 // Main FloorRoomsPage Component
 const FloorRoomsPage = () => {
-  const { floorId } = useParams();
+  const {floorId} = useParams();
   const navigate = useNavigate();
   const [rooms, setRooms] = useState([]);
   const [floor, setFloor] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
 
   // Fetch rooms for the floor
   const fetchRooms = async () => {
     if (!floorId) {
-      setError('Floor ID is required');
+      setError("Floor ID is required");
       return;
     }
 
     setLoading(true);
     setError(null);
-    
+
     try {
       console.log(`🔄 Fetching rooms for floor ID: ${floorId}`);
       const response = await getRoomsByFloorId(floorId);
-      console.log('✅ Complete API Response:', response);
-      
+      console.log("✅ Complete API Response:", response);
+
       // The API returns an array directly, so use it as rooms data
       const roomsData = Array.isArray(response) ? response : [];
-      
-      console.log('✅ Final rooms data:', roomsData);
+
+      console.log("✅ Final rooms data:", roomsData);
       console.log(`📊 Loaded ${roomsData.length} rooms`);
 
       setRooms(roomsData);
-      
+
       // Extract floor info from first room if available
       if (roomsData.length > 0 && roomsData[0].floorId) {
         // You might want to fetch floor details separately if needed
-        setFloor({ 
+        setFloor({
           floorName: `Floor ${roomsData[0].floorId.substring(0, 8)}...`,
-          floorNo: 'N/A' // You can get this from floor details if available
+          floorNo: "N/A", // You can get this from floor details if available
         });
       }
-      
     } catch (err) {
-      console.error('❌ Error fetching rooms:', err);
-      console.error('❌ Error details:', err);
-      setError(err.message || 'Failed to fetch rooms');
+      console.error("❌ Error fetching rooms:", err);
+      console.error("❌ Error details:", err);
+      setError(err.message || "Failed to fetch rooms");
       setRooms([]);
       setFloor(null);
     } finally {
@@ -251,28 +256,30 @@ const FloorRoomsPage = () => {
       console.log(`🏢 FloorRoomsPage mounted for floor ID: ${floorId}`);
       fetchRooms();
     } else {
-      console.warn('⚠️ No floor ID provided in URL parameters');
-      setError('No floor ID provided');
+      console.warn("⚠️ No floor ID provided in URL parameters");
+      setError("No floor ID provided");
     }
   }, [floorId]);
 
   // Filtered rooms
-  const filteredRooms = rooms.filter(room => {
-    const matchesSearch = room.roomNo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         room.sharingType?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         room.status?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = statusFilter === 'all' || room.status?.toLowerCase() === statusFilter;
-    
+  const filteredRooms = rooms.filter((room) => {
+    const matchesSearch =
+      room.roomNo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      room.sharingType?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      room.status?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesStatus =
+      statusFilter === "all" || room.status?.toLowerCase() === statusFilter;
+
     return matchesSearch && matchesStatus;
   });
 
   const handleUpdateRoom = (room) => {
-    console.log('✏️ Update room requested:', room);
+    console.log("✏️ Update room requested:", room);
   };
 
   const handleDeleteRoom = (room) => {
-    console.log('🗑️ Delete room requested:', room);
+    console.log("🗑️ Delete room requested:", room);
     fetchRooms();
   };
 
@@ -338,7 +345,7 @@ const FloorRoomsPage = () => {
               <Select
                 value={statusFilter}
                 onChange={handleStatusFilterChange}
-                style={{ width: '100%' }}
+                style={{width: "100%"}}
                 size="large"
                 placeholder="Filter by status"
               >
@@ -373,11 +380,11 @@ const FloorRoomsPage = () => {
             <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
               <Empty
                 description={
-                  loading 
-                    ? 'Loading rooms...' 
-                    : rooms.length === 0 
+                  loading
+                    ? "Loading rooms..."
+                    : rooms.length === 0
                       ? `No rooms found for this floor.`
-                      : 'No rooms match your search filters'
+                      : "No rooms match your search filters"
                 }
                 image={Empty.PRESENTED_IMAGE_SIMPLE}
               />

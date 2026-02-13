@@ -6,7 +6,7 @@ import LoadingSpinner from "../ui/loadingSpinner/LoadingSpinner.jsx";
 
 const ProtectedRoute = ({children}) => {
   const {isAuthenticated, initialized, showExpirationModal} = useSelector(
-    (state) => state.auth
+    (state) => state.auth,
   );
   const location = useLocation();
   const dispatch = useDispatch();

@@ -27,7 +27,7 @@
 }
 
 .calendar-icon {
-  color: #4d44b5;
+  color: #059669;
 }
 
 /* Stats Grid */
@@ -114,7 +114,7 @@
 }
 
 .chart-icon {
-  color: #4d44b5;
+  color: #059669;
 }
 
 .pie-chart {
@@ -141,7 +141,7 @@
   left: 50%;
   transform: translate(-50%, -50%);
   font-weight: 700;
-  color: #4d44b5;
+  color: #059669;
   font-size: 1.2rem;
 }
 
@@ -201,7 +201,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: #4d44b5;
+  background-color: #059669;
 }
 
 .activity-content p {
@@ -284,7 +284,7 @@
   padding: 0.5rem;
   min-width: 50px;
   text-align: center;
-  color: #4d44b5;
+  color: #059669;
   display: flex;
   flex-direction: column;
 }
@@ -321,7 +321,7 @@
   .stats-grid {
     grid-template-columns: 1fr 1fr;
   }
-  
+
   .pie-chart {
     flex-direction: column;
     align-items: flex-start;
@@ -333,7 +333,7 @@
   .stats-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .dashboard-header {
     flex-direction: column;
     align-items: flex-start;

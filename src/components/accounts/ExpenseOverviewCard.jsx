@@ -17,7 +17,7 @@ const ExpenseOverviewCard = ({expenses, loading = false}) => {
       {
         name: "PG",
         amount: expenses?.currentMonthPgExpense || 0,
-        color: "#4d44b5",
+        color: "#059669",
       },
       {
         name: "Mess",
@@ -34,7 +34,7 @@ const ExpenseOverviewCard = ({expenses, loading = false}) => {
       expenses?.currentMonthPgExpense,
       expenses?.currentMonthMessExpense,
       expenses?.currentMonthOthersExpense,
-    ]
+    ],
   );
 
   // Get trend display configuration
@@ -203,8 +203,8 @@ const ExpenseOverviewCard = ({expenses, loading = false}) => {
                 {expenses?.trend === "increased"
                   ? "more than last month"
                   : expenses?.trend === "decreased"
-                  ? "less than last month"
-                  : "no change compared to last month"}
+                    ? "less than last month"
+                    : "no change compared to last month"}
               </div>
             </div>
 
@@ -423,7 +423,9 @@ const ExpenseOverviewCard = ({expenses, loading = false}) => {
           height: 100%;
           border-radius: 4px;
           cursor: pointer;
-          transition: width 0.3s ease, background-color 0.3s ease;
+          transition:
+            width 0.3s ease,
+            background-color 0.3s ease;
         }
 
         /* Responsive Breakpoints */

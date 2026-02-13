@@ -72,7 +72,7 @@ const AccountingDashboard = () => {
       queryKey: ["journalEntries", selectedProperty?.id],
       queryFn: () => getJournalEntries({propertyId: selectedProperty?.id}),
       refetchOnWindowFocus: false,
-    }
+    },
   );
 
   const {data: systemNames, isLoading: systemNamesLoading} = useQuery({
@@ -134,8 +134,8 @@ const AccountingDashboard = () => {
                 size="large"
                 onClick={() => setShowJournalEntryModal(true)}
                 style={{
-                  color: "#4d44b5",
-                  borderColor: "#4d44b5",
+                  color: "#059669",
+                  borderColor: "#059669",
                 }}
                 className="hover-effect-uniform w-full sm:w-auto"
               >
@@ -147,8 +147,8 @@ const AccountingDashboard = () => {
                 size="large"
                 onClick={() => setShowChartOfAccountModal(true)}
                 style={{
-                  color: "#4d44b5",
-                  borderColor: "#4d44b5",
+                  color: "#059669",
+                  borderColor: "#059669",
                 }}
                 className="hover-effect-uniform w-full sm:w-auto"
               >
@@ -159,8 +159,8 @@ const AccountingDashboard = () => {
                 size="large"
                 onClick={() => setShowAccountSettingsModal(true)}
                 style={{
-                  color: "#4d44b5",
-                  borderColor: "#4d44b5",
+                  color: "#059669",
+                  borderColor: "#059669",
                 }}
                 className="hover-effect-uniform w-full sm:w-auto"
               >
@@ -174,8 +174,8 @@ const AccountingDashboard = () => {
                 icon={<ReconciliationOutlined />}
                 size="large"
                 style={{
-                  color: "#4d44b5",
-                  borderColor: "#4d44b5",
+                  color: "#059669",
+                  borderColor: "#059669",
                 }}
                 className="hover-effect-uniform w-full sm:w-auto"
                 onClick={() => navigate("/accounting/generalLedger")}

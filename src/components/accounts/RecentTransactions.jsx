@@ -88,7 +88,7 @@ const transformApiDataToTransactions = (apiData) => {
   });
 
   return [...paymentTx, ...expenseTx, ...commissionTx].sort(
-    (a, b) => new Date(b.date) - new Date(a.date)
+    (a, b) => new Date(b.date) - new Date(a.date),
   );
 };
 
@@ -185,7 +185,7 @@ const RecentTransactions = () => {
             {/* Adjust path as needed */}
             <Button
               type="link"
-              style={{color: "#4d44b5", fontWeight: 500, padding: 0}}
+              style={{color: "#059669", fontWeight: 500, padding: 0}}
             >
               View All
             </Button>

@@ -34,9 +34,9 @@ export const yellowButton = {
 export const purpleButton = {
   components: {
     Button: {
-      colorPrimary: "#4d44b5",
-      colorPrimaryHover: "#6e66c2",
-      colorPrimaryActive: "#3d3599",
+      colorPrimary: "#059669",
+      colorPrimaryHover: "#39d0a0",
+      colorPrimaryActive: "#02b87e",
       colorTextPrimary: "#ffffff",
     },
   },
@@ -56,7 +56,7 @@ export const blueButton = {
 export const indigoButton = {
   components: {
     Button: {
-      colorPrimary: "#4d44b5",
+      colorPrimary: "#059669",
       colorPrimaryHover: "#6a63c9", // lighter shade
       colorPrimaryActive: "#3a3390", // darker shade
       colorTextPrimary: "#ffffff",

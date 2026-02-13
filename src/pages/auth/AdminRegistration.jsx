@@ -1,25 +1,41 @@
-import { useState } from "react";
+import {useState} from "react";
+import {useNavigate} from "react-router-dom";
+import {validateRegistrationForm} from "../../utils/validator.js";
+import {registerClient} from "../../hooks/client/useClient.js";
 import {
-  FiUser,
-  FiMail,
-  FiPhone,
-  FiLock,
-  FiHome,
-  FiMapPin,
-  FiEyeOff,
-  FiEye,
-} from "react-icons/fi";
-import { useNavigate } from "react-router-dom";
-import { validateRegistrationForm } from "../../utils/validator.js";
-import { registerClient } from "../../hooks/client/useClient.js";
+  Card,
+  Form,
+  Input,
+  Button,
+  Alert,
+  Typography,
+  Row,
+  Col,
+  Select,
+  Divider,
+  message,
+} from "antd";
+import {
+  UserOutlined,
+  MailOutlined,
+  PhoneOutlined,
+  LockOutlined,
+  HomeOutlined,
+  EnvironmentOutlined,
+} from "@ant-design/icons";
+
+const {Title, Paragraph, Text} = Typography;
+const {Option} = Select;
 
 const AdminRegistration = () => {
   const navigate = useNavigate();
+  const [form] = Form.useForm();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [messageApi, contextHolder] = message.useMessage();
 
-  const [formData, setFormData] = useState({
+  const initialValues = {
     companyName: "",
     primaryAdmin: {
       name: "",
@@ -34,55 +50,34 @@ const AdminRegistration = () => {
       country: "India",
       zipCode: "",
     },
-  });
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => {
-      if (name.includes(".")) {
-        const [parent, child] = name.split(".");
-        return {
-          ...prev,
-          [parent]: {
-            ...prev[parent],
-            [child]: value,
-          },
-        };
-      }
-      return { ...prev, [name]: value };
-    });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setErrorMsg(""); // Clear previous errors
+  const handleSubmit = async (values) => {
+    setErrorMsg("");
     setLoading(true);
 
     // Frontend validation
-    const validationErrors = validateRegistrationForm(formData);
+    const validationErrors = validateRegistrationForm(values);
     if (validationErrors.length > 0) {
-      setErrorMsg(validationErrors.join("\n")); // Separate errors with newlines
+      setErrorMsg(validationErrors.join("\n"));
       setLoading(false);
       return;
     }
 
     try {
-      const response = await registerClient(formData);
+      const response = await registerClient(values);
       console.log("Registration Success:", response);
-      console.log(response.success);
+      messageApi.success(response?.data?.message || "Registration Success");
 
-      // Handle successful registration
       if (response.success) {
         navigate("/login", {
           state: {
-            email: formData.primaryAdmin.email,
-            password: formData.primaryAdmin.password,
+            email: values.primaryAdmin.email,
+            password: values.primaryAdmin.password,
           },
         });
-        // Option 2: Show success message then redirect
-        // setSuccessMsg('Registration successful! Redirecting...');
-        // setTimeout(() => navigate('/'), 2000);
       } else {
+        console.log(response);
         setErrorMsg(response.message || "Registration completed with warnings");
       }
     } catch (err) {
@@ -91,7 +86,7 @@ const AdminRegistration = () => {
       let errorMessage = "Registration failed. Please try again.";
 
       if (err.details) {
-        // Handle structured error from apiClient
+        console.log(err.details);
         if (Array.isArray(err.details)) {
           errorMessage = err.details.join("\n");
         } else if (typeof err.details === "object") {
@@ -102,10 +97,9 @@ const AdminRegistration = () => {
       } else if (err.message) {
         errorMessage = err.message;
       }
-
-      setErrorMsg(errorMessage);
-
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      console.log(errorMessage);
+      setErrorMsg(err?.details?.message);
+      window.scrollTo({top: 0, behavior: "smooth"});
     } finally {
       setLoading(false);
     }
@@ -113,289 +107,329 @@ const AdminRegistration = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-4xl bg-white rounded-xl shadow-lg overflow-hidden">
-        <div className="bg-gradient-to-r from-[#4d44b5] to-[#3a32a0] p-6 text-white">
-          <h1 className="text-2xl font-bold">Admin Registration</h1>
-          <p className="text-indigo-100">
+      {contextHolder}
+      <Card
+        className="w-full max-w-4xl shadow-lg rounded-2xl overflow-hidden"
+        bordered={false}
+        styles={{
+          body: {padding: 0},
+        }}
+      >
+        {/* Header */}
+        <div
+          className="bg-gradient-to-r from-[#059669] to-[#059669] p-6 text-white"
+          style={{
+            background: "linear-gradient(to right, #059669, #059669)",
+          }}
+        >
+          <Title level={3} style={{color: "white", margin: 0}}>
+            Admin Registration
+          </Title>
+          <Paragraph style={{color: "#e0e7ff", margin: "0.25rem 0 0 0"}}>
             Create your organization's admin account
-          </p>
+          </Paragraph>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 sm:p-8">
-          {/* Error Message */}
-          {errorMsg && (
-            <p className="text-red-600 mb-4 text-center">{errorMsg}</p>
-          )}
+        <div className="p-6 sm:p-8">
+          <Form
+            form={form}
+            name="registration-form"
+            initialValues={initialValues}
+            onFinish={handleSubmit}
+            layout="vertical"
+            size="large"
+          >
+            {/* Error Message */}
+            {errorMsg && (
+              <Alert
+                message={<div style={{whiteSpace: "pre-line"}}>{errorMsg}</div>}
+                type="error"
+                showIcon
+                style={{marginBottom: "24px", borderRadius: "8px"}}
+                closable
+                onClose={() => setErrorMsg("")}
+              />
+            )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Company Information */}
-            <div className="md:col-span-2">
-              <h2 className="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
-                Company Information
-              </h2>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Company Name *
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <FiHome className="text-gray-400" />
-                    </div>
-                    <input
-                      type="text"
-                      name="companyName"
-                      value={formData.companyName}
-                      onChange={handleChange}
-                      required
-                      className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#4d44b5] focus:border-[#4d44b5]"
-                      placeholder="Enter company/organization name"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Primary Admin */}
-            <div>
-              <h2 className="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
-                Primary Admin
-              </h2>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Full Name *
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <FiUser className="text-gray-400" />
-                    </div>
-                    <input
-                      type="text"
-                      name="primaryAdmin.name"
-                      value={formData.primaryAdmin.name}
-                      onChange={handleChange}
-                      required
-                      className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#4d44b5] focus:border-[#4d44b5]"
-                      placeholder="Admin's full name"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email *
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <FiMail className="text-gray-400" />
-                    </div>
-                    <input
-                      type="email"
-                      name="primaryAdmin.email"
-                      value={formData.primaryAdmin.email}
-                      onChange={handleChange}
-                      required
-                      className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#4d44b5] focus:border-[#4d44b5]"
-                      placeholder="official@company.com"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Phone *
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <FiPhone className="text-gray-400" />
-                    </div>
-                    <input
-                      type="tel"
-                      name="primaryAdmin.phone"
-                      value={formData.primaryAdmin.phone}
-                      onChange={handleChange}
-                      required
-                      className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#4d44b5] focus:border-[#4d44b5]"
-                      placeholder="Phone with country code"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Password *
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <FiLock className="text-gray-400" />
-                    </div>
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      name="primaryAdmin.password"
-                      value={formData.primaryAdmin.password}
-                      onChange={handleChange}
-                      required
-                      minLength="6"
-                      className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#4d44b5] focus:border-[#4d44b5]"
-                      placeholder="••••••••"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="cursor-pointer absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
-                    >
-                      {showPassword ? <FiEyeOff /> : <FiEye />}
-                    </button>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Min 6 chars, incl. 1 number, uppercase & special character
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Address Information */}
-            <div>
-              <h2 className="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
-                Company Address
-              </h2>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Street *
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <FiMapPin className="text-gray-400" />
-                    </div>
-                    <input
-                      type="text"
-                      name="address.street"
-                      value={formData.address.street}
-                      onChange={handleChange}
-                      required
-                      className="pl-10 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#4d44b5] focus:border-[#4d44b5]"
-                      placeholder="Street address"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      City *
-                    </label>
-                    <input
-                      type="text"
-                      name="address.city"
-                      value={formData.address.city}
-                      onChange={handleChange}
-                      required
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#4d44b5] focus:border-[#4d44b5]"
-                      placeholder="City"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      State *
-                    </label>
-                    <input
-                      type="text"
-                      name="address.state"
-                      value={formData.address.state}
-                      onChange={handleChange}
-                      required
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#4d44b5] focus:border-[#4d44b5]"
-                      placeholder="State/Province"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Country *
-                    </label>
-                    <select
-                      name="address.country"
-                      value={formData.address.country}
-                      onChange={handleChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#4d44b5] focus:border-[#4d44b5]"
-                    >
-                      <option value="India">India</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      ZIP Code *
-                    </label>
-                    <input
-                      type="text"
-                      name="address.zipCode"
-                      value={formData.address.zipCode}
-                      onChange={handleChange}
-                      required
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#4d44b5] focus:border-[#4d44b5]"
-                      placeholder="Postal/ZIP code"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Form Actions */}
-          <div className="mt-8 flex flex-col-reverse sm:flex-row sm:justify-between items-center space-y-4 sm:space-y-0 sm:space-x-4">
-            <p className="text-sm text-gray-600 text-center sm:text-left mt-4 sm:mt-0">
-              Already have an account?{" "}
-              <span
-                onClick={() => navigate("/login")}
-                className="text-[#4d44b5] font-medium hover:underline cursor-pointer"
+            <div style={{marginBottom: "32px"}}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  marginBottom: "24px",
+                  paddingBottom: "12px",
+                  borderBottom: "2px solid #e5e7eb",
+                }}
               >
-                Login
-              </span>
-            </p>
+                <HomeOutlined
+                  style={{
+                    color: "#059669",
+                    marginRight: "12px",
+                    fontSize: "18px",
+                  }}
+                />
+                <Title level={4} style={{margin: 0, color: "#1f2937"}}>
+                  Company Information
+                </Title>
+              </div>
+              <Form.Item
+                label="Company Name"
+                name="companyName"
+                rules={[{required: true, message: "Please enter company name"}]}
+                style={{marginBottom: "16px"}}
+              >
+                <Input
+                  prefix={<HomeOutlined style={{color: "#9ca3af"}} />}
+                  placeholder="Enter company/organization name"
+                  style={{borderRadius: "8px"}}
+                />
+              </Form.Item>
+            </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className={`cursor-pointer w-full sm:w-auto px-6 py-2 bg-[#4d44b5] text-white rounded-lg hover:bg-[#3a32a0] focus:outline-none focus:ring-2 focus:ring-[#4d44b5] focus:ring-offset-2 disabled:opacity-50 ${
-                loading ? "opacity-75 cursor-not-allowed" : ""
-              }`}
-            >
-              {loading ? (
-                <span className="flex items-center justify-center">
-                  <svg
-                    className="animate-spin h-5 w-5 mr-2 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  Registering...
-                </span>
-              ) : (
-                "Register"
-              )}
-            </button>
-          </div>
-        </form>
-      </div>
+            <Row gutter={[24, 0]}>
+              {/* Primary Admin Section */}
+              <Col xs={24} md={12}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    marginBottom: "24px",
+                    paddingBottom: "12px",
+                    borderBottom: "2px solid #e5e7eb",
+                  }}
+                >
+                  <UserOutlined
+                    style={{
+                      color: "#059669",
+                      marginRight: "12px",
+                      fontSize: "18px",
+                    }}
+                  />
+                  <Title level={4} style={{margin: 0, color: "#1f2937"}}>
+                    Primary Admin
+                  </Title>
+                </div>
+
+                <Form.Item
+                  label="Full Name"
+                  name={["primaryAdmin", "name"]}
+                  rules={[{required: true, message: "Please enter admin name"}]}
+                  style={{marginBottom: "16px"}}
+                >
+                  <Input
+                    prefix={<UserOutlined style={{color: "#9ca3af"}} />}
+                    placeholder="Admin's full name"
+                    style={{borderRadius: "8px"}}
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  label="Email"
+                  name={["primaryAdmin", "email"]}
+                  rules={[
+                    {required: true, message: "Please enter email"},
+                    {type: "email", message: "Please enter valid email"},
+                  ]}
+                  style={{marginBottom: "16px"}}
+                >
+                  <Input
+                    prefix={<MailOutlined style={{color: "#9ca3af"}} />}
+                    placeholder="official@company.com"
+                    style={{borderRadius: "8px"}}
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  label="Phone"
+                  name={["primaryAdmin", "phone"]}
+                  rules={[
+                    {required: true, message: "Please enter phone number"},
+                  ]}
+                  style={{marginBottom: "16px"}}
+                >
+                  <Input
+                    prefix={<PhoneOutlined style={{color: "#9ca3af"}} />}
+                    placeholder="Please enter phone number"
+                    style={{borderRadius: "8px"}}
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  label="Password"
+                  name={["primaryAdmin", "password"]}
+                  rules={[
+                    {required: true, message: "Please enter password"},
+                    {min: 6, message: "Minimum 6 characters"},
+                  ]}
+                  style={{marginBottom: "8px"}}
+                >
+                  <Input.Password
+                    prefix={<LockOutlined style={{color: "#9ca3af"}} />}
+                    placeholder="••••••••"
+                    style={{borderRadius: "8px"}}
+                    visibilityToggle={{
+                      visible: showPassword,
+                      onVisibleChange: setShowPassword,
+                    }}
+                  />
+                </Form.Item>
+                <Text
+                  type="secondary"
+                  style={{
+                    fontSize: "12px",
+                    display: "block",
+                    marginBottom: "24px",
+                  }}
+                >
+                  Min 6 chars, incl. 1 number, uppercase & special character
+                </Text>
+              </Col>
+
+              {/* Address Information Section */}
+              <Col xs={24} md={12}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    marginBottom: "24px",
+                    paddingBottom: "12px",
+                    borderBottom: "2px solid #e5e7eb",
+                  }}
+                >
+                  <EnvironmentOutlined
+                    style={{
+                      color: "#059669",
+                      marginRight: "12px",
+                      fontSize: "18px",
+                    }}
+                  />
+                  <Title level={4} style={{margin: 0, color: "#1f2937"}}>
+                    Company Address
+                  </Title>
+                </div>
+
+                <Form.Item
+                  label="Street"
+                  name={["address", "street"]}
+                  rules={[
+                    {required: true, message: "Please enter street address"},
+                  ]}
+                  style={{marginBottom: "16px"}}
+                >
+                  <Input
+                    prefix={<EnvironmentOutlined style={{color: "#9ca3af"}} />}
+                    placeholder="Street address"
+                    style={{borderRadius: "8px"}}
+                  />
+                </Form.Item>
+
+                <Row gutter={16} style={{marginBottom: "16px"}}>
+                  <Col span={12}>
+                    <Form.Item
+                      label="City"
+                      name={["address", "city"]}
+                      rules={[{required: true, message: "Please enter city"}]}
+                      style={{marginBottom: 0}}
+                    >
+                      <Input placeholder="City" style={{borderRadius: "8px"}} />
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item
+                      label="State"
+                      name={["address", "state"]}
+                      rules={[{required: true, message: "Please enter state"}]}
+                      style={{marginBottom: 0}}
+                    >
+                      <Input
+                        placeholder="State/Province"
+                        style={{borderRadius: "8px"}}
+                      />
+                    </Form.Item>
+                  </Col>
+                </Row>
+
+                <Row gutter={16}>
+                  <Col span={12}>
+                    <Form.Item
+                      label="Country"
+                      name={["address", "country"]}
+                      rules={[
+                        {required: true, message: "Please select country"},
+                      ]}
+                      style={{marginBottom: 0}}
+                    >
+                      <Select
+                        placeholder="Select country"
+                        style={{borderRadius: "8px"}}
+                      >
+                        <Option value="India">India</Option>
+                        <Option value="Other">Other</Option>
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item
+                      label="ZIP Code"
+                      name={["address", "zipCode"]}
+                      rules={[
+                        {required: true, message: "Please enter ZIP code"},
+                      ]}
+                      style={{marginBottom: 0}}
+                    >
+                      <Input
+                        placeholder="Postal/ZIP code"
+                        style={{borderRadius: "8px"}}
+                      />
+                    </Form.Item>
+                  </Col>
+                </Row>
+              </Col>
+            </Row>
+
+            {/* Form Actions */}
+            <Divider style={{margin: "32px 0 24px 0"}} />
+
+            <div className="flex flex-col-reverse sm:flex-row sm:justify-between items-center gap-4">
+              <Text style={{color: "#6b7280", textAlign: "center"}}>
+                Already have an account?{" "}
+                <Button
+                  type="link"
+                  onClick={() => navigate("/login")}
+                  style={{
+                    color: "#059669",
+                    padding: 0,
+                    height: "auto",
+                    fontWeight: 500,
+                  }}
+                >
+                  Login
+                </Button>
+              </Text>
+
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={loading}
+                style={{
+                  backgroundColor: "#059669",
+                  borderColor: "#059669",
+                  borderRadius: "8px",
+                  height: "40px",
+                  padding: "0 24px",
+                  fontWeight: 500,
+                  width: "100%",
+                  maxWidth: "200px",
+                }}
+                className="hover:opacity-90"
+              >
+                {loading ? "Registering..." : "Register"}
+              </Button>
+            </div>
+          </Form>
+        </div>
+      </Card>
     </div>
   );
 };

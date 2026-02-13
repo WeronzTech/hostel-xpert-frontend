@@ -129,7 +129,7 @@ const ResidentDetailsTabs = ({resident}) => {
         (resident.stayDetails?.nonRefundableDeposit || 0) -
         (resident.stayDetails?.depositAmountPaid || 0)
       }`
-    : status ?? ""; // if null, show empty string
+    : (status ?? ""); // if null, show empty string
 
   return (
     <div className="lg:col-span-8">
@@ -141,7 +141,7 @@ const ResidentDetailsTabs = ({resident}) => {
                 key={tab.id}
                 className={`cursor-pointer flex-shrink-0 flex items-center px-6 py-3 text-sm font-medium border-b-2 ${
                   activeTab === tab.id
-                    ? "border-[#4d44b5] text-[#4d44b5]"
+                    ? "border-[#059669] text-[#059669]"
                     : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 }`}
                 onClick={() => setActiveTab(tab.id)}
@@ -164,7 +164,7 @@ const ResidentDetailsTabs = ({resident}) => {
                     value={
                       resident.personalDetails?.dob
                         ? dayjs(resident.personalDetails.dob).format(
-                            "DD MMMM, YYYY"
+                            "DD MMMM, YYYY",
                           )
                         : "Not Provided"
                     }
@@ -594,7 +594,7 @@ const ResidentDetailsTabs = ({resident}) => {
                   <div className="flex items-center space-x-2">
                     {/* Transaction History */}
                     <button
-                      className="cursor-pointer inline-flex items-center px-4 py-2 bg-[#4d44b5] hover:bg-[#3a32a0] text-white text-sm font-medium rounded-md shadow-sm transition-colors"
+                      className="cursor-pointer inline-flex items-center px-4 py-2 bg-[#059669] hover:bg-[#059669] text-white text-sm font-medium rounded-md shadow-sm transition-colors"
                       onClick={() => setTransactionModalVisible(true)}
                     >
                       <FaHistory className="mr-2" />
@@ -603,7 +603,7 @@ const ResidentDetailsTabs = ({resident}) => {
 
                     {/* Make Payment */}
                     <button
-                      className="cursor-pointer inline-flex items-center px-4 py-2 bg-[#4d44b5] hover:bg-[#3a32a0] text-white text-sm font-medium rounded-md shadow-sm transition-colors"
+                      className="cursor-pointer inline-flex items-center px-4 py-2 bg-[#059669] hover:bg-[#059669] text-white text-sm font-medium rounded-md shadow-sm transition-colors"
                       onClick={(e) => {
                         e.stopPropagation();
                         handlePaymentClick(resident);

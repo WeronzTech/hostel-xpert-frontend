@@ -35,7 +35,7 @@ const Timeline = ({steps, activeStep}) => {
                                 w-10 h-10 sm:w-12 sm:h-12 rounded-full z-10
                                 ${
                                   activeStep >= step.id
-                                    ? "bg-[#4d44b5] text-white"
+                                    ? "bg-[#059669] text-white"
                                     : "bg-gray-200 text-gray-600"
                                 }
                                 ${
@@ -57,7 +57,7 @@ const Timeline = ({steps, activeStep}) => {
                 <span
                   className={`block sm:hidden truncate ${
                     activeStep >= step.id
-                      ? "text-[#4d44b5] font-medium"
+                      ? "text-[#059669] font-medium"
                       : "text-gray-500"
                   }`}
                 >
@@ -68,7 +68,7 @@ const Timeline = ({steps, activeStep}) => {
                 <span
                   className={`hidden sm:block ${
                     activeStep >= step.id
-                      ? "text-[#4d44b5] font-medium"
+                      ? "text-[#059669] font-medium"
                       : "text-gray-500"
                   }`}
                 >
@@ -81,7 +81,7 @@ const Timeline = ({steps, activeStep}) => {
       </div>
 
       {/* Current step indicator (mobile only) */}
-      <div className="sm:hidden text-center text-xs text-[#4d44b5] font-medium mt-2">
+      <div className="sm:hidden text-center text-xs text-[#059669] font-medium mt-2">
         Step {activeStep} of {steps.length}:{" "}
         {steps.find((s) => s.id === activeStep)?.name}
       </div>

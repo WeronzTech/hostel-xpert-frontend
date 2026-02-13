@@ -107,36 +107,36 @@ const OnboardingApprovalPage = () => {
               },
             }
           : isDailyRentUser
-          ? {
-              property: stayDetails.propertyName || "",
-              propertyId: stayDetails.propertyId || "",
-              sharingType: stayDetails.sharingType || "",
-              roomId: stayDetails.roomId || "",
-              roomNumber: stayDetails.roomNumber || "",
-              stayDetails: {
-                dailyRent: stayDetails.dailyRent || 0,
-                checkInDate:
-                  stayDetails.checkInDate ||
-                  new Date().toISOString().split("T")[0],
-                checkOutDate:
-                  stayDetails.extendedDays || stayDetails.checkOutDate || "",
-                noOfDays: stayDetails.noOfDays || 0,
-              },
-              financialDetails: {
-                totalAmount: financialDetails.totalAmount || 0,
-              },
-            }
-          : {
-              property: stayDetails.propertyName || "",
-              propertyId: stayDetails.propertyId || "",
-              sharingType: stayDetails.sharingType || "",
-              roomId: stayDetails.roomId || "",
-              roomNumber: stayDetails.roomNumber || "",
-              rentAmount: stayDetails.rent || 0,
-              joinDate: stayDetails.joinDate
-                ? new Date(stayDetails.joinDate).toISOString().split("T")[0]
-                : new Date().toISOString().split("T")[0],
-            }),
+            ? {
+                property: stayDetails.propertyName || "",
+                propertyId: stayDetails.propertyId || "",
+                sharingType: stayDetails.sharingType || "",
+                roomId: stayDetails.roomId || "",
+                roomNumber: stayDetails.roomNumber || "",
+                stayDetails: {
+                  dailyRent: stayDetails.dailyRent || 0,
+                  checkInDate:
+                    stayDetails.checkInDate ||
+                    new Date().toISOString().split("T")[0],
+                  checkOutDate:
+                    stayDetails.extendedDays || stayDetails.checkOutDate || "",
+                  noOfDays: stayDetails.noOfDays || 0,
+                },
+                financialDetails: {
+                  totalAmount: financialDetails.totalAmount || 0,
+                },
+              }
+            : {
+                property: stayDetails.propertyName || "",
+                propertyId: stayDetails.propertyId || "",
+                sharingType: stayDetails.sharingType || "",
+                roomId: stayDetails.roomId || "",
+                roomNumber: stayDetails.roomNumber || "",
+                rentAmount: stayDetails.rent || 0,
+                joinDate: stayDetails.joinDate
+                  ? new Date(stayDetails.joinDate).toISOString().split("T")[0]
+                  : new Date().toISOString().split("T")[0],
+              }),
       };
       setFormData(initialFormData);
       setOriginalSharingType(stayDetails.sharingType || "");
@@ -207,7 +207,7 @@ const OnboardingApprovalPage = () => {
 
   const fetchRoomsAndPricing = async (
     propertyId,
-    preferredSharingType = ""
+    preferredSharingType = "",
   ) => {
     try {
       const {rooms, pricing} = await getAvailableRoomsByProperty(propertyId);
@@ -237,7 +237,7 @@ const OnboardingApprovalPage = () => {
         sharingType = types[0] || "";
       }
       const filtered = formattedRooms.filter(
-        (room) => room.sharingType === sharingType
+        (room) => room.sharingType === sharingType,
       );
       setFilteredRooms(filtered);
       setFormData((prev) => ({
@@ -277,7 +277,7 @@ const OnboardingApprovalPage = () => {
   const handleSharingTypeChange = (e) => {
     const sharingType = e.target.value;
     const filtered = availableRooms.filter(
-      (room) => room.sharingType === sharingType
+      (room) => room.sharingType === sharingType,
     );
     setFilteredRooms(filtered);
 
@@ -374,7 +374,7 @@ const OnboardingApprovalPage = () => {
         };
       } else {
         const selectedRoom = availableRooms.find(
-          (room) => room._id === formData.roomId
+          (room) => room._id === formData.roomId,
         );
 
         if (!selectedRoom && !isDailyRent) {
@@ -417,25 +417,25 @@ const OnboardingApprovalPage = () => {
         {id: 4, name: "Confirmation"},
       ]
     : isDailyRent
-    ? [
-        {id: 1, name: "Applicant Details"},
-        {id: 2, name: "Property Selection"},
-        {id: 3, name: "Room Assignment"},
-        {id: 4, name: "Payment Terms"},
-        {id: 5, name: "Confirmation"},
-      ]
-    : [
-        {id: 1, name: "Applicant Details"},
-        {id: 2, name: "Property Selection"},
-        {id: 3, name: "Room Assignment"},
-        {id: 4, name: "Payment Terms"},
-        {id: 5, name: "Confirmation"},
-      ];
+      ? [
+          {id: 1, name: "Applicant Details"},
+          {id: 2, name: "Property Selection"},
+          {id: 3, name: "Room Assignment"},
+          {id: 4, name: "Payment Terms"},
+          {id: 5, name: "Confirmation"},
+        ]
+      : [
+          {id: 1, name: "Applicant Details"},
+          {id: 2, name: "Property Selection"},
+          {id: 3, name: "Room Assignment"},
+          {id: 4, name: "Payment Terms"},
+          {id: 5, name: "Confirmation"},
+        ];
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#4d44b5]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#059669]"></div>
       </div>
     );
   }
@@ -447,7 +447,7 @@ const OnboardingApprovalPage = () => {
           <p className="text-red-500 mb-4">Failed to load resident data</p>
           <button
             onClick={() => queryClient.refetchQueries(["resident", id])}
-            className="px-4 py-2 bg-[#4d44b5] text-white rounded-lg"
+            className="px-4 py-2 bg-[#059669] text-white rounded-lg"
           >
             Retry
           </button>

@@ -1,24 +1,20 @@
-
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import {useState} from "react";
+import {useNavigate} from "react-router-dom";
+import {useSelector} from "react-redux";
 import PageHeader from "../../components/ui/PageHeader";
 
-const StaffForm = ({
-  loadingProperties,
-  onSubmit,
-  clientId,
-  isSubmitting,
-}) => {
+const StaffForm = ({loadingProperties, onSubmit, clientId, isSubmitting}) => {
   const navigate = useNavigate();
-  
+
   // Get properties from Redux store
-  const { properties, selectedProperty } = useSelector(
-    (state) => state.properties
+  const {properties, selectedProperty} = useSelector(
+    (state) => state.properties,
   );
 
-  const [currentProperty, setCurrentProperty] = useState(selectedProperty || "");
-  
+  const [currentProperty, setCurrentProperty] = useState(
+    selectedProperty || "",
+  );
+
   const [formData, setFormData] = useState({
     name: "",
     gender: "",
@@ -49,32 +45,32 @@ const StaffForm = ({
   });
 
   const handleFileChange = (e) => {
-    const { name, files } = e.target;
+    const {name, files} = e.target;
     const file = files[0];
 
     if (file) {
-      setFormData((prev) => ({ ...prev, [name]: file }));
+      setFormData((prev) => ({...prev, [name]: file}));
 
       const reader = new FileReader();
       reader.onloadend = () => {
-        setPreview((prev) => ({ ...prev, [name]: reader.result }));
+        setPreview((prev) => ({...prev, [name]: reader.result}));
       };
       reader.readAsDataURL(file);
     }
   };
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const {name, value} = e.target;
 
     if (name === "property") {
       // Handle property selection
       setCurrentProperty(value);
-      setFormData((prev) => ({ 
-        ...prev, 
-        property: value 
+      setFormData((prev) => ({
+        ...prev,
+        property: value,
       }));
     } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
+      setFormData((prev) => ({...prev, [name]: value}));
     }
   };
 
@@ -131,7 +127,7 @@ const StaffForm = ({
     if (!validateForm()) return;
 
     const formDataToSend = new FormData();
-    
+
     // Append all form data
     Object.entries(formData).forEach(([key, value]) => {
       if (key === "property") {
@@ -206,7 +202,7 @@ const StaffForm = ({
                     )}
                   </div>
                   <label htmlFor="photo-upload" className="ml-5 cursor-pointer">
-                    <span className="py-2 px-3 rounded-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#4d44b5]">
+                    <span className="py-2 px-3 rounded-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#059669]">
                       Change
                     </span>
                     <input
@@ -239,7 +235,7 @@ const StaffForm = ({
                   onChange={handleChange}
                   className={`mt-1 px-3 py-2 block w-full rounded-md ${
                     errors.name ? "border-red-500" : "border-gray-300"
-                  } border shadow-sm focus:border-[#4d44b5] focus:ring-[#4d44b5] sm:text-sm`}
+                  } border shadow-sm focus:border-[#059669] focus:ring-[#059669] sm:text-sm`}
                   placeholder="Enter full name"
                 />
                 {errors.name && (
@@ -261,7 +257,7 @@ const StaffForm = ({
                     name="dob"
                     value={formData.dob}
                     onChange={handleChange}
-                    className="mt-1 px-3 py-2 block w-full rounded-md border border-gray-300 shadow-sm focus:border-[#4d44b5] focus:ring-[#4d44b5] sm:text-sm"
+                    className="mt-1 px-3 py-2 block w-full rounded-md border border-gray-300 shadow-sm focus:border-[#059669] focus:ring-[#059669] sm:text-sm"
                   />
                 </div>
                 <div>
@@ -278,7 +274,7 @@ const StaffForm = ({
                     onChange={handleChange}
                     className={`mt-1 px-3 py-2 block w-full rounded-md ${
                       errors.gender ? "border-red-500" : "border-gray-300"
-                    } border shadow-sm focus:border-[#4d44b5] focus:ring-[#4d44b5] sm:text-sm`}
+                    } border shadow-sm focus:border-[#059669] focus:ring-[#059669] sm:text-sm`}
                   >
                     <option value="">Select Gender</option>
                     <option value="Male">Male</option>
@@ -334,7 +330,7 @@ const StaffForm = ({
                     type="file"
                     accept="image/*"
                     onChange={handleFileChange}
-                    className="mt-2 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#4d44b5] file:text-white hover:file:bg-[#3a32a0]"
+                    className="mt-2 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#059669] file:text-white hover:file:bg-[#059669]"
                   />
                 </div>
                 {errors.adharFrontImage && (
@@ -367,7 +363,7 @@ const StaffForm = ({
                   onChange={handleChange}
                   className={`mt-1 px-3 py-2 block w-full rounded-md ${
                     errors.contactNumber ? "border-red-500" : "border-gray-300"
-                  } border shadow-sm focus:border-[#4d44b5] focus:ring-[#4d44b5] sm:text-sm`}
+                  } border shadow-sm focus:border-[#059669] focus:ring-[#059669] sm:text-sm`}
                   placeholder="Enter 10-digit contact number"
                 />
                 {errors.contactNumber && (
@@ -392,7 +388,7 @@ const StaffForm = ({
                   onChange={handleChange}
                   className={`mt-1 px-3 py-2 block w-full rounded-md ${
                     errors.email ? "border-red-500" : "border-gray-300"
-                  } border shadow-sm focus:border-[#4d44b5] focus:ring-[#4d44b5] sm:text-sm`}
+                  } border shadow-sm focus:border-[#059669] focus:ring-[#059669] sm:text-sm`}
                   placeholder="Enter email address"
                 />
                 {errors.email && (
@@ -413,7 +409,7 @@ const StaffForm = ({
                   rows={3}
                   value={formData.address}
                   onChange={handleChange}
-                  className="mt-1 px-3 py-2 block w-full rounded-md border border-gray-300 shadow-sm focus:border-[#4d44b5] focus:ring-[#4d44b5] sm:text-sm"
+                  className="mt-1 px-3 py-2 block w-full rounded-md border border-gray-300 shadow-sm focus:border-[#059669] focus:ring-[#059669] sm:text-sm"
                   placeholder="Enter complete address"
                 />
               </div>
@@ -461,7 +457,7 @@ const StaffForm = ({
                     type="file"
                     accept="image/*"
                     onChange={handleFileChange}
-                    className="mt-2 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#4d44b5] file:text-white hover:file:bg-[#3a32a0]"
+                    className="mt-2 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#059669] file:text-white hover:file:bg-[#059669]"
                   />
                 </div>
                 {errors.adharBackImage && (
@@ -494,7 +490,7 @@ const StaffForm = ({
                     onChange={handleChange}
                     className={`mt-1 px-3 py-2 block w-full rounded-md ${
                       errors.type ? "border-red-500" : "border-gray-300"
-                    } border shadow-sm focus:border-[#4d44b5] focus:ring-[#4d44b5] sm:text-sm`}
+                    } border shadow-sm focus:border-[#059669] focus:ring-[#059669] sm:text-sm`}
                   >
                     <option value="">Select Type</option>
                     <option value="Permanent">Permanent</option>
@@ -522,7 +518,7 @@ const StaffForm = ({
                     onChange={handleChange}
                     className={`mt-1 px-3 py-2 block w-full rounded-md ${
                       errors.role ? "border-red-500" : "border-gray-300"
-                    } border shadow-sm focus:border-[#4d44b5] focus:ring-[#4d44b5] sm:text-sm`}
+                    } border shadow-sm focus:border-[#059669] focus:ring-[#059669] sm:text-sm`}
                     placeholder="Enter staff role"
                   />
                   {errors.role && (
@@ -547,7 +543,7 @@ const StaffForm = ({
                     onChange={handleChange}
                     className={`mt-1 px-3 py-2 block w-full rounded-md ${
                       errors.joinDate ? "border-red-500" : "border-gray-300"
-                    } border shadow-sm focus:border-[#4d44b5] focus:ring-[#4d44b5] sm:text-sm`}
+                    } border shadow-sm focus:border-[#059669] focus:ring-[#059669] sm:text-sm`}
                   />
                   {errors.joinDate && (
                     <p className="mt-1 text-sm text-red-600">
@@ -570,7 +566,7 @@ const StaffForm = ({
                     onChange={handleChange}
                     className={`mt-1 px-3 py-2 block w-full rounded-md ${
                       errors.paySchedule ? "border-red-500" : "border-gray-300"
-                    } border shadow-sm focus:border-[#4d44b5] focus:ring-[#4d44b5] sm:text-sm`}
+                    } border shadow-sm focus:border-[#059669] focus:ring-[#059669] sm:text-sm`}
                   >
                     <option value="">Select Schedule</option>
                     <option value="Monthly">Monthly</option>
@@ -598,7 +594,7 @@ const StaffForm = ({
                   name="status"
                   value={formData.status}
                   onChange={handleChange}
-                  className="mt-1 px-3 py-2 block w-full rounded-md border border-gray-300 shadow-sm focus:border-[#4d44b5] focus:ring-[#4d44b5] sm:text-sm"
+                  className="mt-1 px-3 py-2 block w-full rounded-md border border-gray-300 shadow-sm focus:border-[#059669] focus:ring-[#059669] sm:text-sm"
                 >
                   <option value="Active">Active</option>
                   <option value="Inactive">Inactive</option>
@@ -628,15 +624,16 @@ const StaffForm = ({
                   onChange={handleChange}
                   className={`mt-1 px-3 py-2 block w-full rounded-md ${
                     errors.property ? "border-red-500" : "border-gray-300"
-                  } border shadow-sm focus:border-[#4d44b5] focus:ring-[#4d44b5] sm:text-sm`}
+                  } border shadow-sm focus:border-[#059669] focus:ring-[#059669] sm:text-sm`}
                   disabled={loadingProperties}
                 >
                   <option value="">Select Property</option>
-                  {properties && properties.map((property) => (
-                    <option key={property._id} value={property._id}>
-                      {property.propertyName}
-                    </option>
-                  ))}
+                  {properties &&
+                    properties.map((property) => (
+                      <option key={property._id} value={property._id}>
+                        {property.propertyName}
+                      </option>
+                    ))}
                 </select>
                 {loadingProperties && (
                   <p className="mt-1 text-sm text-gray-500">
@@ -646,11 +643,13 @@ const StaffForm = ({
                 {errors.property && (
                   <p className="mt-1 text-sm text-red-600">{errors.property}</p>
                 )}
-                {properties && properties.length === 0 && !loadingProperties && (
-                  <p className="mt-1 text-sm text-yellow-600">
-                    No properties available. Please create a property first.
-                  </p>
-                )}
+                {properties &&
+                  properties.length === 0 &&
+                  !loadingProperties && (
+                    <p className="mt-1 text-sm text-yellow-600">
+                      No properties available. Please create a property first.
+                    </p>
+                  )}
               </div>
 
               <div>
@@ -670,7 +669,7 @@ const StaffForm = ({
                   step="0.01"
                   className={`mt-1 px-3 py-2 block w-full rounded-md ${
                     errors.salary ? "border-red-500" : "border-gray-300"
-                  } border shadow-sm focus:border-[#4d44b5] focus:ring-[#4d44b5] sm:text-sm`}
+                  } border shadow-sm focus:border-[#059669] focus:ring-[#059669] sm:text-sm`}
                   placeholder="Enter salary amount"
                 />
                 {errors.salary && (
@@ -690,7 +689,7 @@ const StaffForm = ({
                   name="salaryStatus"
                   value={formData.salaryStatus}
                   onChange={handleChange}
-                  className="mt-1 px-3 py-2 block w-full rounded-md border border-gray-300 shadow-sm focus:border-[#4d44b5] focus:ring-[#4d44b5] sm:text-sm"
+                  className="mt-1 px-3 py-2 block w-full rounded-md border border-gray-300 shadow-sm focus:border-[#059669] focus:ring-[#059669] sm:text-sm"
                 >
                   <option value="Pending">Pending</option>
                   <option value="Paid">Paid</option>
@@ -711,7 +710,7 @@ const StaffForm = ({
                   name="aadhar"
                   value={formData.aadhar}
                   onChange={handleChange}
-                  className="mt-1 px-3 py-2 block w-full rounded-md border border-gray-300 shadow-sm focus:border-[#4d44b5] focus:ring-[#4d44b5] sm:text-sm"
+                  className="mt-1 px-3 py-2 block w-full rounded-md border border-gray-300 shadow-sm focus:border-[#059669] focus:ring-[#059669] sm:text-sm"
                   placeholder="Enter Aadhar number"
                 />
               </div>
@@ -731,8 +730,10 @@ const StaffForm = ({
           <button
             type="submit"
             disabled={isSubmitting || (properties && properties.length === 0)}
-            className={`cursor-pointer flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-white bg-[#4d44b5] hover:bg-[#3a32a0] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#4d44b5] ${
-              isSubmitting || (properties && properties.length === 0) ? "opacity-75 cursor-not-allowed" : ""
+            className={`cursor-pointer flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-white bg-[#059669] hover:bg-[#059669] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#059669] ${
+              isSubmitting || (properties && properties.length === 0)
+                ? "opacity-75 cursor-not-allowed"
+                : ""
             }`}
           >
             {isSubmitting ? (

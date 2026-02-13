@@ -42,7 +42,7 @@ const CustomSelect = ({
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className="cursor-pointer w-full px-4 py-2 text-gray-700 border border-gray-300 rounded-lg flex justify-between items-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4d44b5] focus:border-[#4d44b5] transition-colors"
+          className="cursor-pointer w-full px-4 py-2 text-gray-700 border border-gray-300 rounded-lg flex justify-between items-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-[#059669] focus:border-[#059669] transition-colors"
         >
           <span>{displayText}</span>
           <FiChevronDown
@@ -53,7 +53,7 @@ const CustomSelect = ({
         </button>
 
         {isOpen && (
-          <div className="absolute z-10 w-full mt-1 bg-white text-[#4d44b5] border border-gray-300 rounded-lg shadow-lg overflow-hidden">
+          <div className="absolute z-10 w-full mt-1 bg-white text-[#059669] border border-gray-300 rounded-lg shadow-lg overflow-hidden">
             {options.map((option) => (
               <div
                 key={option.value}

@@ -48,15 +48,15 @@ const PropertyDashboard = () => {
     const isFiltered = filteredArray.length !== allArray.length;
     const totalOccupancy = filteredArray.reduce(
       (sum, p) => sum + (p.occupiedBeds || 0),
-      0
+      0,
     );
     const totalRevenue = filteredArray.reduce(
       (sum, p) => sum + (p.revenue || 0),
-      0
+      0,
     );
     const totalRooms = filteredArray.reduce(
       (sum, p) => sum + (p.totalBeds || 0),
-      0
+      0,
     );
     const occupancyRate =
       totalRooms > 0 ? Math.round((totalOccupancy / totalRooms) * 100) : 0;
@@ -88,8 +88,8 @@ const PropertyDashboard = () => {
           occupancyRate > 75
             ? "bg-green-100 text-green-600"
             : occupancyRate > 50
-            ? "bg-green-100 text-green-600"
-            : "bg-red-100 text-red-600",
+              ? "bg-green-100 text-green-600"
+              : "bg-red-100 text-red-600",
       },
       {
         title: "Total Revenue",
@@ -120,7 +120,7 @@ const PropertyDashboard = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentPlaceholderIndex(
-        (prev) => (prev + 1) % placeholderTerms.length
+        (prev) => (prev + 1) % placeholderTerms.length,
       );
     }, 2000);
     return () => clearInterval(interval);
@@ -137,7 +137,7 @@ const PropertyDashboard = () => {
     const results = properties.filter(
       (property) =>
         property.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        property.propertyName.toLowerCase().includes(searchTerm.toLowerCase())
+        property.propertyName.toLowerCase().includes(searchTerm.toLowerCase()),
     );
     setFilteredProperties(results);
     setStats(calculateStats(results, properties));
@@ -194,7 +194,7 @@ const PropertyDashboard = () => {
             <input
               type="text"
               className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg
-                         focus:outline-none focus:ring-1 focus:ring-[#4d44b5] focus:border-[#4d44b5]"
+                         focus:outline-none focus:ring-1 focus:ring-[#059669] focus:border-[#059669]"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -203,7 +203,7 @@ const PropertyDashboard = () => {
               <div className="absolute inset-y-0 left-10 flex items-center pointer-events-none">
                 <span className="text-gray-400">
                   Search your{" "}
-                  <span className="text-[#4d44b5] font-medium">
+                  <span className="text-[#059669] font-medium">
                     {placeholderTerms[currentPlaceholderIndex]}
                   </span>
                 </span>
@@ -214,7 +214,7 @@ const PropertyDashboard = () => {
           {/* Add Property Button */}
           <div className="flex justify-center md:justify-end w-full md:w-auto">
             <button
-              className="w-full md:w-auto cursor-pointer flex items-center justify-center gap-2 px-4 py-2 bg-[#4d44b5] text-white rounded-lg hover:bg-[#3a32a0] transition-colors"
+              className="w-full md:w-auto cursor-pointer flex items-center justify-center gap-2 px-4 py-2 bg-[#059669] text-white rounded-lg hover:bg-[#059669] transition-colors"
               onClick={() => navigate("/add-property")}
             >
               <FiHome className="text-lg" />

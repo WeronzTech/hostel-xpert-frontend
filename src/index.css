@@ -12,7 +12,7 @@
 /* Style the dropdown panel */
 .custom-select option {
   background: white;
-  color: #4d44b5;
+  color: #059669;
   padding: 12px;
 }
 
@@ -28,7 +28,7 @@
 /* Firefox specific fixes */
 @-moz-document url-prefix() {
   .custom-select {
-    color: #4d44b5 !important;
+    color: #059669 !important;
     text-indent: 2px;
   }
   .custom-select option {
@@ -40,7 +40,7 @@
 @media not all and (min-resolution: 0.001dpcm) {
   @supports (-webkit-appearance: none) {
     .custom-select {
-      color: #4d44b5;
+      color: #059669;
     }
   }
 }

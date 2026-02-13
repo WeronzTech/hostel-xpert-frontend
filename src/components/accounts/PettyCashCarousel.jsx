@@ -36,7 +36,7 @@ const PettyCashCard = ({
             borderRadius: "8px",
             boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1)",
             height: "100%",
-            background: " #4d44b5",
+            background: " #059669",
             color: "white",
             position: "relative",
             overflow: "hidden",
@@ -76,7 +76,7 @@ const PettyCashCard = ({
           <Button
             style={{
               backgroundColor: "white",
-              color: "#4d44b5",
+              color: "#059669",
               border: "none",
               fontWeight: 500,
               display: "flex",
@@ -108,7 +108,7 @@ const PettyCashCard = ({
           borderRadius: "8px",
           boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1)",
           height: "100%",
-          background: " #4d44b5",
+          background: " #059669",
           color: "white",
           position: "relative",
           overflow: "hidden",
@@ -227,7 +227,7 @@ const PettyCashCard = ({
             {inHandAmount > 0 && (
               <Tooltip
                 title={`Cash In Hand: ₹${inHandAmount || 0} (${Math.round(
-                  inHandPercentage
+                  inHandPercentage,
                 )}%)`}
                 placement="top"
               >
@@ -246,7 +246,7 @@ const PettyCashCard = ({
             {inAccountAmount > 0 && (
               <Tooltip
                 title={`Cash In Account: ₹${inAccountAmount || 0} (${Math.round(
-                  inAccountPercentage
+                  inAccountPercentage,
                 )}%)`}
                 placement="top"
               >
@@ -268,7 +268,7 @@ const PettyCashCard = ({
             style={{
               flex: 1,
               backgroundColor: "white",
-              color: "#4d44b5",
+              color: "#059669",
               border: "none",
               fontWeight: 500,
             }}
@@ -370,7 +370,7 @@ const PettyCashCarousel = ({pettyCashData, loading}) => {
           borderRadius: "8px",
           boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1)",
           height: "100%",
-          background: " #4d44b5",
+          background: " #059669",
           color: "white",
           position: "relative",
           overflow: "hidden",

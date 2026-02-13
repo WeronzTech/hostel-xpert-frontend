@@ -16,7 +16,7 @@ ChartJS.register(
   BarElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
 );
 
 const {Option} = Select;
@@ -36,7 +36,7 @@ const ExpenseAnalytics = ({
   // Calculate totals
   const totalExpense = monthlyData.reduce(
     (sum, month) => sum + month.totalExpense,
-    0
+    0,
   );
 
   const averageMonthly = totalExpense / monthlyData.length;
@@ -46,10 +46,10 @@ const ExpenseAnalytics = ({
 
   // Highest and lowest spending months
   const highestMonth = monthlyData.reduce((max, month) =>
-    month.totalExpense > max.totalExpense ? month : max
+    month.totalExpense > max.totalExpense ? month : max,
   );
   const lowestMonth = monthlyData.reduce((min, month) =>
-    month.totalExpense < min.totalExpense ? month : min
+    month.totalExpense < min.totalExpense ? month : min,
   );
 
   // Function to get short month name
@@ -79,7 +79,7 @@ const ExpenseAnalytics = ({
       {
         label: "PG",
         data: monthlyData.map((month) => month.pg),
-        backgroundColor: "#4d44b5",
+        backgroundColor: "#059669",
         borderRadius: 4, // Rounded corners for better look
       },
       {
@@ -123,7 +123,7 @@ const ExpenseAnalytics = ({
             const value = context.raw;
             const total = context.chart.data.datasets.reduce(
               (sum, dataset) => sum + dataset.data[context.dataIndex],
-              0
+              0,
             );
             const percentage = ((value / total) * 100).toFixed(1);
             return `${label}: ₹ ${value.toLocaleString()} (${percentage}%)`;
@@ -131,7 +131,7 @@ const ExpenseAnalytics = ({
           afterBody: function (context) {
             const total = context[0].chart.data.datasets.reduce(
               (sum, dataset) => sum + dataset.data[context[0].dataIndex],
-              0
+              0,
             );
             return `Total: ₹ ${total.toLocaleString()}`;
           },

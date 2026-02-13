@@ -25,7 +25,7 @@ export const getAllHeavensProperties = async (propertyId) => {
     console.log("Fetching heavens property:", propertyId); // Debug log
 
     const response = await apiClient.get("/property/heavens-properties", {
-      params: propertyId ? { propertyId } : {}, // ✅ pass query only if provided
+      params: propertyId ? {propertyId} : {}, // ✅ pass query only if provided
     });
 
     console.debug("Fetched heavens property(get):", response.data);
@@ -65,10 +65,10 @@ export const addRoom = async (roomData) => {
   }
 };
 
-export const getAllHeavensRooms = async (heavensRoomData) => {
+export const getAllRooms = async (heavensRoomData) => {
   try {
     console.debug("fetched heavens heavens Room Data:", heavensRoomData);
-    const response = await apiClient.get("/property/room/heavens-rooms", {
+    const response = await apiClient.get("/property/room/all", {
       params: {
         propertyId: heavensRoomData?.propertyId || null, // Use the parameter passed in
       },
@@ -92,7 +92,7 @@ export const getAllHeavensRooms = async (heavensRoomData) => {
 export const getAvailableRoomsByProperty = async (propertyId) => {
   try {
     const response = await apiClient.get("/property/room/availableRooms", {
-      params: { propertyId },
+      params: {propertyId},
     });
     console.log("Fetched available rooms:", response.data);
 
@@ -120,7 +120,7 @@ export const updateRooms = async (roomId, updatedData) => {
     // Use template literal to insert the actual roomId
     const response = await apiClient.put(
       `/property/room/update/${roomId}`,
-      updatedData
+      updatedData,
     );
     console.log("room updated successfully:", response.data);
 
@@ -141,10 +141,10 @@ export const updateRooms = async (roomId, updatedData) => {
   }
 };
 
-export const deleteRooms = async ({ roomId, adminName }) => {
+export const deleteRooms = async ({roomId, adminName}) => {
   try {
     const response = await apiClient.delete(`/property/room/delete/${roomId}`, {
-      params: { adminName }, // Pass as query
+      params: {adminName}, // Pass as query
     });
     console.log("API Delete response data", response.data);
     return response.data; // or adapt based on API
@@ -183,7 +183,7 @@ export const updateProperty = async (propertyId, propertyData) => {
     console.debug("Updating Property:", propertyData);
     const response = await apiClient.put(
       `/property/edit/${propertyId}`,
-      propertyData
+      propertyData,
     );
     console.debug("Update successful:", response.data);
     return response.data.data;
@@ -264,7 +264,7 @@ export const getPropertyActivityLogs = async ({
 export const getDashboardStats = async (propertyId) => {
   try {
     const response = await apiClient.get(`/property/dashboard/stats`, {
-      params: propertyId ? { propertyId } : {},
+      params: propertyId ? {propertyId} : {},
     });
 
     return response.data;
@@ -294,28 +294,28 @@ export const createMaintenance = async (formData) => {
         headers: {
           "Content-Type": "multipart/form-data",
         },
-      }
+      },
     );
 
     return response.data;
   } catch (error) {
     console.error("Error creating maintenance record:", error);
     throw new Error(
-      error.response?.data?.message || "Failed to create maintenance record"
+      error.response?.data?.message || "Failed to create maintenance record",
     );
   }
 };
 
 export const markMaintenanceAsResolved = async (
   maintenanceId,
-  remarks = null
+  remarks = null,
 ) => {
   try {
     const response = await apiClient.patch(
       `/property/maintenance/resolve/${maintenanceId}`,
       {
         remarks,
-      }
+      },
     );
 
     return response.data;
@@ -357,7 +357,7 @@ export const updateCarousel = async (data, carouseId) => {
   try {
     const response = await apiClient.put(
       `/property/carousel/update/${carouseId}`,
-      data
+      data,
     );
 
     console.debug("Carousel successfully updated:", response.data);
@@ -379,7 +379,7 @@ export const updateCarousel = async (data, carouseId) => {
 export const deleteCarousel = async (carouseId) => {
   try {
     const response = await apiClient.delete(
-      `/property/carousel/delete/${carouseId}`
+      `/property/carousel/delete/${carouseId}`,
     );
 
     console.debug("Carousel successfully deleted:", response.data);
@@ -419,7 +419,7 @@ export const getFloorsByPropertyId = async (propertyId) => {
   try {
     // Send propertyId as a query parameter
     const response = await apiClient.get(`/property/floor`, {
-      params: { propertyId },
+      params: {propertyId},
     });
 
     console.debug("Floors successfully fetched:", response.data);
@@ -449,19 +449,17 @@ export const getRoomsByFloorId = async (floorId) => {
   }
 
   try {
-    const response = await apiClient.get(
-      "/property/room/by-floor",
-      {
-        params: { floorId },
-      }
-    );
+    const response = await apiClient.get("/property/room/by-floor", {
+      params: {floorId},
+    });
 
     console.debug("✅ Rooms by Floor fetched:", response.data);
     return response.data;
   } catch (error) {
     console.error("❌ Failed to fetch rooms by floor:", error);
     throw {
-      message: error.response?.data?.message || "Failed to fetch rooms by floor",
+      message:
+        error.response?.data?.message || "Failed to fetch rooms by floor",
       details: error.response?.data || error.message,
       status: error.response?.status,
     };
@@ -489,10 +487,7 @@ export const addFloor = async (data) => {
 
 export const updateFloor = async (data, floorId) => {
   try {
-    const response = await apiClient.put(
-      `/property/floor/${floorId}`,
-      data
-    );
+    const response = await apiClient.put(`/property/floor/${floorId}`, data);
 
     //console.debug("floor successfully updated:", response.data);
     return response.data;
@@ -512,9 +507,7 @@ export const updateFloor = async (data, floorId) => {
 
 export const deleteFloor = async (floorId) => {
   try {
-    const response = await apiClient.delete(
-      `/property/floor/${floorId}`
-    );
+    const response = await apiClient.delete(`/property/floor/${floorId}`);
 
     console.debug("floor successfully deleted:", response.data);
     return response.data;
@@ -598,7 +591,8 @@ export const getAssetCategory = async () => {
     console.error("fetch Asset Category failed:", error);
 
     const apiError = {
-      message: error.response?.data?.message || "Failed to fetch Asset Category",
+      message:
+        error.response?.data?.message || "Failed to fetch Asset Category",
       details:
         error.response?.data?.errors || error.response?.data || error.message,
       status: error.response?.status,
@@ -612,7 +606,7 @@ export const updateAssetCategory = async (data, categoryId) => {
   try {
     const response = await apiClient.put(
       `/property/asset/category/${categoryId}`,
-      data
+      data,
     );
 
     //console.debug("floor successfully updated:", response.data);
@@ -621,7 +615,8 @@ export const updateAssetCategory = async (data, categoryId) => {
     console.error("update Asset Category failed:", error);
 
     const apiError = {
-      message: error.response?.data?.message || "Failed to update Asset Category",
+      message:
+        error.response?.data?.message || "Failed to update Asset Category",
       details:
         error.response?.data?.errors || error.response?.data || error.message,
       status: error.response?.status,
@@ -634,7 +629,7 @@ export const updateAssetCategory = async (data, categoryId) => {
 export const deleteAssetCategory = async (categoryId) => {
   try {
     const response = await apiClient.delete(
-      `property/asset/category/${categoryId}`
+      `property/asset/category/${categoryId}`,
     );
 
     console.debug("Asset Category successfully deleted:", response.data);
@@ -643,7 +638,8 @@ export const deleteAssetCategory = async (categoryId) => {
     console.error("delete Asset Category failed:", error);
 
     const apiError = {
-      message: error.response?.data?.message || "Failed to Asset Category floor",
+      message:
+        error.response?.data?.message || "Failed to Asset Category floor",
       details:
         error.response?.data?.errors || error.response?.data || error.message,
       status: error.response?.status,
@@ -663,7 +659,7 @@ export const getAllAssets = async (filters = {}) => {
     if (filters.categoryId) params.categoryId = filters.categoryId;
     if (filters.status) params.status = filters.status;
 
-    const response = await apiClient.get("/property/asset", { params });
+    const response = await apiClient.get("/property/asset", {params});
 
     console.debug("Assets fetched successfully:", response.data);
     return response.data;
@@ -683,14 +679,17 @@ export const getAllAssets = async (filters = {}) => {
 
 export const updateAssetStatus = async (data) => {
   try {
-    const { id, status, soldDetails } = data;
+    const {id, status, soldDetails} = data;
 
-    const payload = { status };
+    const payload = {status};
     if (status === "Sold" && soldDetails) {
       payload.soldDetails = soldDetails;
     }
 
-    const response = await apiClient.patch(`/property/asset/status/${id}`, payload);
+    const response = await apiClient.patch(
+      `/property/asset/status/${id}`,
+      payload,
+    );
 
     console.debug("Asset status updated successfully:", response.data);
     return response.data;
@@ -708,13 +707,9 @@ export const updateAssetStatus = async (data) => {
   }
 };
 
-
 export const updateAsset = async (data, assetId) => {
   try {
-    const response = await apiClient.put(
-      `/property/asset/${assetId}`,
-      data
-    );
+    const response = await apiClient.put(`/property/asset/${assetId}`, data);
 
     console.debug("asset successfully updated:", response.data);
     return response.data;
@@ -734,9 +729,7 @@ export const updateAsset = async (data, assetId) => {
 
 export const deleteAsset = async (assetId) => {
   try {
-    const response = await apiClient.delete(
-      `/property/asset/${assetId}`
-    );
+    const response = await apiClient.delete(`/property/asset/${assetId}`);
 
     console.debug("Asset  successfully deleted:", response.data);
     return response.data;
@@ -757,7 +750,7 @@ export const getAssetLabelsPDF = async (filters = {}) => {
   try {
     const response = await apiClient.get("/property/asset/download-labels", {
       params: filters,
-      responseType: 'blob' // Important: tell axios to handle binary data
+      responseType: "blob", // Important: tell axios to handle binary data
     });
     return response;
   } catch (error) {

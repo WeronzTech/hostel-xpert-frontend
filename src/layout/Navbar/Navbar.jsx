@@ -1,888 +1,3 @@
-// import { Link, useLocation, useNavigate } from "react-router-dom";
-// import {
-//   FiUser,
-//   FiBell,
-//   FiMenu,
-//   FiGrid,
-//   FiUsers,
-//   FiChevronDown,
-//   FiChevronUp,
-//   FiLogOut,
-//   FiAlertCircle,
-//   FiHome,
-//   MdAccountBalance,
-//   MdRestaurantMenu,
-//   HiOutlineUserGroup,
-//   LuCircleArrowOutUpLeft,
-//   FaHistory,
-//   UserOutlined,
-// } from "../../icons/index.js";
-// import "./Navbar.css";
-// import { useState, useEffect, useMemo } from "react";
-// import ConfirmModal from "../../modals/common/ConfirmModal";
-// import { logout } from "../../redux/authSlice.js";
-// import { useDispatch, useSelector } from "react-redux";
-// import { getAllHeavensProperties } from "../../hooks/property/useProperty.js";
-// import { selectProperty, setProperties } from "../../redux/propertiesSlice.js";
-// import { Dropdown } from "antd";
-// import { useQuery } from "@tanstack/react-query";
-// import { getRoleById } from "../../hooks/employee/useEmployee.js";
-// import { IoNotificationsCircle } from "react-icons/io5";
-// import { FiSliders } from "react-icons/fi";
-// import CarouselManagementModal from "../../modals/common/CarouselManagement.jsx";
-// import RefferalSettingsModal from "../../modals/common/referralSettingsModal.jsx";
-// import GameManagementModal from "../../modals/users/GameManagementModal.jsx";
-
-// const Navbar = () => {
-//   const { user } = useSelector((state) => state.auth);
-//   const { properties, selectedProperty } = useSelector(
-//     (state) => state.properties
-//   );
-//   const [searchTerm, setSearchTerm] = useState("");
-//   const [isCarouselModalOpen, setIsCarouselModalOpen] = useState(false);
-//   const [isReferralSettingsModalOpen, setIsReferralSettingsModalOpen] = useState(false);
-//   const [isGameManagementModalOpen, setIsGameManagementModalOpen] = useState(false);
-
-//   const roleId = useSelector((state) => state?.auth?.user?.role?.id);
-
-//   const { data: role } = useQuery({
-//     queryKey: ["get-role", roleId],
-//     queryFn: () => getRoleById(roleId),
-//   });
-
-//   const permissions = role?.permissions;
-
-//   const hasPermission = (requiredPermission) => {
-//     return permissions?.includes(requiredPermission);
-//   };
-
-//   const dispatch = useDispatch();
-//   const location = useLocation();
-//   const navigate = useNavigate();
-//   const [menuOpen, setMenuOpen] = useState(false);
-//   const [propertyDropdownOpen, setPropertyDropdownOpen] = useState(false);
-//   const [residentsDropdownOpen, setResidentsDropdownOpen] = useState(false);
-//   const [messDropdownOpen, setMessDropdownOpen] = useState(false);
-//   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
-//   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
-//   const isMobile = window.innerWidth < 768;
-
-//   // Close mobile menu when any modal opens
-//   useEffect(() => {
-//     if (isCarouselModalOpen || isReferralSettingsModalOpen || isGameManagementModalOpen || isLogoutModalOpen) {
-//       setMenuOpen(false);
-//     }
-//   }, [isCarouselModalOpen, isReferralSettingsModalOpen, isGameManagementModalOpen, isLogoutModalOpen]);
-
-//   const handleNotificationMenuClick = ({ key }) => {
-//     if (key === "1") navigate("/notification/push-notification");
-//     else if (key === "2") navigate("/notification/alert-notification");
-//     else if (key === "3") navigate("/notification/notification-logs");
-//   };
-
-//   const handleSettingsMenuClick = ({ key }) => {
-//     // Close mobile menu when settings option is clicked
-//     if (isMobile) {
-//       setMenuOpen(false);
-//     }
-
-//     if (key === "1") handleCarouselClick();
-//     else if (key === "2") handleRefferalClick();
-//     else if (key === "3") handleGameManagementClick();
-//   };
-
-//   const handleRefferalClick = () => {
-//     setIsReferralSettingsModalOpen(true);
-//   };
-
-//   const handleCarouselClick = () => {
-//     setIsCarouselModalOpen(true);
-//   };
-
-//   const handleGameManagementClick = () => {
-//     setIsGameManagementModalOpen(true);
-//   };
-
-//   // Close all dropdowns when menu is toggled
-//   const toggleMenu = () => {
-//     setMenuOpen(!menuOpen);
-//     if (!menuOpen) {
-//       // When opening menu, close all dropdowns
-//       setPropertyDropdownOpen(false);
-//       setResidentsDropdownOpen(false);
-//       setMessDropdownOpen(false);
-//     }
-//   };
-
-//   const togglePropertyDropdown = () =>
-//     setPropertyDropdownOpen(!propertyDropdownOpen);
-
-//   const toggleResidentsDropdown = () =>
-//     setResidentsDropdownOpen(!residentsDropdownOpen);
-
-//   const toggleMessDropdown = () =>
-//     setMessDropdownOpen(!messDropdownOpen);
-
-//   const items = [
-//     {
-//       key: "1",
-//       label: "Push Notification",
-//     },
-//     {
-//       key: "2",
-//       label: "Alert Notification",
-//     },
-//     {
-//       key: "3",
-//       label: "Notification Logs",
-//     },
-//   ];
-
-//   const settings = [
-//     {
-//       key: "1",
-//       label: "Carousel Management",
-//     },
-//     {
-//       key: "2",
-//       label: "Referral management",
-//     },
-//     {
-//       key: "3",
-//       label: "Game Management",
-//     },
-//   ];
-
-//   useEffect(() => {
-//     const fetchProperties = async () => {
-//       try {
-//         const data = await getAllHeavensProperties();
-//         dispatch(
-//           setProperties(
-//             data.map((p) => ({
-//               name: p.propertyName,
-//               _id: p._id,
-//             }))
-//           )
-//         );
-//       } catch (error) {
-//         console.error("Failed to fetch properties:", error);
-//       }
-//     };
-
-//     fetchProperties();
-//   }, [dispatch]);
-
-//   const propertyList = useMemo(() => {
-//     if (!properties) return [];
-
-//     if (user?.role?.name === "admin") {
-//       const hasAllOption = properties.some((p) => p.name === "All Properties");
-//       return hasAllOption
-//         ? properties
-//         : [{ name: "All Properties", _id: "all" }, ...properties];
-//     }
-
-//     return properties.filter((p) => user?.properties?.includes(p._id));
-//   }, [properties, user]);
-
-//   const filteredList = propertyList.filter((p) =>
-//     p.name.toLowerCase().includes(searchTerm.toLowerCase())
-//   );
-
-//   useEffect(() => {
-//     if (
-//       user?.role?.name !== "admin" &&
-//       user?.properties?.length > 0 &&
-//       !selectedProperty?.id
-//     ) {
-//       const firstPropertyId = user.properties[0];
-//       const firstProperty = properties?.find((p) => p._id === firstPropertyId);
-
-//       if (firstProperty) {
-//         dispatch(
-//           selectProperty({
-//             name: `Heavens Living - ${firstProperty.name}`,
-//             id: firstProperty._id,
-//           })
-//         );
-//       }
-//     }
-//   }, [user, properties, selectedProperty, dispatch]);
-
-//   const handlePropertySelect = (property) => {
-//     const selected =
-//       property.name === "All Properties"
-//         ? { name: "", id: null }
-//         : { name: `Heavens Living - ${property.name}`, id: property._id };
-
-//     dispatch(selectProperty(selected));
-//     setIsDropdownOpen(false);
-//   };
-
-//   const toggleDropdown = () => {
-//     setIsDropdownOpen(!isDropdownOpen);
-//   };
-
-//   const isActive = (path) => {
-//     return (
-//       location.pathname === path ||
-//       (path !== "/" && location.pathname.startsWith(path))
-//     );
-//   };
-
-//   const handleLogoutClick = () => {
-//     setIsLogoutModalOpen(true);
-//     setMenuOpen(false);
-//   };
-
-//   const handleLogoutConfirm = () => {
-//     dispatch(
-//       logout({
-//         showModal: false,
-//         reason: "user_initiated",
-//       })
-//     );
-//     setIsLogoutModalOpen(false);
-//     navigate("/login");
-//   };
-
-//   const handleModalClose = () => {
-//     setIsLogoutModalOpen(false);
-//   };
-
-//   // Close mobile menu when navigating
-//   const handleMobileLinkClick = () => {
-//     setMenuOpen(false);
-//   };
-
-//   return (
-//     <header className="navbar">
-//       {/* First Row */}
-//       <div className="navbar-top">
-//         <div className="navbar-left">
-//           <div className="logo" style={{ display: "flex", alignItems: "center" }}>
-//             <Link
-//               to="/"
-//               className="logo-link"
-//               style={{
-//                 display: "flex",
-//                 alignItems: "center",
-//                 textDecoration: "none",
-//                 color: "inherit",
-//               }}
-//             >
-//               <span className="logo-text">Heavens Living</span>
-//             </Link>
-//             <span className="separator">|</span>
-//             <div className="property-selector">
-//               <div className="property-display" onClick={toggleDropdown}>
-//                 <span className="property-text">
-//                   {!selectedProperty?.id ||
-//                   selectedProperty.id === "null" ||
-//                   selectedProperty?.name === ""
-//                     ? "Heavens Living"
-//                     : selectedProperty?.name?.includes("Heavens Living - ") &&
-//                       isMobile
-//                     ? selectedProperty.name.replace("Heavens Living - ", "")
-//                     : selectedProperty?.name}
-//                 </span>
-//                 <span className="sort-icons">
-//                   <FiChevronUp size={10} />
-//                   <FiChevronDown size={10} />
-//                 </span>
-//               </div>
-//               {isDropdownOpen && (
-//                 <div className="property-dropdown text-[#4d44b5] font-semibold pt-2 pb-2">
-//                   <div className="p-2">
-//                     <input
-//                       type="text"
-//                       placeholder="Search property..."
-//                       value={searchTerm}
-//                       onChange={(e) => setSearchTerm(e.target.value)}
-//                       className="w-full px-2 py-1 border rounded text-sm focus:outline-none"
-//                     />
-//                   </div>
-
-//                   {filteredList.map((property) => {
-//                     const isSelected =
-//                       (!selectedProperty?.id &&
-//                         property.name === "All Properties") ||
-//                       selectedProperty?.id === property._id;
-
-//                     return (
-//                       <div
-//                         key={property._id || property.name}
-//                         className={`property-option ${
-//                           isSelected ? "selected" : ""
-//                         }`}
-//                         onClick={(e) => {
-//                           e.stopPropagation();
-//                           handlePropertySelect(property);
-//                         }}
-//                       >
-//                         {property.name}
-//                       </div>
-//                     );
-//                   })}
-
-//                   {filteredList.length === 0 && (
-//                     <div className="p-2 text-gray-500 text-sm">
-//                       No results found
-//                     </div>
-//                   )}
-//                 </div>
-//               )}
-//             </div>
-//           </div>
-//         </div>
-
-//         <div className="navbar-right">
-//           <button className="menu-toggle relative" onClick={toggleMenu}>
-//             <FiMenu size={24} className="text-white" />
-//             <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-400 rounded-full animate-pulse"></span>
-//           </button>
-//           <div className="icons-desktop flex items-center gap-4">
-//             <div className="user-info flex items-center gap-2">
-//               <button className="icon-button p-1 rounded-full hover:bg-[#3a32a1]">
-//                 <FiUser size={20} className="text-white" />
-//               </button>
-//               <div className="text-sm text-right">
-//                 <div className="font-medium text-white">{user?.name}</div>
-//               </div>
-//             </div>
-//             <Dropdown
-//               menu={{ items: settings, onClick: handleSettingsMenuClick }}
-//               trigger={["hover"]}
-//               placement="bottom"
-//               arrow
-//             >
-//               <button className="icon-button p-1 rounded-full hover:bg-[#3a32a1]">
-//                 <FiSliders size={20} className="text-white" />
-//               </button>
-//             </Dropdown>
-//             <Dropdown
-//               menu={{ items: items, onClick: handleNotificationMenuClick }}
-//               trigger={["hover"]}
-//               placement="bottom"
-//               arrow
-//             >
-//               <button className="icon-button p-1 rounded-full hover:bg-[#3a32a1]">
-//                 <FiBell size={20} className="text-white" />
-//               </button>
-//             </Dropdown>
-//             <button
-//               className="icon-button p-1 rounded-full hover:bg-[#3a32a1]"
-//               onClick={handleLogoutClick}
-//             >
-//               <FiLogOut size={20} className="text-white" />
-//             </button>
-//           </div>
-//         </div>
-//       </div>
-
-//       {/* Mobile Menu - Slides from right */}
-//       <div className={`mobile-menu-container ${menuOpen ? "open" : ""}`}>
-//         <div className="mobile-menu-overlay" onClick={toggleMenu}></div>
-//         <div className="mobile-menu-content">
-//           <div className="mobile-menu-icons">
-//             <button className="icon-button">
-//               <FiUser size={20} />
-//             </button>
-//             <Dropdown
-//               menu={{ items: settings, onClick: handleSettingsMenuClick }}
-//               trigger={["click"]}
-//               placement="bottom"
-//               arrow
-//             >
-//               <button className="icon-button">
-//                 <FiSliders size={20} />
-//               </button>
-//             </Dropdown>
-//             <Dropdown
-//               menu={{ items, onClick: handleNotificationMenuClick }}
-//               trigger={["click"]}
-//               placement="bottom"
-//               arrow
-//             >
-//               <button className="icon-button">
-//                 <FiBell size={20} />
-//               </button>
-//             </Dropdown>
-//             <button className="icon-button" onClick={handleLogoutClick}>
-//               <FiLogOut size={20} />
-//             </button>
-//           </div>
-//           <nav className="mobile-nav-items">
-//             {hasPermission("/") && (
-//               <Link
-//                 to="/"
-//                 className={`mobile-nav-link ${isActive("/") ? "active" : ""}`}
-//                 onClick={handleMobileLinkClick}
-//               >
-//                 <FiGrid size={20} />
-//                 <span>Dashboard</span>
-//               </Link>
-//             )}
-
-//             {hasPermission("/property") && (
-//               <div className="mobile-dropdown-container">
-//                 <div
-//                   className={`mobile-nav-link ${
-//                     isActive("/property") || isActive("/rooms") ? "active" : ""
-//                   }`}
-//                   onClick={togglePropertyDropdown}
-//                 >
-//                   <FiHome size={20} />
-//                   <span>Property</span>
-//                   {propertyDropdownOpen ? <FiChevronUp /> : <FiChevronDown />}
-//                 </div>
-//                 {propertyDropdownOpen && (
-//                   <div className="mobile-dropdown-menu">
-//                     <Link
-//                       to="/property"
-//                       className={`mobile-dropdown-link ${
-//                         isActive("/property") ? "active" : ""
-//                       }`}
-//                       onClick={handleMobileLinkClick}
-//                     >
-//                       <span>Properties</span>
-//                     </Link>
-//                     <Link
-//                       to="/rooms"
-//                       className={`mobile-dropdown-link ${
-//                         isActive("/rooms") ? "active" : ""
-//                       }`}
-//                       onClick={handleMobileLinkClick}
-//                     >
-//                       <span>Rooms</span>
-//                     </Link>
-//                   </div>
-//                 )}
-//               </div>
-//             )}
-
-//             {hasPermission("/monthlyRent") && (
-//               <div className="mobile-dropdown-container">
-//                 <div
-//                   className={`mobile-nav-link ${
-//                     isActive("/monthlyRent") ||
-//                     isActive("/food-only") ||
-//                     isActive("/dailyRent")
-//                       ? "active"
-//                       : ""
-//                   }`}
-//                   onClick={toggleResidentsDropdown}
-//                 >
-//                   <FiUsers size={20} />
-//                   <span>Users</span>
-//                   {residentsDropdownOpen ? <FiChevronUp /> : <FiChevronDown />}
-//                 </div>
-//                 {residentsDropdownOpen && (
-//                   <div className="mobile-dropdown-menu">
-//                     <Link
-//                       to="/monthlyRent"
-//                       className={`mobile-dropdown-link ${
-//                         isActive("/monthlyRent") ? "active" : ""
-//                       }`}
-//                       onClick={handleMobileLinkClick}
-//                     >
-//                       <span>Monthly Rent</span>
-//                     </Link>
-//                     <Link
-//                       to="/dailyRent"
-//                       className={`mobile-dropdown-link ${
-//                         isActive("/dailyRent") ? "active" : ""
-//                       }`}
-//                       onClick={handleMobileLinkClick}
-//                     >
-//                       <span>Daily Rent</span>
-//                     </Link>
-//                     <Link
-//                       to="/food-only"
-//                       className={`mobile-dropdown-link ${
-//                         isActive("/food-only") ? "active" : ""
-//                       }`}
-//                       onClick={handleMobileLinkClick}
-//                     >
-//                       <span>Mess Only</span>
-//                     </Link>
-//                   </div>
-//                 )}
-//               </div>
-//             )}
-
-//             {hasPermission("/employees") && (
-//               <Link
-//                 to="/employees"
-//                 className={`mobile-nav-link ${
-//                   isActive("/employees") ? "active" : ""
-//                 }`}
-//                 onClick={handleMobileLinkClick}
-//               >
-//                 <HiOutlineUserGroup size={20} />
-//                 <span>Employees</span>
-//               </Link>
-//             )}
-
-//             {hasPermission("/mess") && (
-//               <div className="mobile-dropdown-container">
-//                 <div
-//                   className={`mobile-nav-link ${
-//                     isActive("/mess") || isActive("/addons") ? "active" : ""
-//                   }`}
-//                   onClick={toggleMessDropdown}
-//                 >
-//                   <MdRestaurantMenu size={20} />
-//                   <span>Mess</span>
-//                   {messDropdownOpen ? <FiChevronUp /> : <FiChevronDown />}
-//                 </div>
-//                 {messDropdownOpen && (
-//                   <div className="mobile-dropdown-menu">
-//                     <Link
-//                       to="/mess"
-//                       className={`mobile-dropdown-link ${
-//                         isActive("/mess") ? "active" : ""
-//                       }`}
-//                       onClick={handleMobileLinkClick}
-//                     >
-//                       <span>Order Details</span>
-//                     </Link>
-//                     <Link
-//                       to="/kitchen"
-//                       className={`mobile-dropdown-link ${
-//                         isActive("/kitchen") ? "active" : ""
-//                       }`}
-//                       onClick={handleMobileLinkClick}
-//                     >
-//                       <span>Kitchen</span>
-//                     </Link>
-//                     <Link
-//                     to="/stock-usage"
-//                     className={`dropdown-link ${
-//                       isActive("/stock-usage") ? "active" : ""
-//                     }`}
-//                   >
-//                     <span>Daily Usage</span>
-//                   </Link>
-//                   </div>
-//                 )}
-//               </div>
-//             )}
-
-//             {hasPermission("/maintenance") && (
-//               <Link
-//                 to="/maintenance"
-//                 className={`mobile-nav-link ${
-//                   isActive("/maintenance") ? "active" : ""
-//                 } relative`}
-//                 onClick={handleMobileLinkClick}
-//               >
-//                 <FiAlertCircle size={20} />
-//                 <span>Maintenance</span>
-//                 <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-//                   3
-//                 </span>
-//               </Link>
-//             )}
-
-//             {hasPermission("/accounts") && (
-//               <Link
-//                 to="/accounts"
-//                 className={`mobile-nav-link ${
-//                   isActive("/accounts") ? "active" : ""
-//                 }`}
-//                 onClick={handleMobileLinkClick}
-//               >
-//                 <MdAccountBalance size={20} />
-//                 <span>Accounts</span>
-//               </Link>
-//             )}
-
-//             {hasPermission("/offboarding") && (
-//               <Link
-//                 to="/offboarding"
-//                 className={`mobile-nav-link ${
-//                   isActive("/offboarding") ? "active" : ""
-//                 }`}
-//                 onClick={handleMobileLinkClick}
-//               >
-//                 <LuCircleArrowOutUpLeft size={20} />
-//                 <span>Off Boarding</span>
-//               </Link>
-//             )}
-
-//             {hasPermission("/activity-logs") && (
-//               <Link
-//                 to="/activity-logs"
-//                 className={`mobile-nav-link ${
-//                   isActive("/activity-logs") ? "active" : ""
-//                 }`}
-//                 onClick={handleMobileLinkClick}
-//               >
-//                 <FaHistory size={18} />
-//                 <span>Logs</span>
-//               </Link>
-//             )}
-//           </nav>
-//         </div>
-//       </div>
-
-//       {/* Second Row - Nav Links */}
-//       <div className={`navbar-bottom ${menuOpen ? "open" : ""}`}>
-//         <nav className="nav-items">
-//           {hasPermission("/") && (
-//             <Link
-//               to="/"
-//               className={`nav-link ${isActive("/") ? "active" : ""}`}
-//             >
-//               <div className="nav-icon-text">
-//                 <FiGrid size={20} />
-//                 <span>Dashboard</span>
-//               </div>
-//             </Link>
-//           )}
-
-//           {hasPermission("/property") && (
-//             <div
-//               className={`nav-link dropdown-container ${
-//                 isActive("/property") || isActive("/rooms") ? "active" : ""
-//               }`}
-//               onMouseEnter={() => setPropertyDropdownOpen(true)}
-//               onMouseLeave={() => setPropertyDropdownOpen(false)}
-//             >
-//               <div className="nav-icon-text">
-//                 <FiHome size={20} />
-//                 <span>Property</span>
-//                 {propertyDropdownOpen ? (
-//                   <FiChevronUp size={16} />
-//                 ) : (
-//                   <FiChevronDown size={16} />
-//                 )}
-//               </div>
-//               {propertyDropdownOpen && (
-//                 <div className="dropdown-menu">
-//                   <Link
-//                     to="/property"
-//                     className={`dropdown-link ${
-//                       isActive("/property") ? "active" : ""
-//                     }`}
-//                   >
-//                     <span>Properties</span>
-//                   </Link>
-//                   <Link
-//                     to="/rooms"
-//                     className={`dropdown-link ${
-//                       isActive("/rooms") ? "active" : ""
-//                     }`}
-//                   >
-//                     <span>Rooms</span>
-//                   </Link>
-//                 </div>
-//               )}
-//             </div>
-//           )}
-
-//           {hasPermission("/monthlyRent") && (
-//             <div
-//               className={`nav-link dropdown-container ${
-//                 isActive("/monthlyRent") ||
-//                 isActive("/food-only") ||
-//                 isActive("/dailyRent")
-//                   ? "active"
-//                   : ""
-//               }`}
-//               onMouseEnter={() => setResidentsDropdownOpen(true)}
-//               onMouseLeave={() => setResidentsDropdownOpen(false)}
-//             >
-//               <div className="nav-icon-text">
-//                 <FiUsers size={20} />
-//                 <span>Users</span>
-//                 {residentsDropdownOpen ? (
-//                   <FiChevronUp size={16} />
-//                 ) : (
-//                   <FiChevronDown size={16} />
-//                 )}
-//               </div>
-//               {residentsDropdownOpen && (
-//                 <div className="dropdown-menu">
-//                   <Link
-//                     to="/monthlyRent"
-//                     className={`dropdown-link ${
-//                       isActive("/monthlyRent") ? "active" : ""
-//                     }`}
-//                   >
-//                     <span>Monthly Rent</span>
-//                   </Link>
-//                   <Link
-//                     to="/dailyRent"
-//                     className={`dropdown-link ${
-//                       isActive("/dailyRent") ? "active" : ""
-//                     }`}
-//                   >
-//                     <span>Daily Rent</span>
-//                   </Link>
-//                   <Link
-//                     to="/food-only"
-//                     className={`dropdown-link ${
-//                       isActive("/food-only") ? "active" : ""
-//                     }`}
-//                   >
-//                     <span>Mess Only</span>
-//                   </Link>
-//                 </div>
-//               )}
-//             </div>
-//           )}
-
-//           {hasPermission("/employees") && (
-//             <Link
-//               to="/employees"
-//               className={`nav-link ${isActive("/employees") ? "active" : ""}`}
-//             >
-//               <div className="nav-icon-text">
-//                 <HiOutlineUserGroup size={20} />
-//                 <span>Employees</span>
-//               </div>
-//             </Link>
-//           )}
-
-//           {hasPermission("/mess") && (
-//             <div
-//               className={`nav-link dropdown-container ${
-//                 isActive("/mess") || isActive("/addons") ? "active" : ""
-//               }`}
-//               onMouseEnter={() => setMessDropdownOpen(true)}
-//               onMouseLeave={() => setMessDropdownOpen(false)}
-//             >
-//               <div className="nav-icon-text">
-//                 <MdRestaurantMenu size={20} />
-//                 <span>Mess</span>
-//                 {messDropdownOpen ? (
-//                   <FiChevronUp size={16} />
-//                 ) : (
-//                   <FiChevronDown size={16} />
-//                 )}
-//               </div>
-//               {messDropdownOpen && (
-//                 <div className="dropdown-menu">
-//                   <Link
-//                     to="/mess"
-//                     className={`dropdown-link ${
-//                       isActive("/mess") ? "active" : ""
-//                     }`}
-//                   >
-//                     <span>Order Details</span>
-//                   </Link>
-//                   <Link
-//                     to="/kitchen"
-//                     className={`dropdown-link ${
-//                       isActive("/kitchen") ? "active" : ""
-//                     }`}
-//                   >
-//                     <span>Kitchen</span>
-//                   </Link>
-//                   <Link
-//                     to="/stock-usage"
-//                     className={`dropdown-link ${
-//                       isActive("/stock-usage") ? "active" : ""
-//                     }`}
-//                   >
-//                     <span>Daily Usage</span>
-//                   </Link>
-//                 </div>
-//               )}
-//             </div>
-//           )}
-
-//           {hasPermission("/maintenance") && (
-//             <Link
-//               to="/maintenance"
-//               className={`nav-link ${
-//                 isActive("/maintenance") ? "active" : ""
-//               } relative group`}
-//             >
-//               <div className="nav-icon-text">
-//                 <FiAlertCircle size={20} />
-//                 <span>Maintenance</span>
-//                 <span className="absolute -top-1 -right-3 bg-red-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center transition-all group-hover:scale-110">
-//                   3
-//                 </span>
-//               </div>
-//             </Link>
-//           )}
-
-//           {hasPermission("/accounts") && (
-//             <Link
-//               to="/accounts"
-//               className={`nav-link ${isActive("/accounts") ? "active" : ""}`}
-//             >
-//               <div className="nav-icon-text">
-//                 <MdAccountBalance size={20} />
-//                 <span>Accounts</span>
-//               </div>
-//             </Link>
-//           )}
-
-//           {hasPermission("/offboarding") && (
-//             <Link
-//               to="/offboarding"
-//               className={`nav-link ${isActive("/offboarding") ? "active" : ""}`}
-//             >
-//               <div className="nav-icon-text">
-//                 <LuCircleArrowOutUpLeft size={18} />
-//                 <span>Off Boarding</span>
-//               </div>
-//             </Link>
-//           )}
-
-//           {hasPermission("/activity-logs") && (
-//             <Link
-//               to="/activity-logs"
-//               className={`nav-link ${
-//                 isActive("/activity-logs") ? "active" : ""
-//               }`}
-//             >
-//               <div className="nav-icon-text">
-//                 <FaHistory size={18} />
-//                 <span>Logs</span>
-//               </div>
-//             </Link>
-//           )}
-//         </nav>
-//       </div>
-
-//       {/* Modals */}
-//       <RefferalSettingsModal
-//         isOpen={isReferralSettingsModalOpen}
-//         onClose={() => setIsReferralSettingsModalOpen(false)}
-//       />
-
-//       <CarouselManagementModal
-//         isOpen={isCarouselModalOpen}
-//         onClose={() => setIsCarouselModalOpen(false)}
-//       />
-
-//       <GameManagementModal
-//         isOpen={isGameManagementModalOpen}
-//         onClose={() => setIsGameManagementModalOpen(false)}
-//       />
-
-//       <ConfirmModal
-//         isOpen={isLogoutModalOpen}
-//         title="Confirm Logout"
-//         message="Are you sure you want to log out?"
-//         onConfirm={handleLogoutConfirm}
-//         onCancel={handleModalClose}
-//         className="mt-0"
-//       />
-//     </header>
-//   );
-// };
-
-// export default Navbar;
-
 import {Link, useLocation, useNavigate} from "react-router-dom";
 import {
   FiUser,
@@ -922,8 +37,9 @@ import RequestCountBadge from "../../components/offboarding/RequestCountBadge.js
 
 const Navbar = () => {
   const {user} = useSelector((state) => state.auth);
+  console.log(user);
   const {properties, selectedProperty} = useSelector(
-    (state) => state.properties
+    (state) => state.properties,
   );
   const [searchTerm, setSearchTerm] = useState("");
   const [isCarouselModalOpen, setIsCarouselModalOpen] = useState(false);
@@ -942,6 +58,11 @@ const Navbar = () => {
   const permissions = role?.permissions;
 
   const hasPermission = (requiredPermission) => {
+    // Allow everything if user has ALL_PRIVILEGES
+    if (permissions?.includes("ALL_PRIVILEGES")) {
+      return true;
+    }
+
     return permissions?.includes(requiredPermission);
   };
 
@@ -991,7 +112,6 @@ const Navbar = () => {
     if (key === "1") handleCarouselClick();
     else if (key === "2") handleRefferalClick();
     else if (key === "3") handleGameManagementClick();
-    else if (key === "4") handleWebsiteManagementClick();
   };
 
   const handleRefferalClick = () => {
@@ -1004,10 +124,6 @@ const Navbar = () => {
 
   const handleGameManagementClick = () => {
     setIsGameManagementModalOpen(true);
-  };
-
-  const handleWebsiteManagementClick = () => {
-    navigate("/website-management");
   };
 
   // Close all dropdowns when menu is toggled
@@ -1036,50 +152,123 @@ const Navbar = () => {
   const toggleMoreDropdown = () => setMoreDropdownOpen(!moreDropdownOpen); // <-- CHANGED from toggleLogsDropdown
 
   const items = [
-    {
+    hasPermission("/notification/push-notification") && {
       key: "1",
       label: "Push Notification",
     },
-    {
+
+    hasPermission("/notification/alert-notification") && {
       key: "2",
       label: "Alert Notification",
     },
-    {
+
+    hasPermission("/notification/notification-logs") && {
       key: "3",
       label: "Notification Logs",
     },
-  ];
+  ].filter(Boolean);
 
   const settings = [
-    {
+    hasPermission("CAROUSEL_MANAGE") && {
       key: "1",
       label: "Carousel Management",
     },
-    {
+
+    hasPermission("REFERRAL_MANAGE") && {
       key: "2",
-      label: "Referral management",
+      label: "Referral Management",
     },
-    {
+
+    hasPermission("GAMING_MANAGE") && {
       key: "3",
       label: "Game Management",
     },
+  ].filter(Boolean);
+
+  const userRoutes = [
     {
-      key: "4",
-      label: "Website Management",
+      path: "/monthlyRent",
+      label: "Monthly Rent",
+      permission: "/monthlyRent",
+    },
+    {
+      path: "/dailyRent",
+      label: "Daily Rent",
+      permission: "/dailyRent",
+    },
+    {
+      path: "/food-only",
+      label: "Mess Only",
+      permission: "/food-only",
     },
   ];
+
+  const canViewAccounts = hasPermission("/accounts");
+  const canViewAccounting = hasPermission("/accounting");
+
+  const canViewProperties = hasPermission("/property");
+  const canViewRooms = hasPermission("/rooms");
+  const canViewFloors = hasPermission("/floor");
+
+  const canViewOrderDetails = hasPermission("/mess");
+  const canViewKitchens = hasPermission("/kitchen");
+  const canViewDailyUsage = hasPermission("/stock-usage");
+
+  const propertyRoutes = [
+    {
+      path: "/property",
+      label: "Properties",
+      canView: canViewProperties,
+    },
+    {
+      path: "/floor",
+      label: "Floors",
+      canView: canViewFloors,
+    },
+    {
+      path: "/rooms",
+      label: "Rooms",
+      canView: canViewRooms,
+    },
+  ];
+
+  const kitchenRoutes = [
+    {
+      path: "/mess",
+      label: "Order Details",
+      canView: canViewOrderDetails,
+    },
+    {
+      path: "/kitchen",
+      label: "Kitchen",
+      canView: canViewKitchens,
+    },
+    {
+      path: "/stock-usage",
+      label: "Daily Usage",
+      canView: canViewDailyUsage,
+    },
+  ];
+
+  const allowedKitchenRoutes = kitchenRoutes.filter((route) => route.canView);
+  const allowedPropertyRoutes = propertyRoutes.filter((route) => route.canView);
+
+  const allowedUserRoutes = userRoutes.filter((route) =>
+    hasPermission(route.permission),
+  );
 
   useEffect(() => {
     const fetchProperties = async () => {
       try {
         const data = await getAllHeavensProperties();
+        console.log(data);
         dispatch(
           setProperties(
             data.map((p) => ({
               name: p.propertyName,
               _id: p._id,
-            }))
-          )
+            })),
+          ),
         );
       } catch (error) {
         console.error("Failed to fetch properties:", error);
@@ -1092,7 +281,7 @@ const Navbar = () => {
   const propertyList = useMemo(() => {
     if (!properties) return [];
 
-    if (user?.role?.name === "admin") {
+    if (user?.role?.name === "Admin") {
       const hasAllOption = properties.some((p) => p.name === "All Properties");
       return hasAllOption
         ? properties
@@ -1103,12 +292,12 @@ const Navbar = () => {
   }, [properties, user]);
 
   const filteredList = propertyList.filter((p) =>
-    p.name.toLowerCase().includes(searchTerm.toLowerCase())
+    p.name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   useEffect(() => {
     if (
-      user?.role?.name !== "admin" &&
+      user?.role?.name !== "Admin" &&
       user?.properties?.length > 0 &&
       !selectedProperty?.id
     ) {
@@ -1118,9 +307,9 @@ const Navbar = () => {
       if (firstProperty) {
         dispatch(
           selectProperty({
-            name: `Heavens Living - ${firstProperty.name}`,
+            name: `${user.companyName} - ${firstProperty.name}`,
             id: firstProperty._id,
-          })
+          }),
         );
       }
     }
@@ -1130,7 +319,7 @@ const Navbar = () => {
     const selected =
       property.name === "All Properties"
         ? {name: "", id: null}
-        : {name: `Heavens Living - ${property.name}`, id: property._id};
+        : {name: `${user.companyName} - ${property.name}`, id: property._id};
 
     dispatch(selectProperty(selected));
     setIsDropdownOpen(false);
@@ -1162,7 +351,7 @@ const Navbar = () => {
       logout({
         showModal: false,
         reason: "user_initiated",
-      })
+      }),
     );
     setIsLogoutModalOpen(false);
     navigate("/login");
@@ -1196,7 +385,7 @@ const Navbar = () => {
                 color: "inherit",
               }}
             >
-              <span className="logo-text">Heavens Living</span>
+              <span className="logo-text">HostelXpert</span>
             </Link>
             <span className="separator">|</span>
             <Dropdown
@@ -1222,7 +411,7 @@ const Navbar = () => {
                         <Menu.Item
                           key={property._id || property.name}
                           className={`${
-                            isSelected ? "bg-purple-50 text-[#4d44b5]" : ""
+                            isSelected ? "bg-purple-50 text-[#059669]" : ""
                           } `}
                           onClick={(e) => {
                             e.domEvent.stopPropagation();
@@ -1232,7 +421,7 @@ const Navbar = () => {
                           <div className="flex items-center justify-between">
                             <span className="truncate">{property.name}</span>
                             {isSelected && (
-                              <span className="text-[#4d44b5]">✓</span>
+                              <span className="text-[#059669]">✓</span>
                             )}
                           </div>
                         </Menu.Item>
@@ -1262,11 +451,15 @@ const Navbar = () => {
                   {!selectedProperty?.id ||
                   selectedProperty.id === "null" ||
                   selectedProperty?.name === ""
-                    ? "Heavens Living"
-                    : selectedProperty?.name?.includes("Heavens Living - ") &&
-                      isMobile
-                    ? selectedProperty.name.replace("Heavens Living - ", "")
-                    : selectedProperty?.name}
+                    ? `${user.companyName}`
+                    : selectedProperty?.name?.includes(
+                          `${user.companyName} - `,
+                        ) && isMobile
+                      ? selectedProperty.name.replace(
+                          `${user.companyName} - `,
+                          "",
+                        )
+                      : selectedProperty?.name}
                 </span>
                 <span className="sort-icons flex flex-col flex-shrink-0">
                   <FiChevronUp size={10} className="-mb-1" />
@@ -1289,30 +482,48 @@ const Navbar = () => {
               <button className="icon-button p-1 rounded-full hover:bg-[#3a32a1]">
                 <FiUser size={20} className="text-white" />
               </button>
+
               <div className="text-sm text-right">
-                <div className="font-medium text-white">{user?.name}</div>
+                <div className="flex items-center justify-end gap-2">
+                  <span className="font-medium text-white">{user?.name}</span>
+
+                  <span
+                    className="text-[10px] px-2 py-0.5 rounded-full
+                        bg-white/20 text-white
+                       uppercase tracking-wide"
+                  >
+                    {user?.role?.name}
+                  </span>
+                </div>
               </div>
             </div>
-            <Dropdown
-              menu={{items: settings, onClick: handleSettingsMenuClick}}
-              trigger={["hover"]}
-              placement="bottom"
-              arrow
-            >
-              <button className="icon-button p-1 rounded-full hover:bg-[#3a32a1]">
-                <FiSliders size={20} className="text-white" />
-              </button>
-            </Dropdown>
-            <Dropdown
-              menu={{items: items, onClick: handleNotificationMenuClick}}
-              trigger={["hover"]}
-              placement="bottom"
-              arrow
-            >
-              <button className="icon-button p-1 rounded-full hover:bg-[#3a32a1]">
-                <FiBell size={20} className="text-white" />
-              </button>
-            </Dropdown>
+
+            {settings.length > 0 && (
+              <Dropdown
+                menu={{items: settings, onClick: handleSettingsMenuClick}}
+                trigger={["hover"]}
+                placement="bottom"
+                arrow
+              >
+                <button className="icon-button p-1 rounded-full hover:bg-[#3a32a1]">
+                  <FiSliders size={20} className="text-white" />
+                </button>
+              </Dropdown>
+            )}
+
+            {items.length > 0 && (
+              <Dropdown
+                menu={{items, onClick: handleNotificationMenuClick}}
+                trigger={["hover"]}
+                placement="bottom"
+                arrow
+              >
+                <button className="icon-button p-1 rounded-full hover:bg-[#3a32a1]">
+                  <FiBell size={20} className="text-white" />
+                </button>
+              </Dropdown>
+            )}
+
             <button
               className="icon-button p-1 rounded-full hover:bg-[#3a32a1]"
               onClick={handleLogoutClick}
@@ -1366,100 +577,121 @@ const Navbar = () => {
                 <span>Dashboard</span>
               </Link>
             )}
-            {hasPermission("/property") && (
-              <div className="mobile-dropdown-container">
-                <div
-                  className={`mobile-nav-link ${
-                    isActive("/property") || isActive("/rooms") ? "active" : ""
-                  }`}
-                  onClick={togglePropertyDropdown}
-                >
-                  <FiHome size={20} />
-                  <span>Property</span>
-                  {propertyDropdownOpen ? <FiChevronUp /> : <FiChevronDown />}
-                </div>
-                {propertyDropdownOpen && (
-                  <div className="mobile-dropdown-menu">
-                    <Link
-                      to="/property"
-                      className={`mobile-dropdown-link ${
-                        isActive("/property") ? "active" : ""
+
+            {allowedPropertyRoutes.length > 0 && (
+              <>
+                {/* MULTIPLE permissions → dropdown */}
+                {allowedPropertyRoutes.length > 1 ? (
+                  <div className="mobile-dropdown-container">
+                    <div
+                      className={`mobile-nav-link ${
+                        allowedPropertyRoutes.some((route) =>
+                          isActive(route.path),
+                        )
+                          ? "active"
+                          : ""
                       }`}
-                      onClick={handleMobileLinkClick}
+                      onClick={togglePropertyDropdown}
                     >
-                      <span>Properties</span>
-                    </Link>
-                    <Link
-                      to="/rooms"
-                      className={`mobile-dropdown-link ${
-                        isActive("/rooms") ? "active" : ""
-                      }`}
-                      onClick={handleMobileLinkClick}
-                    >
-                      <span>Rooms</span>
-                    </Link>
-                    <Link
-                      to="/floor"
-                      className={`mobile-dropdown-link ${
-                        isActive("/floor") ? "active" : ""
-                      }`}
-                      onClick={handleMobileLinkClick}
-                    >
-                      <span>Floor</span>
-                    </Link>
+                      <FiHome size={20} />
+                      <span>Property</span>
+                      {propertyDropdownOpen ? (
+                        <FiChevronUp />
+                      ) : (
+                        <FiChevronDown />
+                      )}
+                    </div>
+
+                    {propertyDropdownOpen && (
+                      <div className="mobile-dropdown-menu">
+                        {allowedPropertyRoutes.map((route) => (
+                          <Link
+                            key={route.path}
+                            to={route.path}
+                            className={`mobile-dropdown-link ${
+                              isActive(route.path) ? "active" : ""
+                            }`}
+                            onClick={handleMobileLinkClick}
+                          >
+                            {route.label}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
                   </div>
+                ) : (
+                  /* SINGLE permission → direct link */
+                  <Link
+                    to={allowedPropertyRoutes[0].path}
+                    className={`mobile-nav-link ${
+                      isActive(allowedPropertyRoutes[0].path) ? "active" : ""
+                    }`}
+                    onClick={handleMobileLinkClick}
+                  >
+                    <FiHome size={20} />
+                    <span>{allowedPropertyRoutes[0].label}</span>
+                  </Link>
                 )}
-              </div>
+              </>
             )}
-            {hasPermission("/monthlyRent") && (
-              <div className="mobile-dropdown-container">
-                <div
-                  className={`mobile-nav-link ${
-                    isActive("/monthlyRent") ||
-                    isActive("/food-only") ||
-                    isActive("/dailyRent")
-                      ? "active"
-                      : ""
-                  }`}
-                  onClick={toggleResidentsDropdown}
-                >
-                  <FiUsers size={20} />
-                  <span>Users</span>
-                  {residentsDropdownOpen ? <FiChevronUp /> : <FiChevronDown />}
-                </div>
-                {residentsDropdownOpen && (
-                  <div className="mobile-dropdown-menu">
-                    <Link
-                      to="/monthlyRent"
-                      className={`mobile-dropdown-link ${
-                        isActive("/monthlyRent") ? "active" : ""
+
+            {allowedUserRoutes.length > 0 && (
+              <>
+                {/* MULTIPLE routes → dropdown */}
+                {allowedUserRoutes.length > 1 ? (
+                  <div className="mobile-dropdown-container">
+                    <div
+                      className={`mobile-nav-link ${
+                        allowedUserRoutes.some((route) => isActive(route.path))
+                          ? "active"
+                          : ""
                       }`}
-                      onClick={handleMobileLinkClick}
+                      onClick={toggleResidentsDropdown}
                     >
-                      <span>Monthly Rent</span>
-                    </Link>
-                    <Link
-                      to="/dailyRent"
-                      className={`mobile-dropdown-link ${
-                        isActive("/dailyRent") ? "active" : ""
-                      }`}
-                      onClick={handleMobileLinkClick}
-                    >
-                      <span>Daily Rent</span>
-                    </Link>
-                    <Link
-                      to="/food-only"
-                      className={`mobile-dropdown-link ${
-                        isActive("/food-only") ? "active" : ""
-                      }`}
-                      onClick={handleMobileLinkClick}
-                    >
-                      <span>Mess Only</span>
-                    </Link>
+                      <FiUsers size={20} />
+                      <span>Users</span>
+                      {residentsDropdownOpen ? (
+                        <FiChevronUp />
+                      ) : (
+                        <FiChevronDown />
+                      )}
+                    </div>
+
+                    {residentsDropdownOpen && (
+                      <div className="mobile-dropdown-menu">
+                        {allowedUserRoutes.map((route) => (
+                          <Link
+                            key={route.path}
+                            to={route.path}
+                            className={`mobile-dropdown-link ${
+                              isActive(route.path) ? "active" : ""
+                            }`}
+                            onClick={handleMobileLinkClick}
+                          >
+                            {route.label}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
                   </div>
+                ) : (
+                  /* SINGLE route → direct link */
+                  <Link
+                    to={allowedUserRoutes[0].path}
+                    className={`mobile-nav-link ${
+                      isActive(allowedUserRoutes[0].path) ? "active" : ""
+                    }`}
+                    onClick={handleMobileLinkClick}
+                  >
+                    <div className="flex items-center gap-2">
+                      <FiUsers size={20} />
+                      <span>{allowedUserRoutes[0].label}</span>
+                    </div>
+                  </Link>
                 )}
-              </div>
+              </>
             )}
+
             {hasPermission("/employees") && (
               <Link
                 to="/employees"
@@ -1472,54 +704,57 @@ const Navbar = () => {
                 <span>Employees</span>
               </Link>
             )}
-            {hasPermission("/mess") && (
-              <div className="mobile-dropdown-container">
-                <div
-                  className={`mobile-nav-link ${
-                    isActive("/mess") ||
-                    isActive("/kitchen") ||
-                    isActive("/stock-usage")
-                      ? "active"
-                      : ""
-                  }`}
-                  onClick={toggleMessDropdown}
-                >
-                  <MdRestaurantMenu size={20} />
-                  <span>Mess</span>
-                  {messDropdownOpen ? <FiChevronUp /> : <FiChevronDown />}
-                </div>
-                {messDropdownOpen && (
-                  <div className="mobile-dropdown-menu">
-                    <Link
-                      to="/mess"
-                      className={`mobile-dropdown-link ${
-                        isActive("/mess") ? "active" : ""
+            {allowedKitchenRoutes.length > 0 && (
+              <>
+                {/* MULTIPLE permissions → dropdown */}
+                {allowedKitchenRoutes.length > 1 ? (
+                  <div className="mobile-dropdown-container">
+                    <div
+                      className={`mobile-nav-link ${
+                        allowedKitchenRoutes.some((route) =>
+                          isActive(route.path),
+                        )
+                          ? "active"
+                          : ""
                       }`}
-                      onClick={handleMobileLinkClick}
+                      onClick={toggleMessDropdown}
                     >
-                      <span>Order Details</span>
-                    </Link>
-                    <Link
-                      to="/kitchen"
-                      className={`mobile-dropdown-link ${
-                        isActive("/kitchen") ? "active" : ""
-                      }`}
-                      onClick={handleMobileLinkClick}
-                    >
-                      <span>Kitchen</span>
-                    </Link>
-                    <Link
-                      to="/stock-usage"
-                      className={`mobile-dropdown-link ${
-                        isActive("/stock-usage") ? "active" : ""
-                      }`}
-                      onClick={handleMobileLinkClick}
-                    >
-                      <span>Daily Usage</span>
-                    </Link>
+                      <MdRestaurantMenu size={20} />
+                      <span>Mess</span>
+                      {messDropdownOpen ? <FiChevronUp /> : <FiChevronDown />}
+                    </div>
+
+                    {messDropdownOpen && (
+                      <div className="mobile-dropdown-menu">
+                        {allowedKitchenRoutes.map((route) => (
+                          <Link
+                            key={route.path}
+                            to={route.path}
+                            className={`mobile-dropdown-link ${
+                              isActive(route.path) ? "active" : ""
+                            }`}
+                            onClick={handleMobileLinkClick}
+                          >
+                            {route.label}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
                   </div>
+                ) : (
+                  /* SINGLE permission → direct link */
+                  <Link
+                    to={allowedKitchenRoutes[0].path}
+                    className={`mobile-nav-link ${
+                      isActive(allowedKitchenRoutes[0].path) ? "active" : ""
+                    }`}
+                    onClick={handleMobileLinkClick}
+                  >
+                    <MdRestaurantMenu size={20} />
+                    <span>{allowedKitchenRoutes[0].label}</span>
+                  </Link>
                 )}
-              </div>
+              </>
             )}
 
             {hasPermission("/maintenance") && (
@@ -1539,45 +774,68 @@ const Navbar = () => {
               </Link>
             )}
 
-            {hasPermission("/accounts") && (
-              <div className="mobile-dropdown-container">
-                <div
-                  className={`mobile-nav-link ${
-                    isActive("/accounts") || isActive("/accounting")
-                      ? "active"
-                      : ""
-                  }`}
-                  onClick={toggleAccountsDropdown}
-                >
-                  <MdAccountBalance size={20} />
-                  <span>Accounts</span>
-                  {accountsDropdownOpen ? <FiChevronUp /> : <FiChevronDown />}
-                </div>
-
-                {accountsDropdownOpen && (
-                  <div className="mobile-dropdown-menu">
-                    <Link
-                      to="/accounts"
-                      className={`mobile-dropdown-link ${
-                        isActive("/accounts") ? "active" : ""
+            {(canViewAccounts || canViewAccounting) && (
+              <>
+                {/* BOTH permissions → show dropdown */}
+                {canViewAccounts && canViewAccounting ? (
+                  <div className="mobile-dropdown-container">
+                    <div
+                      className={`mobile-nav-link ${
+                        isActive("/accounts") || isActive("/accounting")
+                          ? "active"
+                          : ""
                       }`}
-                      onClick={handleMobileLinkClick}
+                      onClick={toggleAccountsDropdown}
                     >
-                      <span>Overview</span>
-                    </Link>
+                      <MdAccountBalance size={20} />
+                      <span>Accounts</span>
+                      {accountsDropdownOpen ? (
+                        <FiChevronUp />
+                      ) : (
+                        <FiChevronDown />
+                      )}
+                    </div>
 
-                    <Link
-                      to="/accounting"
-                      className={`mobile-dropdown-link ${
-                        isActive("/accounting") ? "active" : ""
-                      }`}
-                      onClick={handleMobileLinkClick}
-                    >
-                      <span>Accountant</span>
-                    </Link>
+                    {accountsDropdownOpen && (
+                      <div className="mobile-dropdown-menu">
+                        <Link
+                          to="/accounts"
+                          className={`mobile-dropdown-link ${
+                            isActive("/accounts") ? "active" : ""
+                          }`}
+                          onClick={handleMobileLinkClick}
+                        >
+                          Overview
+                        </Link>
+
+                        <Link
+                          to="/accounting"
+                          className={`mobile-dropdown-link ${
+                            isActive("/accounting") ? "active" : ""
+                          }`}
+                          onClick={handleMobileLinkClick}
+                        >
+                          Accountant
+                        </Link>
+                      </div>
+                    )}
                   </div>
+                ) : (
+                  /* ONLY ONE permission → show direct link */
+                  <Link
+                    to={canViewAccounts ? "/accounts" : "/accounting"}
+                    className={`mobile-nav-link ${
+                      isActive("/accounts") || isActive("/accounting")
+                        ? "active"
+                        : ""
+                    }`}
+                    onClick={handleMobileLinkClick}
+                  >
+                    <MdAccountBalance size={20} />
+                    <span>{canViewAccounts ? "Accounts" : "Accountant"}</span>
+                  </Link>
                 )}
-              </div>
+              </>
             )}
 
             {hasPermission("/offboarding") && (
@@ -1596,7 +854,6 @@ const Navbar = () => {
                 />
               </Link>
             )}
-
             {/* // <-- ENTIRE 'MORE' BLOCK CHANGED --> */}
             {hasPermission("/activity-logs") && (
               <div className="mobile-dropdown-container">
@@ -1654,104 +911,116 @@ const Navbar = () => {
             </Link>
           )}
 
-          {hasPermission("/property") && (
-            <div
-              className={`nav-link dropdown-container ${
-                isActive("/property") || isActive("/rooms") ? "active" : ""
-              }`}
-              onMouseEnter={() => setPropertyDropdownOpen(true)}
-              onMouseLeave={() => setPropertyDropdownOpen(false)}
-            >
-              <div className="nav-icon-text">
-                <FiHome size={20} />
-                <span>Property</span>
-                {propertyDropdownOpen ? (
-                  <FiChevronUp size={16} />
-                ) : (
-                  <FiChevronDown size={16} />
-                )}
-              </div>
-              {propertyDropdownOpen && (
-                <div className="dropdown-menu">
-                  <Link
-                    to="/property"
-                    className={`dropdown-link ${
-                      isActive("/property") ? "active" : ""
-                    }`}
-                  >
-                    <span>Properties</span>
-                  </Link>
-                  <Link
-                    to="/rooms"
-                    className={`dropdown-link ${
-                      isActive("/rooms") ? "active" : ""
-                    }`}
-                  >
-                    <span>Rooms</span>
-                  </Link>
-                  <Link
-                    to="/floor"
-                    className={`dropdown-link ${
-                      isActive("/floor") ? "active" : ""
-                    }`}
-                  >
-                    <span>Floor</span>
-                  </Link>
+          {allowedPropertyRoutes.length > 0 && (
+            <>
+              {/* MULTIPLE permissions → dropdown */}
+              {allowedPropertyRoutes.length > 1 ? (
+                <div
+                  className={`nav-link dropdown-container ${
+                    allowedPropertyRoutes.some((route) => isActive(route.path))
+                      ? "active"
+                      : ""
+                  }`}
+                  onMouseEnter={() => setPropertyDropdownOpen(true)}
+                  onMouseLeave={() => setPropertyDropdownOpen(false)}
+                >
+                  <div className="nav-icon-text">
+                    <FiHome size={20} />
+                    <span>Property</span>
+                    {propertyDropdownOpen ? (
+                      <FiChevronUp size={16} />
+                    ) : (
+                      <FiChevronDown size={16} />
+                    )}
+                  </div>
+
+                  {propertyDropdownOpen && (
+                    <div className="dropdown-menu">
+                      {allowedPropertyRoutes.map((route) => (
+                        <Link
+                          key={route.path}
+                          to={route.path}
+                          className={`dropdown-link ${
+                            isActive(route.path) ? "active" : ""
+                          }`}
+                        >
+                          {route.label}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
                 </div>
+              ) : (
+                /* SINGLE permission → direct link */
+                <Link
+                  to={allowedPropertyRoutes[0].path}
+                  className={`nav-link ${
+                    isActive(allowedPropertyRoutes[0].path) ? "active" : ""
+                  }`}
+                >
+                  <div className="nav-icon-text">
+                    <FiHome size={20} />
+                    <span>{allowedPropertyRoutes[0].label}</span>
+                  </div>
+                </Link>
               )}
-            </div>
+            </>
           )}
 
-          {hasPermission("/monthlyRent") && (
-            <div
-              className={`nav-link dropdown-container ${
-                isActive("/monthlyRent") ||
-                isActive("/food-only") ||
-                isActive("/dailyRent")
-                  ? "active"
-                  : ""
-              }`}
-              onMouseEnter={() => setResidentsDropdownOpen(true)}
-              onMouseLeave={() => setResidentsDropdownOpen(false)}
-            >
-              <div className="nav-icon-text">
-                <FiUsers size={20} />
-                <span>Users</span>
-                {residentsDropdownOpen ? (
-                  <FiChevronUp size={16} />
-                ) : (
-                  <FiChevronDown size={16} />
-                )}
-              </div>
-              {residentsDropdownOpen && (
-                <div className="dropdown-menu">
-                  <Link
-                    to="/monthlyRent"
-                    className={`dropdown-link ${
-                      isActive("/monthlyRent") ? "active" : ""
-                    }`}
-                  >
-                    <span>Monthly Rent</span>
-                  </Link>
-                  <Link
-                    to="/dailyRent"
-                    className={`dropdown-link ${
-                      isActive("/dailyRent") ? "active" : ""
-                    }`}
-                  >
-                    <span>Daily Rent</span>
-                  </Link>
-                  <Link
-                    to="/food-only"
-                    className={`dropdown-link ${
-                      isActive("/food-only") ? "active" : ""
-                    }`}
-                  >
-                    <span>Mess Only</span>
-                  </Link>
+          {allowedUserRoutes.length > 0 && (
+            <>
+              {/* MULTIPLE routes → dropdown */}
+              {allowedUserRoutes.length > 1 ? (
+                <div
+                  className={`nav-link dropdown-container ${
+                    allowedUserRoutes.some((route) => isActive(route.path))
+                      ? "active"
+                      : ""
+                  }`}
+                  onMouseEnter={() => setResidentsDropdownOpen(true)}
+                  onMouseLeave={() => setResidentsDropdownOpen(false)}
+                >
+                  <div className="nav-icon-text">
+                    <FiUsers size={20} />
+                    <span>Users</span>
+                    {residentsDropdownOpen ? (
+                      <FiChevronUp size={16} />
+                    ) : (
+                      <FiChevronDown size={16} />
+                    )}
+                  </div>
+
+                  {residentsDropdownOpen && (
+                    <div className="dropdown-menu">
+                      {allowedUserRoutes.map((route) => (
+                        <Link
+                          key={route.path}
+                          to={route.path}
+                          className={`dropdown-link ${
+                            isActive(route.path) ? "active" : ""
+                          }`}
+                        >
+                          {route.label}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
                 </div>
+              ) : (
+                /* SINGLE route → direct link */
+                <Link
+                  to={allowedUserRoutes[0].path}
+                  className={`nav-link ${
+                    isActive(allowedUserRoutes[0].path) ? "active" : ""
+                  }`}
+                >
+                  <div className="nav-icon-text">
+                    <FiUsers size={20} />
+                    <span>{allowedUserRoutes[0].label}</span>
+                  </div>
+                </Link>
               )}
-            </div>
+            </>
           )}
 
           {hasPermission("/employees") && (
@@ -1766,56 +1035,60 @@ const Navbar = () => {
             </Link>
           )}
 
-          {hasPermission("/mess") && (
-            <div
-              className={`nav-link dropdown-container ${
-                isActive("/mess") ||
-                isActive("/kitchen") ||
-                isActive("/stock-usage")
-                  ? "active"
-                  : ""
-              }`}
-              onMouseEnter={() => setMessDropdownOpen(true)}
-              onMouseLeave={() => setMessDropdownOpen(false)}
-            >
-              <div className="nav-icon-text">
-                <MdRestaurantMenu size={20} />
-                <span>Mess</span>
-                {messDropdownOpen ? (
-                  <FiChevronUp size={16} />
-                ) : (
-                  <FiChevronDown size={16} />
-                )}
-              </div>
-              {messDropdownOpen && (
-                <div className="dropdown-menu">
-                  <Link
-                    to="/mess"
-                    className={`dropdown-link ${
-                      isActive("/mess") ? "active" : ""
-                    }`}
-                  >
-                    <span>Order Details</span>
-                  </Link>
-                  <Link
-                    to="/kitchen"
-                    className={`dropdown-link ${
-                      isActive("/kitchen") ? "active" : ""
-                    }`}
-                  >
-                    <span>Kitchen</span>
-                  </Link>
-                  <Link
-                    to="/stock-usage"
-                    className={`dropdown-link ${
-                      isActive("/stock-usage") ? "active" : ""
-                    }`}
-                  >
-                    <span>Daily Usage</span>
-                  </Link>
+          {allowedKitchenRoutes.length > 0 && (
+            <>
+              {/* MULTIPLE permissions → dropdown */}
+              {allowedKitchenRoutes.length > 1 ? (
+                <div
+                  className={`nav-link dropdown-container ${
+                    allowedKitchenRoutes.some((route) => isActive(route.path))
+                      ? "active"
+                      : ""
+                  }`}
+                  onMouseEnter={() => setMessDropdownOpen(true)}
+                  onMouseLeave={() => setMessDropdownOpen(false)}
+                >
+                  <div className="nav-icon-text">
+                    <MdRestaurantMenu size={20} />
+                    <span>Mess</span>
+                    {messDropdownOpen ? (
+                      <FiChevronUp size={16} />
+                    ) : (
+                      <FiChevronDown size={16} />
+                    )}
+                  </div>
+
+                  {messDropdownOpen && (
+                    <div className="dropdown-menu">
+                      {allowedKitchenRoutes.map((route) => (
+                        <Link
+                          key={route.path}
+                          to={route.path}
+                          className={`dropdown-link ${
+                            isActive(route.path) ? "active" : ""
+                          }`}
+                        >
+                          {route.label}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
                 </div>
+              ) : (
+                /* SINGLE permission → direct link */
+                <Link
+                  to={allowedKitchenRoutes[0].path}
+                  className={`nav-link ${
+                    isActive(allowedKitchenRoutes[0].path) ? "active" : ""
+                  }`}
+                >
+                  <div className="nav-icon-text">
+                    <MdRestaurantMenu size={20} />
+                    <span>{allowedKitchenRoutes[0].label}</span>
+                  </div>
+                </Link>
               )}
-            </div>
+            </>
           )}
 
           {hasPermission("/maintenance") && (
@@ -1836,46 +1109,67 @@ const Navbar = () => {
             </Link>
           )}
 
-          {hasPermission("/accounts") && (
-            <div
-              className={`nav-link dropdown-container ${
-                isActive("/accounts") || isActive("/accounting") ? "active" : ""
-              }`}
-              onMouseEnter={() => setAccountsDropdownOpen(true)}
-              onMouseLeave={() => setAccountsDropdownOpen(false)}
-            >
-              <div className="nav-icon-text">
-                <MdAccountBalance size={20} />
-                <span>Accounts</span>
-                {accountsDropdownOpen ? (
-                  <FiChevronUp size={16} />
-                ) : (
-                  <FiChevronDown size={16} />
-                )}
-              </div>
+          {(canViewAccounts || canViewAccounting) && (
+            <>
+              {canViewAccounts && canViewAccounting ? (
+                <div
+                  className={`nav-link dropdown-container ${
+                    isActive("/accounts") || isActive("/accounting")
+                      ? "active"
+                      : ""
+                  }`}
+                  onMouseEnter={() => setAccountsDropdownOpen(true)}
+                  onMouseLeave={() => setAccountsDropdownOpen(false)}
+                >
+                  <div className="nav-icon-text">
+                    <MdAccountBalance size={20} />
+                    <span>Accounts</span>
+                    {accountsDropdownOpen ? (
+                      <FiChevronUp size={16} />
+                    ) : (
+                      <FiChevronDown size={16} />
+                    )}
+                  </div>
 
-              {accountsDropdownOpen && (
-                <div className="dropdown-menu">
-                  <Link
-                    to="/accounts"
-                    className={`dropdown-link ${
-                      isActive("/accounts") ? "active" : ""
-                    }`}
-                  >
-                    <span>Overview</span>
-                  </Link>
+                  {accountsDropdownOpen && (
+                    <div className="dropdown-menu">
+                      <Link
+                        to="/accounts"
+                        className={`dropdown-link ${
+                          isActive("/accounts") ? "active" : ""
+                        }`}
+                      >
+                        Overview
+                      </Link>
 
-                  <Link
-                    to="/accounting"
-                    className={`dropdown-link ${
-                      isActive("/accounting") ? "active" : ""
-                    }`}
-                  >
-                    <span>Accountant</span>
-                  </Link>
+                      <Link
+                        to="/accounting"
+                        className={`dropdown-link ${
+                          isActive("/accounting") ? "active" : ""
+                        }`}
+                      >
+                        Accountant
+                      </Link>
+                    </div>
+                  )}
                 </div>
+              ) : (
+                /* ONLY ONE permission → direct link (desktop-sized) */
+                <Link
+                  to={canViewAccounts ? "/accounts" : "/accounting"}
+                  className={`nav-link ${
+                    isActive("/accounts") || isActive("/accounting")
+                      ? "active"
+                      : ""
+                  }`}
+                >
+                  <div className="nav-icon-text">
+                    <MdAccountBalance size={20} />
+                    <span>{canViewAccounts ? "Accounts" : "Accountant"}</span>
+                  </div>
+                </Link>
               )}
-            </div>
+            </>
           )}
 
           {hasPermission("/offboarding") && (

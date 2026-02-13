@@ -68,14 +68,16 @@ const FinanceBarChart = ({data, loading, height = "200px"}) => {
       {
         label: "Income",
         data: data.map((item) => item.totalIncome),
-        backgroundColor: "#00c853",
+        backgroundColor: "#059669",
         borderRadius: 6,
         barPercentage: 0.7,
       },
       {
         label: "Expense",
         data: data.map((item) => item.totalExpense),
-        backgroundColor: "#ff5252",
+        backgroundColor: "#C17B4C",
+        // backgroundColor: "#B5826C",
+        // backgroundColor: "#2A6B8A",
         borderRadius: 6,
         barPercentage: 0.7,
       },

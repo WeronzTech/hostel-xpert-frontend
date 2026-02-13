@@ -1,7 +1,7 @@
-import { FiMapPin, FiHome, FiEye } from "../../icons/index.js";
-import { Link } from "react-router-dom";
+import {FiMapPin, FiHome, FiEye} from "../../icons/index.js";
+import {Link} from "react-router-dom";
 
-const PropertyCard = ({ property }) => {
+const PropertyCard = ({property}) => {
   const [city, branch, phase] = property.location.split(", ");
   const occupancyRate =
     property.totalBeds > 0
@@ -64,10 +64,10 @@ const PropertyCard = ({ property }) => {
                 occupancyRate < 50
                   ? "bg-red-400"
                   : occupancyRate < 75
-                  ? "bg-yellow-400"
-                  : "bg-emerald-500"
+                    ? "bg-yellow-400"
+                    : "bg-emerald-500"
               }`}
-              style={{ width: `${occupancyRate}%` }}
+              style={{width: `${occupancyRate}%`}}
             />
           </div>
         </div>
@@ -77,7 +77,7 @@ const PropertyCard = ({ property }) => {
       <div className="px-5 py-3 border-t border-gray-100 flex justify-between items-center bg-gray-50">
         <span className="text-xs text-gray-500">Phase {phase}</span>
         <Link
-          className="text-sm font-medium text-[#4d44b5] hover:text-[#3a32a0] flex items-center gap-1"
+          className="text-sm font-medium text-[#059669] hover:text-[#059669] flex items-center gap-1"
           to={`/property/${property._id}`} // ✅ sends correct ID to details
         >
           <FiEye className="text-sm" />
@@ -88,7 +88,7 @@ const PropertyCard = ({ property }) => {
   );
 };
 
-const EmptyState = ({ searchTerm }) => (
+const EmptyState = ({searchTerm}) => (
   <div className="col-span-full flex justify-center">
     {" "}
     {/* This ensures it spans all columns and centers */}
@@ -105,4 +105,4 @@ const EmptyState = ({ searchTerm }) => (
     </div>
   </div>
 );
-export { PropertyCard, EmptyState };
+export {PropertyCard, EmptyState};

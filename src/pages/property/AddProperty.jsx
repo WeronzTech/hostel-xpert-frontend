@@ -10,10 +10,8 @@ import {
 } from "../../hooks/property/useProperty.js";
 
 import {
-  AdditionalInformationSection,
   BasicInformationSection,
   FinancialDetailsSection,
-  ImageUploadingSection,
 } from "../../components/property/SectionsForAddProperty.jsx";
 import PageHeader from "../../components/common/PageHeader.jsx";
 
@@ -37,7 +35,6 @@ const AddProperty = ({isEdit}) => {
     },
     location: "",
     address: "",
-    startingPrice: "",
     sharingPrices: {},
     deposit: {
       refundable: "",
@@ -49,16 +46,8 @@ const AddProperty = ({isEdit}) => {
     },
     preferredBy: "",
     propertyType: "",
-    amenities: [],
-    map: "",
-    propertyTitle: "",
-    images: {
-      propertyPhotos: [],
-      eventPhotos: [],
-      companyPhotos: [],
-    },
+
     clientId: user?.id,
-    isHeavens: false,
     adminName: user.name,
   });
 
@@ -66,7 +55,6 @@ const AddProperty = ({isEdit}) => {
     type: "",
     price: "",
   });
-  const [newAmenity, setNewAmenity] = useState("");
 
   // Load property data in edit mode
   useEffect(() => {
@@ -167,58 +155,23 @@ const AddProperty = ({isEdit}) => {
     }));
   };
 
-  const addAmenity = () => {
-    if (newAmenity.trim()) {
-      setPropertyData((prev) => ({
-        ...prev,
-        amenities: [...prev.amenities, newAmenity.trim()],
-      }));
-      setNewAmenity("");
-    }
-  };
-
-  const removeAmenity = (index) => {
-    setPropertyData((prev) => ({
-      ...prev,
-      amenities: prev.amenities.filter((_, i) => i !== index),
-    }));
-  };
-
-  const handleImageUpload = (e, fieldName) => {
-    const files = Array.from(e.target.files);
-    setPropertyData((prev) => ({
-      ...prev,
-      images: {
-        ...prev.images,
-        [fieldName]: [...(prev.images[fieldName] || []), ...files],
-      },
-    }));
-  };
-
-  const removeImage = (fieldName, index) => {
-    setPropertyData((prev) => ({
-      ...prev,
-      images: {
-        ...prev.images,
-        [fieldName]: prev.images[fieldName].filter((_, i) => i !== index),
-      },
-    }));
-  };
-
-  const validateForm = () => {
-    if (!propertyData.razorpayCredentials.keyId || !propertyData.razorpayCredentials.keySecret) {
-      showNotification("Razorpay Key ID and Key Secret are required", "error");
-      return false;
-    }
-    return true;
-  };
+  // const validateForm = () => {
+  //   if (
+  //     !propertyData.razorpayCredentials.keyId ||
+  //     !propertyData.razorpayCredentials.keySecret
+  //   ) {
+  //     showNotification("Razorpay Key ID and Key Secret are required", "error");
+  //     return false;
+  //   }
+  //   return true;
+  // };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
+
+    // if (!validateForm()) {
+    //   return;
+    // }
 
     setIsLoading(true);
     try {
@@ -239,7 +192,7 @@ const AddProperty = ({isEdit}) => {
       } else {
         await registerProperty(submitData);
         dispatch(
-          addProperty({name: propertyData.propertyName, _id: propertyData._id})
+          addProperty({name: propertyData.propertyName, _id: propertyData._id}),
         );
         showNotification("Property registered successfully!", "success");
       }
@@ -249,7 +202,7 @@ const AddProperty = ({isEdit}) => {
       showNotification(
         error.response?.data?.message ||
           (isEdit ? "Update failed" : "Registration failed"),
-        "error"
+        "error",
       );
     } finally {
       setIsLoading(false);
@@ -287,21 +240,6 @@ const AddProperty = ({isEdit}) => {
             addSharingPrice={addSharingPrice}
             removeSharingPrice={removeSharingPrice}
           />
-
-          <AdditionalInformationSection
-            propertyData={propertyData}
-            handleChange={handleChange}
-            newAmenity={newAmenity}
-            setNewAmenity={setNewAmenity}
-            addAmenity={addAmenity}
-            removeAmenity={removeAmenity}
-          />
-
-          <ImageUploadingSection
-            handleImageUpload={handleImageUpload}
-            removeImage={removeImage}
-            propertyData={propertyData}
-          />
         </div>
 
         {/* Actions */}
@@ -317,7 +255,7 @@ const AddProperty = ({isEdit}) => {
           <button
             type="submit"
             disabled={isLoading}
-            className={`cursor-pointer flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-white bg-[#4d44b5] hover:bg-[#3a32a0] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#4d44b5] ${
+            className={`cursor-pointer flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-white bg-[#059669] hover:bg-[#059669] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#059669] ${
               isLoading ? "opacity-75 cursor-not-allowed" : ""
             }`}
           >
