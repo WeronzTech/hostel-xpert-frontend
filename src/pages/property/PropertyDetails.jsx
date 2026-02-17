@@ -5,36 +5,25 @@ import {
   Typography,
   Spin,
   Tag,
-  Descriptions,
-  Divider,
   message,
-  Tabs,
-  Progress,
-  Avatar,
-  List,
-  Badge,
+  Descriptions,
+  Row,
+  Col,
+  Divider,
   Button,
+  Space,
 } from "antd";
 import {
-  PhoneOutlined,
-  MailOutlined,
-  CalendarOutlined,
-  InfoCircleOutlined,
   EnvironmentOutlined,
-  CheckCircleOutlined,
-  WifiOutlined,
-  CarOutlined,
-  CoffeeOutlined,
-  SafetyOutlined,
   EditOutlined,
+  HomeOutlined,
+  PhoneOutlined,
+  UserOutlined,
 } from "@ant-design/icons";
-import {ActionButton, PageHeader, StatsGrid} from "../../components";
+import {PageHeader} from "../../components";
 import {getPropertyDetails} from "../../hooks/property/useProperty";
-import {FaBed, FaUniversity, FaUserCheck} from "react-icons/fa";
-import {purpleButton} from "../../data/common/color";
 
 const {Title, Text} = Typography;
-const {TabPane} = Tabs;
 
 const PropertyDetails = () => {
   const {id} = useParams();
@@ -53,16 +42,16 @@ const PropertyDetails = () => {
 
   if (isLoading)
     return (
-      <Spin
-        size="large"
-        className="flex justify-center items-center h-screen"
-      />
+      <div className="flex justify-center items-center h-screen">
+        <Spin size="large" />
+      </div>
     );
+
   if (isError) {
     message.error(
       error?.response?.data?.message ||
         error?.message ||
-        "Failed to load property details"
+        "Failed to load property details",
     );
     return (
       <Text type="danger" className="flex justify-center items-center h-screen">
@@ -70,6 +59,7 @@ const PropertyDetails = () => {
       </Text>
     );
   }
+
   if (!property)
     return (
       <Text
@@ -81,283 +71,242 @@ const PropertyDetails = () => {
     );
 
   const {
-    _id,
     propertyName,
-    propertyTitle,
     location,
+    address,
     totalBeds,
     occupiedBeds,
-    startingPrice,
+    totalFloors,
     deposit,
     sharingPrices,
     propertyType,
     contacts,
-    amenities,
-    createdAt,
-    updatedAt,
+    preferredBy,
+    phase,
+    branch,
   } = property;
 
-  const occupancyRate = Math.round((occupiedBeds / totalBeds) * 100);
-
-  const featureList = [
-    {icon: <WifiOutlined />, text: "High-Speed WiFi"},
-    {icon: <CarOutlined />, text: "Parking Space"},
-    {icon: <CoffeeOutlined />, text: "Cafeteria"},
-    {icon: <SafetyOutlined />, text: "24/7 Security"},
-    ...(amenities || []).map((amenity) => ({
-      icon: <CheckCircleOutlined />,
-      text: amenity,
-    })),
-  ];
+  const occupancyRate =
+    totalBeds > 0 ? Math.round((occupiedBeds / totalBeds) * 100) : 0;
 
   return (
     <div className="min-h-screen bg-gray-50 xl:px-12 lg:px-4 lg:pt-6 lg:pb-12 px-4 pt-4 pb-8">
-      {/* Property Header */}
-      <PageHeader title={propertyName} subtitle={propertyTitle} />
+      {/* Header */}
+      <PageHeader title={propertyName} subtitle="Property Details" />
 
-      {/* Stats Overview */}
-      <StatsGrid
-        stats={[
-          {
-            title: "Total Beds",
-            value: totalBeds,
-            icon: <FaBed className="text-xl" />,
-            color: "bg-blue-100 text-blue-600",
-          },
-          {
-            title: "Occupied Beds",
-            value: `${occupiedBeds}`,
-            icon: <FaBed className="text-xl" />,
-            color: "bg-purple-100 text-purple-600",
-          },
-          {
-            title: "Occupancy Rate",
-            value: `${occupancyRate}%`,
-            icon: <FaUserCheck className="text-xl" />,
-            color: "bg-green-100 text-green-600",
-          },
-          {
-            title: "Deposit",
-            value: `₹${
-              (deposit?.refundable || 0) + (deposit?.nonRefundable || 0)
-            }`,
-            icon: <FaUniversity className="text-xl" />,
-            color: "bg-orange-100 text-orange-600",
-          },
-        ]}
-      />
+      {/* Main Content with proper spacing */}
+      <Row gutter={[24, 24]}>
+        {/* Left Column - Main Details */}
+        <Col xs={24} lg={16}>
+          <Space direction="vertical" size="middle" style={{width: "100%"}}>
+            {/* Property Information Card */}
+            <Card className="shadow-sm">
+              <Title level={4} className="mb-4">
+                Property Information
+              </Title>
 
-      {/* Main Content */}
-      <Tabs defaultActiveKey="1" className="custom-tabs">
-        <TabPane
-          tab={
-            <span className="flex items-center gap-2">
-              <InfoCircleOutlined />
-              Overview
-            </span>
-          }
-          key="1"
-        >
-          <div className="space-y-6">
-            {/* Header */}
-            <Card className="shadow-sm border-0">
-              <div className="flex flex-wrap justify-between items-start gap-4">
-                <div>
-                  <Title level={4} className="mb-1">
-                    {propertyName}
-                  </Title>
-                  <div className="flex flex-wrap items-center gap-2 text-gray-500">
-                    <EnvironmentOutlined />
-                    <Text>{location}</Text>
-                    <Tag color="blue">{propertyType?.toUpperCase()}</Tag>
-                  </div>
+              {/* Location & Type */}
+              <div className="mb-6">
+                <div className="flex items-center gap-2 text-gray-600 mb-2">
+                  <EnvironmentOutlined />
+                  <Text>{location}</Text>
                 </div>
-
-                <ActionButton
-                  icon={<EditOutlined className="text-lg mt-1" />}
-                  customTheme={purpleButton}
-                  onClick={() => navigate(`/property/edit/${_id}`)}
-                >
-                  Edit Property
-                </ActionButton>
+                {address && address !== location && (
+                  <div className="flex items-center gap-2 text-gray-500 text-sm ml-6">
+                    <Text type="secondary">{address}</Text>
+                  </div>
+                )}
+                <div className="flex gap-2 mt-3">
+                  <Tag color="blue" icon={<HomeOutlined />}>
+                    {propertyType}
+                  </Tag>
+                  {preferredBy && (
+                    <Tag color="purple" icon={<UserOutlined />}>
+                      {preferredBy}
+                    </Tag>
+                  )}
+                </div>
               </div>
-            </Card>
 
-            {/* Description */}
-            <Card
-              title="Description"
-              className="shadow-sm border-0"
-              style={{marginTop: 20}}
-            >
-              <Text>{propertyTitle}</Text>
-            </Card>
+              <Divider />
 
-            {/* Pricing */}
-            <Card
-              title="Pricing"
-              className="shadow-sm border-0"
-              style={{marginTop: 20}}
-            >
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {[
-                  {label: "Starting Price", value: startingPrice},
-                  {
-                    label: "Refundable Deposit",
-                    value: deposit?.refundable || "0",
-                  },
-                  {
-                    label: "Non-Refundable Deposit",
-                    value: deposit?.nonRefundable || "0",
-                  },
-                ].map((item, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      backgroundColor: "#f9fafb",
-                      padding: "10px",
-                      borderRadius: "6px",
-                    }}
-                  >
-                    <Text type="secondary">{item.label}</Text>
-                    <Title
-                      level={4}
-                      style={{marginTop: "4px", marginBottom: 0}}
-                    >
-                      ₹{item.value}
+              {/* Key Stats in Grid */}
+              <Row gutter={[16, 16]} className="mb-4">
+                <Col span={12} md={6}>
+                  <div className="bg-gray-50 p-3 rounded-lg text-center">
+                    <Text type="secondary" className="text-xs">
+                      Total Beds
+                    </Text>
+                    <Title level={3} className="mt-1 mb-0 text-blue-600">
+                      {totalBeds}
                     </Title>
                   </div>
-                ))}
-              </div>
-
-              {sharingPrices && Object.keys(sharingPrices).length > 0 && (
-                <div style={{marginTop: "16px"}}>
-                  <Text strong style={{display: "block", marginBottom: "8px"}}>
-                    Sharing Options
-                  </Text>
-                  <div style={{display: "flex", flexWrap: "wrap", gap: "8px"}}>
-                    {Object.entries(sharingPrices).map(([sharing, price]) => (
-                      <Tag key={sharing} color="blue">
-                        {sharing}: ₹{price}
-                      </Tag>
-                    ))}
+                </Col>
+                <Col span={12} md={6}>
+                  <div className="bg-gray-50 p-3 rounded-lg text-center">
+                    <Text type="secondary" className="text-xs">
+                      Occupied
+                    </Text>
+                    <Title level={3} className="mt-1 mb-0 text-green-600">
+                      {occupiedBeds}
+                    </Title>
                   </div>
-                </div>
-              )}
+                </Col>
+                <Col span={12} md={6}>
+                  <div className="bg-gray-50 p-3 rounded-lg text-center">
+                    <Text type="secondary" className="text-xs">
+                      Occupancy
+                    </Text>
+                    <Title level={3} className="mt-1 mb-0 text-orange-600">
+                      {occupancyRate}%
+                    </Title>
+                  </div>
+                </Col>
+                <Col span={12} md={6}>
+                  <div className="bg-gray-50 p-3 rounded-lg text-center">
+                    <Text type="secondary" className="text-xs">
+                      Floors
+                    </Text>
+                    <Title level={3} className="mt-1 mb-0 text-purple-600">
+                      {totalFloors}
+                    </Title>
+                  </div>
+                </Col>
+              </Row>
+
+              <Divider />
+
+              {/* Deposit Information */}
+              <div>
+                <Title level={5} className="mb-3">
+                  Deposit Details
+                </Title>
+                <Row gutter={16}>
+                  <Col span={12}>
+                    <div className="bg-blue-50 p-3 rounded-lg">
+                      <Text type="secondary" className="text-xs">
+                        Refundable
+                      </Text>
+                      <Title level={4} className="mt-1 mb-0 text-blue-700">
+                        ₹{deposit?.refundable || 0}
+                      </Title>
+                    </div>
+                  </Col>
+                  <Col span={12}>
+                    <div className="bg-orange-50 p-3 rounded-lg">
+                      <Text type="secondary" className="text-xs">
+                        Non-Refundable
+                      </Text>
+                      <Title level={4} className="mt-1 mb-0 text-orange-700">
+                        ₹{deposit?.nonRefundable || 0}
+                      </Title>
+                    </div>
+                  </Col>
+                </Row>
+              </div>
             </Card>
 
-            {/* Contact */}
-            <Card
-              title="Contact"
-              className="shadow-sm border-0"
-              style={{marginTop: 20}}
-            >
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {[
-                  {
-                    label: "Primary",
-                    value: contacts?.primary,
-                    icon: <PhoneOutlined />,
-                    color: "blue",
-                  },
-                  {
-                    label: "Alternate",
-                    value: contacts?.alternate,
-                    icon: <PhoneOutlined />,
-                    color: "blue",
-                  },
-                  {
-                    label: "Email",
-                    value: contacts?.email,
-                    icon: <MailOutlined />,
-                    color: "red",
-                  },
-                ].map((item, i) => (
-                  <div
-                    key={i}
-                    className={`flex items-center gap-3 p-3 bg-${item.color}-50 rounded`}
-                  >
-                    <Avatar
-                      icon={item.icon}
-                      className={`bg-${item.color}-100 text-${item.color}-500`}
-                    />
+            {/* Sharing Prices Card */}
+            {sharingPrices && Object.keys(sharingPrices).length > 0 && (
+              <Card className="shadow-sm">
+                <Title level={4} className="mb-4">
+                  Sharing Options & Prices
+                </Title>
+                <Row gutter={[16, 16]}>
+                  {Object.entries(sharingPrices).map(([sharing, price]) => (
+                    <Col xs={24} sm={12} md={8} key={sharing}>
+                      <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                        <Text strong className="text-lg block mb-2">
+                          {sharing}
+                        </Text>
+                        <Text className="text-2xl font-bold text-green-600">
+                          ₹{price}
+                        </Text>
+                        <Text type="secondary" className="block text-sm">
+                          per month
+                        </Text>
+                      </div>
+                    </Col>
+                  ))}
+                </Row>
+              </Card>
+            )}
+          </Space>
+        </Col>
+
+        {/* Right Column - Contact & Edit */}
+        <Col xs={24} lg={8}>
+          <Space direction="vertical" size="middle" style={{width: "100%"}}>
+            {/* Contact Card */}
+            <Card className="shadow-sm">
+              <Title level={4} className="mb-4">
+                Contact Information
+              </Title>
+
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
+                  <PhoneOutlined className="text-blue-600 text-xl" />
+                  <div>
+                    <Text type="secondary" className="text-xs">
+                      Primary Contact
+                    </Text>
+                    <Text strong className="block">
+                      {contacts?.primary || "Not available"}
+                    </Text>
+                  </div>
+                </div>
+
+                {contacts?.alternate && (
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <PhoneOutlined className="text-gray-600 text-xl" />
                     <div>
-                      <Text type="secondary">{item.label}</Text>
+                      <Text type="secondary" className="text-xs">
+                        Alternate Contact
+                      </Text>
                       <Text strong className="block">
-                        {item.value || "Not available"}
+                        {contacts.alternate}
                       </Text>
                     </div>
                   </div>
-                ))}
+                )}
               </div>
             </Card>
-          </div>
-        </TabPane>
 
-        {/* Amenities Tab */}
-        <TabPane
-          tab={
-            <span className="flex items-center gap-2">
-              <CheckCircleOutlined />
-              Amenities
-            </span>
-          }
-          key="2"
-        >
-          <Card className="shadow-sm border-0">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {featureList.map((feature, index) => (
-                <div
-                  key={index}
-                  className="bg-gray-50 p-4 rounded-lg flex items-center gap-3"
-                >
-                  <div className="bg-white p-2 rounded-full">
-                    {feature.icon}
-                  </div>
-                  <Text strong>{feature.text}</Text>
-                </div>
-              ))}
-            </div>
-          </Card>
-        </TabPane>
+            {/* Additional Information Card */}
+            {(phase || branch) && (
+              <Card className="shadow-sm">
+                <Title level={4} className="mb-4">
+                  Additional Information
+                </Title>
+                <Descriptions column={1} bordered size="small">
+                  {phase && (
+                    <Descriptions.Item label="Phase">{phase}</Descriptions.Item>
+                  )}
+                  {branch && (
+                    <Descriptions.Item label="Branch">
+                      {branch}
+                    </Descriptions.Item>
+                  )}
+                </Descriptions>
+              </Card>
+            )}
 
-        {/* Timeline Tab */}
-        <TabPane
-          tab={
-            <span className="flex items-center gap-2">
-              <CalendarOutlined />
-              Timeline
-            </span>
-          }
-          key="3"
-        >
-          <Card className="shadow-sm border-0">
-            <div className="space-y-4">
-              <div className="flex items-start gap-4">
-                <div className="bg-blue-100 p-2 rounded-full">
-                  <CalendarOutlined className="text-blue-600" />
-                </div>
-                <div>
-                  <Text strong>Property Created</Text>
-                  <Text type="secondary" className="block">
-                    {new Date(createdAt).toLocaleString()}
-                  </Text>
-                </div>
-              </div>
-              <div className="flex items-start gap-4">
-                <div className="bg-green-100 p-2 rounded-full">
-                  <CalendarOutlined className="text-green-600" />
-                </div>
-                <div>
-                  <Text strong>Last Updated</Text>
-                  <Text type="secondary" className="block">
-                    {new Date(updatedAt).toLocaleString()}
-                  </Text>
-                </div>
-              </div>
-            </div>
-          </Card>
-        </TabPane>
-      </Tabs>
+            {/* Edit Button Card */}
+            <Card className="shadow-sm">
+              <Button
+                type="primary"
+                icon={<EditOutlined />}
+                onClick={() => navigate(`/property/edit/${id}`)}
+                block
+                size="large"
+                style={{backgroundColor: "#059669", borderColor: "#059669"}}
+              >
+                Edit Property
+              </Button>
+            </Card>
+          </Space>
+        </Col>
+      </Row>
     </div>
   );
 };

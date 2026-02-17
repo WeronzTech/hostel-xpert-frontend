@@ -24,7 +24,7 @@ const {Option} = Select;
 
 const RegistrationModal = ({visible, onCancel, rentType}) => {
   const {properties, selectedProperty} = useSelector(
-    (state) => state.properties
+    (state) => state.properties,
   );
   const [currentCategoryType, setCurrentCategoryType] = useState("");
   const [currentProperty, setCurrentProperty] = useState(selectedProperty);
@@ -139,15 +139,15 @@ const RegistrationModal = ({visible, onCancel, rentType}) => {
       rentType === "daily"
         ? "dailyRent"
         : rentType === "mess"
-        ? "messOnly"
-        : "student";
+          ? "messOnly"
+          : "student";
 
     form
       .validateFields()
       .then((values) => {
         // Get selected room details
         const selectedRoomDetails = getAvailableRoomsForSharingType(
-          selectedSharingType
+          selectedSharingType,
         ).find((room) => room.roomNo === values.roomNumber);
 
         // Transform form values based on rentType
@@ -257,7 +257,7 @@ const RegistrationModal = ({visible, onCancel, rentType}) => {
           "from",
           start.format("DD/MM/YYYY"),
           "to",
-          end.format("DD/MM/YYYY")
+          end.format("DD/MM/YYYY"),
         );
 
         setTotalDays(days > 0 ? days : 0);
@@ -343,7 +343,7 @@ const RegistrationModal = ({visible, onCancel, rentType}) => {
     if (!availableRooms?.rooms || !sharingType) return [];
 
     return availableRooms.rooms.filter(
-      (room) => room.sharingType === sharingType && room.vacantSlot > 0
+      (room) => room.sharingType === sharingType && room.vacantSlot > 0,
     );
   };
 
@@ -543,7 +543,7 @@ const RegistrationModal = ({visible, onCancel, rentType}) => {
                           <Option key={room._id} value={room.roomNo}>
                             {room.roomNo} (Vacant: {room.vacantSlot})
                           </Option>
-                        )
+                        ),
                       )}
                     </Select>
                   </Form.Item>
@@ -714,31 +714,6 @@ const RegistrationModal = ({visible, onCancel, rentType}) => {
               )}
             </>
           )}
-
-          {/* <div style={{marginBottom: 16, marginTop: 24}}>
-            <h3>Personal Details</h3>
-          </div>
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                label="Gender"
-                name="gender"
-                rules={[{required: true, message: "Please select gender"}]}
-              >
-                <Select placeholder="Select gender">
-                  <Option value="Male">Male</Option>
-                  <Option value="Female">Female</Option>
-                  <Option value="Other">Other</Option>
-                </Select>
-              </Form.Item>
-            </Col>
-
-            <Col span={12}>
-              <Form.Item label="Address" name="address">
-                <Input placeholder="Enter complete address" />
-              </Form.Item>
-            </Col>
-          </Row> */}
         </Form>
       </Modal>
     </>

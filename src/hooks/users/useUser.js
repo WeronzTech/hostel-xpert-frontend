@@ -5,7 +5,7 @@ export const registerResident = async (registerData) => {
     console.debug("registering resident:", registerData);
     const response = await apiClient.post(
       `/user/registerFromPanel`,
-      registerData
+      registerData,
     );
     console.debug("Resident registration successfully:", response.data);
     return response.data;
@@ -184,7 +184,7 @@ export const vacateResident = async ({id, adminName}) => {
       {},
       {
         params: {adminName},
-      }
+      },
     );
     console.debug("Resident vacated successfully:", response.data);
     return response.data;
@@ -284,7 +284,7 @@ export const getUserStatusRequests = async (id, {type, status} = {}) => {
 
 export const handleBlockStatus = async (
   id,
-  {action, extendDate, adminName} = {}
+  {action, extendDate, adminName} = {},
 ) => {
   try {
     console.debug("Updating block status for user:", id, {action, extendDate});
@@ -565,7 +565,7 @@ export const getUserTransactionHistory = async (userId) => {
   try {
     console.debug("Fetching transactions for user:", userId);
     const response = await apiClient.get(
-      `/feePayments/transactionHistory/${userId}`
+      `/feePayments/transactionHistory/${userId}`,
     );
     console.debug("transactions fetched successfully:", response.data);
     return response.data;
@@ -587,7 +587,7 @@ export const getUserDepositTransactionHistory = async (userId) => {
   try {
     console.debug("Fetching transactions for user:", userId);
     const response = await apiClient.get(
-      `/depositPayments/transactionHistory/${userId}`
+      `/depositPayments/transactionHistory/${userId}`,
     );
     console.debug("transactions fetched successfully:", response.data);
     return response.data;
@@ -609,7 +609,7 @@ export const getUserBusFeeTransactionHistory = async (userId) => {
   try {
     console.debug("Fetching transactions for user:", userId);
     const response = await apiClient.get(
-      `/busPayments/transactionHistory/${userId}`
+      `/busPayments/transactionHistory/${userId}`,
     );
     console.debug("transactions fetched successfully:", response.data);
     return response.data;
@@ -735,7 +735,7 @@ export const updateGamingItem = async (itemId, formData) => {
         headers: {
           "Content-Type": "multipart/form-data",
         },
-      }
+      },
     );
     return response.data;
   } catch (error) {
@@ -784,13 +784,13 @@ export const updateGameActiveStatusForAllUsers = async (status) => {
     });
     console.debug(
       "✅ Game active status updated for all users:",
-      response.data
+      response.data,
     );
     return response.data;
   } catch (error) {
     console.error(
       "❌ Updating game active status for all users failed:",
-      error
+      error,
     );
     const apiError = {
       message:
@@ -800,5 +800,160 @@ export const updateGameActiveStatusForAllUsers = async (status) => {
       status: error.response?.status,
     };
     throw apiError;
+  }
+};
+
+export const getAllAttendanceByDate = async ({
+  date,
+  search,
+  roomId,
+  status,
+  propertyId,
+}) => {
+  try {
+    console.log({date, search, propertyId});
+    const response = await apiClient.get("/user/attendance/all", {
+      params: {
+        date,
+        search,
+        roomId,
+        status,
+        propertyId,
+      },
+      paramsSerializer: (params) => {
+        return Object.entries(params)
+          .filter(([_, value]) => value !== undefined && value !== "")
+          .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+          .join("&");
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Fetching attendance failed:", error);
+
+    throw {
+      message: error.response?.data?.message || "Fetching attendance failed",
+      details:
+        error.response?.data?.errors || error.response?.data || error.message,
+      status: error.response?.status,
+    };
+  }
+};
+
+export const markAttendance = async ({
+  userId,
+  status,
+  markedBy,
+  remarks,
+  date,
+}) => {
+  try {
+    const response = await apiClient.post("/user/attendance/mark", {
+      userId,
+      status,
+      markedBy,
+      remarks,
+      date,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Mark attendance failed:", error);
+
+    throw {
+      message: error.response?.data?.message || "Mark attendance failed",
+      details:
+        error.response?.data?.errors || error.response?.data || error.message,
+      status: error.response?.status,
+    };
+  }
+};
+
+export const getUserAttendance = async ({userId, startDate, endDate}) => {
+  try {
+    const response = await apiClient.get(`/user/attendance/user/${userId}`, {
+      params: {
+        userId,
+        startDate,
+        endDate,
+      },
+      paramsSerializer: (params) => {
+        return Object.entries(params)
+          .filter(([_, value]) => value !== undefined && value !== "")
+          .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+          .join("&");
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Fetching user attendance failed:", error);
+
+    throw {
+      message:
+        error.response?.data?.message || "Fetching user attendance failed",
+      details:
+        error.response?.data?.errors || error.response?.data || error.message,
+      status: error.response?.status,
+    };
+  }
+};
+
+export const getRoomsByDate = async ({search, propertyId}) => {
+  try {
+    const response = await apiClient.get("/user/attendance/rooms-by-date", {
+      params: {search, propertyId},
+      paramsSerializer: (params) => {
+        return Object.entries(params)
+          .filter(([_, value]) => value !== undefined && value !== "")
+          .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+          .join("&");
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Fetching rooms failed:", error);
+
+    throw {
+      message: error.response?.data?.message || "Fetching rooms failed",
+      details:
+        error.response?.data?.errors || error.response?.data || error.message,
+      status: error.response?.status,
+    };
+  }
+};
+
+export const bulkMarkAttendance = async ({
+  userIds,
+  status,
+  markedBy,
+  remarks,
+  date,
+  roomId,
+  roomNumber,
+}) => {
+  try {
+    const response = await apiClient.post("/user/attendance/bulk-mark", {
+      userIds,
+      status,
+      markedBy,
+      remarks,
+      date,
+      roomId,
+      roomNumber,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Bulk mark attendance failed:", error);
+
+    throw {
+      message: error.response?.data?.message || "Bulk mark attendance failed",
+      details:
+        error.response?.data?.errors || error.response?.data || error.message,
+      status: error.response?.status,
+    };
   }
 };

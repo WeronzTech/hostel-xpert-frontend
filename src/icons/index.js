@@ -69,6 +69,10 @@ export {
   FiBriefcase,
   FiAlertCircle,
   FiInfo,
+  FiClipboard,
+  FiPieChart,
+  FiSettings,
+  FiSliders,
 } from "react-icons/fi";
 
 export {

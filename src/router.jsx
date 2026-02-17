@@ -52,6 +52,7 @@ import ResetPasswordPage from "./pages/auth/ResetPasswordPage.jsx";
 import WebsiteManagement from "./pages/home/website/WebsiteManagement.jsx";
 import AccountingDashboard from "./pages/accounts/AccountingDashboard.jsx";
 import GeneralLedger from "./pages/accounts/GeneralLedger.jsx";
+import AttendanceManagement from "./pages/Attendance/AttendanceManagement.jsx";
 
 const Dashboard = lazy(() => import("./pages/home/Dashboard.jsx"));
 const AccountsDashboard = lazy(
@@ -86,6 +87,7 @@ const appRoutes = [
   {path: "property", element: <PropertyDashboard />},
   {path: "rooms", element: <RoomAllocation />},
   {path: "maintenance", element: <MaintenanceDashboard />},
+  {path: "attendance", element: <AttendanceManagement />},
   {path: "employees", element: <EmployeePage />},
   {path: "employees/:id", element: <EmployeeDetail />},
   {path: "add-property", element: <AddProperty />},
