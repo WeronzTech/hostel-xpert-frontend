@@ -957,3 +957,197 @@ export const bulkMarkAttendance = async ({
     };
   }
 };
+
+export const createLeaveCategory = async ({name, autoApprove, propertyId}) => {
+  try {
+    const response = await apiClient.post("/user/leave-category/create", {
+      name,
+      autoApprove,
+      propertyId,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Create leave category failed:", error);
+
+    throw {
+      message: error.response?.data?.message || "Create leave category failed",
+      details:
+        error.response?.data?.errors || error.response?.data || error.message,
+      status: error.response?.status,
+    };
+  }
+};
+
+export const getAllLeaveCategories = async () => {
+  try {
+    const response = await apiClient.get("/user/leave-category/all");
+
+    return response.data;
+  } catch (error) {
+    console.error("Fetch leave categories failed:", error);
+
+    throw {
+      message:
+        error.response?.data?.message || "Failed to fetch leave categories",
+      details:
+        error.response?.data?.errors || error.response?.data || error.message,
+      status: error.response?.status,
+    };
+  }
+};
+
+export const deleteLeaveCategory = async (id) => {
+  try {
+    const response = await apiClient.delete(
+      `/user/leave-category/delete/${id}`,
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Delete leave category failed:", error);
+
+    throw {
+      message:
+        error.response?.data?.message || "Failed to delete leave category",
+      details:
+        error.response?.data?.errors || error.response?.data || error.message,
+      status: error.response?.status,
+    };
+  }
+};
+
+export const getAllLeaveRequests = async ({
+  propertyId,
+  search,
+  status,
+  fromDate,
+  toDate,
+}) => {
+  try {
+    const response = await apiClient.get(`/user/leave/all`, {
+      params: {
+        propertyId,
+        search,
+        status,
+        fromDate,
+        toDate,
+      },
+      paramsSerializer: (params) => {
+        return Object.entries(params)
+          .filter(([_, value]) => value !== undefined && value !== "")
+          .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+          .join("&");
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Fetching user attendance failed:", error);
+
+    throw {
+      message:
+        error.response?.data?.message || "Fetching user attendance failed",
+      details:
+        error.response?.data?.errors || error.response?.data || error.message,
+      status: error.response?.status,
+    };
+  }
+};
+
+export const respondToLeave = async ({
+  leaveId,
+  status,
+  adminComment,
+  reviewedBy,
+  adminName,
+}) => {
+  try {
+    const response = await apiClient.patch("/user/leave/respond", {
+      leaveId,
+      status,
+      adminComment,
+      reviewedBy,
+      adminName,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Respond to leave failed:", error);
+
+    throw {
+      message:
+        error.response?.data?.message || "Failed to respond to leave request",
+      details:
+        error.response?.data?.errors || error.response?.data || error.message,
+      status: error.response?.status,
+    };
+  }
+};
+
+export const getUserLeaves = async (userId) => {
+  try {
+    const response = await apiClient.get(`/user/leave/my-history/${userId}`);
+
+    return response.data;
+  } catch (error) {
+    console.error("Fetch user leaves failed:", error);
+
+    throw {
+      message: error.response?.data?.message || "Failed to fetch user leaves",
+      details:
+        error.response?.data?.errors || error.response?.data || error.message,
+      status: error.response?.status,
+    };
+  }
+};
+
+export const getAllGatePassRequests = async ({
+  propertyId,
+  clientId,
+  search,
+  status,
+  date,
+}) => {
+  try {
+    const response = await apiClient.get("/user/gatePass/all", {
+      params: {
+        propertyId,
+        clientId,
+        search,
+        status,
+        date,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Fetch gate pass requests failed:", error);
+
+    throw {
+      message:
+        error.response?.data?.message || "Failed to fetch gate pass requests",
+      details:
+        error.response?.data?.errors || error.response?.data || error.message,
+      status: error.response?.status,
+    };
+  }
+};
+
+export const respondToGatePass = async (payload) => {
+  try {
+    const response = await apiClient.patch("/user/gatePass/respond", payload);
+
+    return response.data;
+  } catch (error) {
+    console.error("Respond to gate pass failed:", error);
+
+    throw {
+      message:
+        error.response?.data?.message || "Failed to respond to gate pass",
+      details:
+        error.response?.data?.errors || error.response?.data || error.message,
+      status: error.response?.status,
+    };
+  }
+};

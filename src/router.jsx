@@ -53,6 +53,7 @@ import WebsiteManagement from "./pages/home/website/WebsiteManagement.jsx";
 import AccountingDashboard from "./pages/accounts/AccountingDashboard.jsx";
 import GeneralLedger from "./pages/accounts/GeneralLedger.jsx";
 import AttendanceManagement from "./pages/Attendance/AttendanceManagement.jsx";
+import LeaveGatePassManagement from "./pages/leave/LeaveGatePassManagement.jsx";
 
 const Dashboard = lazy(() => import("./pages/home/Dashboard.jsx"));
 const AccountsDashboard = lazy(
@@ -88,6 +89,7 @@ const appRoutes = [
   {path: "rooms", element: <RoomAllocation />},
   {path: "maintenance", element: <MaintenanceDashboard />},
   {path: "attendance", element: <AttendanceManagement />},
+  {path: "leave", element: <LeaveGatePassManagement />},
   {path: "employees", element: <EmployeePage />},
   {path: "employees/:id", element: <EmployeeDetail />},
   {path: "add-property", element: <AddProperty />},
