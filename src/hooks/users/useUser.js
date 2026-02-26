@@ -88,6 +88,7 @@ export const approveResident = async (id, approvalData) => {
 export const getUsers = async ({
   rentType,
   propertyId,
+  kitchenId,
   page = 1,
   limit = 100,
   search,
@@ -100,6 +101,7 @@ export const getUsers = async ({
       params: {
         rentType,
         propertyId,
+        kitchenId,
         page,
         limit,
         search,
@@ -1145,6 +1147,42 @@ export const respondToGatePass = async (payload) => {
     throw {
       message:
         error.response?.data?.message || "Failed to respond to gate pass",
+      details:
+        error.response?.data?.errors || error.response?.data || error.message,
+      status: error.response?.status,
+    };
+  }
+};
+
+export const updateRentAndDates = async ({
+  userId,
+  dailyRent,
+  rent,
+  checkInDate,
+  checkOutDate,
+  messStartDate,
+  messEndDate,
+  noOfDays,
+}) => {
+  try {
+    const response = await apiClient.put("/user/update-rent-dates", {
+      userId,
+      dailyRent,
+      rent,
+      checkInDate,
+      checkOutDate,
+      messStartDate,
+      messEndDate,
+      noOfDays,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Update rent & dates failed:", error);
+
+    throw {
+      message:
+        error.response?.data?.message || "Failed to update rent and dates",
       details:
         error.response?.data?.errors || error.response?.data || error.message,
       status: error.response?.status,

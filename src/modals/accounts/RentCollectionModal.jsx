@@ -24,32 +24,90 @@
 // import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 // import {
 //   getLatestFeePaymentByUserId,
+//   makeBusFeePayment,
 //   makeDepositPayment,
 //   makeFeePayment,
 // } from "../../hooks/accounts/useAccounts";
+// import {useNavigate} from "react-router-dom";
 
 // const {Option} = Select;
-// const {TabPane} = Tabs;
 
-// const RentCollectionModal = ({visible, onCancel, selectedOption}) => {
+// const RentCollectionModal = ({
+//   visible,
+//   onCancel,
+//   selectedOption,
+//   preSelectedUser = null,
+//   preSelectedProperty = null,
+//   onSuccess,
+// }) => {
+//   console.log(preSelectedUser);
+//   console.log(preSelectedProperty);
+//   console.log(selectedOption);
+
 //   const {properties, selectedProperty} = useSelector(
-//     (state) => state.properties
+//     (state) => state.properties,
 //   );
+//   const {kitchens, selectedKitchen} = useSelector(
+//     (state) => state.kitchens || {},
+//   );
+
 //   const [selectedUser, setSelectedUser] = useState(null);
 //   const [activeTab, setActiveTab] = useState("basic");
 //   const [form] = Form.useForm();
-//   const [depositForm] = Form.useForm(); // Separate form for deposit payment
+//   const [depositForm] = Form.useForm();
+//   const [busFeeForm] = Form.useForm();
 //   const [enableWaiveOff, setEnableWaiveOff] = useState(false);
 //   const [waiveOffAmount, setWaiveOffAmount] = useState(0);
 //   const [remainingAmount, setRemainingAmount] = useState(0);
 //   const [paymentAction, setPaymentAction] = useState("fullPayment");
 //   const [currentProperty, setCurrentProperty] = useState(selectedProperty);
 //   const [paymentMode, setPaymentMode] = useState("");
-//   const [depositPaymentMode, setDepositPaymentMode] = useState(""); // For deposit payment
+//   const [depositPaymentMode, setDepositPaymentMode] = useState("");
+//   const [busPaymentMode, setBusPaymentMode] = useState("");
 
 //   const [messageApi, contextHolder] = message.useMessage();
 
 //   const queryClient = useQueryClient();
+
+//   const navigate = useNavigate();
+
+//   // Use pre-selected property or fallback to Redux selected property
+//   useEffect(() => {
+//     if (preSelectedProperty) {
+//       setCurrentProperty(preSelectedProperty);
+//     } else {
+//       setCurrentProperty(selectedProperty);
+//     }
+//   }, [preSelectedProperty, selectedProperty]);
+
+//   // Auto-select user when preSelectedUser is provided
+//   useEffect(() => {
+//     if (visible && preSelectedUser) {
+//       setSelectedUser(preSelectedUser);
+//       setRemainingAmount(
+//         preSelectedUser?.pendingRent ||
+//           preSelectedUser?.financialDetails?.pendingRent ||
+//           preSelectedUser?.pendingAmount ||
+//           preSelectedUser?.financialDetails?.pendingAmount ||
+//           0,
+//       );
+//       setWaiveOffAmount(0);
+//       setEnableWaiveOff(false);
+//       setPaymentAction("fullPayment");
+
+//       // If user has stayDetails with propertyId, use that property
+//       if (preSelectedUser.stayDetails?.propertyId) {
+//         const userProperty = properties.find(
+//           (p) => p._id === preSelectedUser.stayDetails.propertyId,
+//         );
+//         if (userProperty) {
+//           setCurrentProperty(userProperty);
+//         }
+//       }
+
+//       setActiveTab("basic");
+//     }
+//   }, [visible, preSelectedUser, properties]);
 
 //   const {
 //     data: usersData,
@@ -70,6 +128,7 @@
 //       }),
 //     refetchOnWindowFocus: false,
 //     staleTime: 5 * 60 * 1000,
+//     enabled: !preSelectedUser, // Only fetch users if no pre-selected user
 //   });
 
 //   const users = usersData?.data || [];
@@ -88,22 +147,26 @@
 //         content: `${data.message}`,
 //         duration: 3,
 //       });
-
 //       form.resetFields();
 
-//       queryClient.invalidateQueries({
-//         queryKey: ["accountDashboard"],
-//       });
-//       queryClient.invalidateQueries({
-//         queryKey: ["availableCash"],
-//       });
+//       queryClient.invalidateQueries({queryKey: ["resident"]});
+//       queryClient.invalidateQueries({queryKey: ["monthlyRentUsers"]});
+//       queryClient.invalidateQueries({queryKey: ["accountDashboard"]});
+//       queryClient.invalidateQueries({queryKey: ["availableCash"]});
 
 //       const refreshed = await refetchUsers();
 //       const freshUsers = refreshed?.data?.data || [];
 //       const updatedUser = freshUsers.find((u) => u._id === selectedUser?._id);
-
+//       // console.log(updatedUser);
 //       if (updatedUser) setSelectedUser(updatedUser);
+
+//       // Call onSuccess callback if provided
+//       if (onSuccess) {
+//         onSuccess(data);
+//       }
+
 //       handleModalClose();
+//       navigate(`/accounts/transactions/${selectedUser.rentType}`);
 //     },
 //     onError: (error) => {
 //       messageApi.error({
@@ -125,12 +188,42 @@
 
 //         depositForm.resetFields();
 
-//         queryClient.invalidateQueries({
-//           queryKey: ["accountDashboardDeposit"],
+//         queryClient.invalidateQueries({queryKey: ["resident"]});
+//         queryClient.invalidateQueries({queryKey: ["monthlyRentUsers"]});
+//         queryClient.invalidateQueries({queryKey: ["accountDashboardDeposit"]});
+//         queryClient.invalidateQueries({queryKey: ["availableCash"]});
+
+//         const refreshed = await refetchUsers();
+//         const freshUsers = refreshed?.data?.data || [];
+//         const updatedUser = freshUsers.find((u) => u._id === selectedUser?._id);
+
+//         if (updatedUser) setSelectedUser(updatedUser);
+//         setActiveTab(requiresBusFeePayment ? "busFee" : "payment");
+//       },
+//       onError: (error) => {
+//         messageApi.error({
+//           content: `${error.message}`,
+//           duration: 3,
 //         });
-//         queryClient.invalidateQueries({
-//           queryKey: ["availableCash"],
+//         console.error("Fee payment failed:", error);
+//       },
+//     });
+
+//   const {mutate: recordBusPayment, isLoading: isBusFeeSubmitting} = useMutation(
+//     {
+//       mutationFn: makeBusFeePayment,
+//       onSuccess: async (data) => {
+//         messageApi.success({
+//           content: `${data.message}`,
+//           duration: 3,
 //         });
+
+//         depositForm.resetFields();
+
+//         queryClient.invalidateQueries({queryKey: ["resident"]});
+//         queryClient.invalidateQueries({queryKey: ["monthlyRentUsers"]});
+//         queryClient.invalidateQueries({queryKey: ["accountDashboardDeposit"]});
+//         queryClient.invalidateQueries({queryKey: ["availableCash"]});
 
 //         const refreshed = await refetchUsers();
 //         const freshUsers = refreshed?.data?.data || [];
@@ -146,13 +239,8 @@
 //         });
 //         console.error("Fee payment failed:", error);
 //       },
-//     });
-
-//   useEffect(() => {
-//     if (visible) {
-//       setCurrentProperty(selectedProperty);
-//     }
-//   }, [visible, selectedProperty]);
+//     },
+//   );
 
 //   const handleModalClose = () => {
 //     form.resetFields();
@@ -165,7 +253,8 @@
 //     setPaymentAction("fullPayment");
 //     setPaymentMode("");
 //     setDepositPaymentMode("");
-//     setCurrentProperty(selectedProperty);
+//     setBusPaymentMode("");
+//     setCurrentProperty(preSelectedProperty || selectedProperty);
 //     onCancel();
 //   };
 
@@ -186,9 +275,7 @@
 
 //     return {
 //       ...selectedUser,
-//       lastPaidDate: latestPayment?.paymentDate
-//         ? new Date(latestPayment.paymentDate).toLocaleDateString()
-//         : null,
+//       lastPaidDate: latestPayment?.paymentDate || null,
 //       clearedMonths:
 //         latestPayment?.paymentForMonths?.length > 0
 //           ? latestPayment.paymentForMonths
@@ -201,7 +288,11 @@
 //     if (!checked) {
 //       setWaiveOffAmount(0);
 //       setRemainingAmount(
-//         selectedUser?.pendingRent || selectedUser?.pendingAmount || 0
+//         selectedUser?.pendingRent ||
+//           selectedUser?.financialDetails?.pendingRent ||
+//           selectedUser?.pendingAmount ||
+//           selectedUser?.financialDetails?.pendingAmount ||
+//           0,
 //       );
 //       setPaymentAction("fullPayment");
 //     }
@@ -210,7 +301,11 @@
 //   const handleWaiveOffAmountChange = (value) => {
 //     const waiveOff = value || 0;
 //     const totalPending =
-//       selectedUser?.pendingRent || selectedUser?.pendingAmount || 0;
+//       selectedUser?.pendingRent ||
+//       selectedUser?.financialDetails?.pendingRent ||
+//       selectedUser?.pendingAmount ||
+//       selectedUser?.financialDetails?.pendingAmount ||
+//       0;
 
 //     setWaiveOffAmount(waiveOff);
 //     setRemainingAmount(Math.max(0, totalPending - waiveOff));
@@ -228,6 +323,10 @@
 //     setDepositPaymentMode(value);
 //   };
 
+//   const handleBusFeePaymentModeChange = (value) => {
+//     setBusPaymentMode(value);
+//   };
+
 //   const handlePaymentSubmit = (values) => {
 //     const paymentData = {
 //       ...values,
@@ -240,10 +339,10 @@
 //         paymentMode === "upi"
 //           ? "UPI"
 //           : paymentMode === "bank_transfer"
-//           ? "Bank Transfer"
-//           : paymentMode === "card"
-//           ? "Card"
-//           : "Cash",
+//             ? "Bank Transfer"
+//             : paymentMode === "card"
+//               ? "Card"
+//               : "Cash",
 //       paymentDate: values.paymentDate,
 //       collectedBy: values.collectedBy || "",
 //       transactionId: values.transactionId || null,
@@ -266,10 +365,10 @@
 //         depositPaymentMode === "upi"
 //           ? "UPI"
 //           : depositPaymentMode === "bank_transfer"
-//           ? "Bank Transfer"
-//           : depositPaymentMode === "card"
-//           ? "Card"
-//           : "Cash",
+//             ? "Bank Transfer"
+//             : depositPaymentMode === "card"
+//               ? "Card"
+//               : "Cash",
 //       paymentDate: values.depositPaymentDate,
 //       collectedBy: values.depositCollectedBy || "",
 //       transactionId: values.depTransactionId || null,
@@ -279,8 +378,30 @@
 //     recordDepositPayment(payload);
 //   };
 
-//   const handleSkipDeposit = () => {
-//     setActiveTab("payment");
+//   const handleBusPaymentSubmit = (values) => {
+//     if (!selectedUser?._id) {
+//       message.warning("Please select a user first.");
+//       return;
+//     }
+
+//     const payload = {
+//       userId: selectedUser._id,
+//       amount: values.busFeeAmountPaid,
+//       paymentMethod:
+//         busPaymentMode === "upi"
+//           ? "UPI"
+//           : busPaymentMode === "bank_transfer"
+//             ? "Bank Transfer"
+//             : busPaymentMode === "card"
+//               ? "Card"
+//               : "Cash",
+//       paymentDate: values.busFeePaymentDate,
+//       collectedBy: values.busFeeCollectedBy || "",
+//       transactionId: values.busFeeTransactionId || null,
+//       remarks: values.busFeeRemarks || "",
+//     };
+
+//     recordBusPayment(payload);
 //   };
 
 //   const handlePropertyChange = (propertyId) => {
@@ -306,13 +427,37 @@
 //     }
 //   };
 
-//   // Check if deposit payment is required
-//   const requiresDepositPayment = userWithPayment?.depositStatus === "pending";
-
 //   // Calculate deposit amounts
-//   const totalDeposit = userWithPayment?.depositAmount || 0;
-//   const depositPaid = userWithPayment?.depositPaid || 0;
+//   const totalDeposit =
+//     userWithPayment?.depositAmount ||
+//     userWithPayment?.stayDetails?.refundableDeposit +
+//       userWithPayment?.stayDetails?.nonRefundableDeposit ||
+//     0;
+
+//   const totalBusFee =
+//     userWithPayment?.busFeeAmount || userWithPayment?.busFee?.yearlyAmount || 0;
+
+//   // Check if deposit payment is required
+//   const requiresDepositPayment =
+//     totalDeposit !== 0 &&
+//     (userWithPayment?.depositStatus === "pending" ||
+//       userWithPayment?.stayDetails?.depositStatus === "pending");
+
+//   const requiresBusFeePayment =
+//     totalBusFee !== 0 &&
+//     (userWithPayment?.busFeeStatus === "pending" ||
+//       userWithPayment?.busFee?.status === "pending");
+
+//   const depositPaid =
+//     userWithPayment?.depositPaid ||
+//     userWithPayment?.stayDetails?.depositAmountPaid ||
+//     0;
+
+//   const busFeePaid =
+//     userWithPayment?.busFeePaid || userWithPayment?.busFee?.amountPaid || 0;
+
 //   const depositRemaining = totalDeposit - depositPaid;
+//   const busFeeRemaining = totalBusFee - busFeePaid;
 
 //   // Custom filter function for user search
 //   const filterOption = (input, option) => {
@@ -349,10 +494,18 @@
 //   const showDepositTransactionIdField =
 //     depositPaymentMode === "upi" || depositPaymentMode === "bank_transfer";
 
+//   const showBusFeeTransactionIdField =
+//     busPaymentMode === "upi" || busPaymentMode === "bank_transfer";
+
 //   // Check if collected by field is needed for deposit payment
 //   const showDepositCollectedByField = depositPaymentMode === "cash";
 
+//   const showBusFeeCollectedByField = busPaymentMode === "cash";
+
 //   const showCollectedByField = paymentMode === "cash";
+
+//   // Check if we should show property selection (only show if no pre-selected data)
+//   const showPropertySelection = !preSelectedProperty && !selectedProperty?.id;
 
 //   return (
 //     <>
@@ -376,8 +529,8 @@
 //               label: "Basic Information",
 //               children: (
 //                 <Form layout="vertical" form={form}>
-//                   {/* Property Selection (only show if no property is selected initially) */}
-//                   {!selectedProperty?.id && (
+//                   {/* Property Selection (only show if no pre-selected property) */}
+//                   {showPropertySelection && (
 //                     <Card size="small" style={{marginBottom: 16}}>
 //                       <Form.Item
 //                         label="Select Property"
@@ -403,6 +556,7 @@
 //                       </Form.Item>
 //                     </Card>
 //                   )}
+
 //                   {/* If property is selected from dropdown, show it as a hidden field */}
 //                   {currentProperty?.id && !selectedProperty?.id && (
 //                     <Form.Item
@@ -413,37 +567,90 @@
 //                       <Input />
 //                     </Form.Item>
 //                   )}
-//                   {(selectedProperty?.id || currentProperty?._id) && (
-//                     <Form.Item label={`Select User (${users.length})`} required>
-//                       <Select
-//                         showSearch
-//                         placeholder="Search user by name or room number"
-//                         value={selectedUser?._id || undefined}
-//                         onChange={handleUserSelect}
-//                         filterOption={filterOption}
-//                         suffixIcon={<FiSearch />}
-//                         loading={usersLoading}
-//                         notFoundContent={
-//                           usersError ? "Error loading users" : "No users found"
-//                         }
+
+//                   {/* User Selection - Only show if no pre-selected user */}
+//                   {!preSelectedUser &&
+//                     (selectedProperty?.id || currentProperty?._id) && (
+//                       <Form.Item
+//                         label={`Select User (${users.length})`}
+//                         required
 //                       >
-//                         {users.map((user) => (
-//                           <Option key={user?._id} value={user?._id}>
-//                             {user.name} (Room {user.roomNumber})
-//                           </Option>
-//                         ))}
-//                       </Select>
-//                     </Form.Item>
+//                         <Select
+//                           showSearch
+//                           placeholder="Search user by name or room number"
+//                           value={selectedUser?._id || undefined}
+//                           onChange={handleUserSelect}
+//                           filterOption={filterOption}
+//                           suffixIcon={<FiSearch />}
+//                           loading={usersLoading}
+//                           notFoundContent={
+//                             usersError
+//                               ? "Error loading users"
+//                               : "No users found"
+//                           }
+//                         >
+//                           {users.map((user) => (
+//                             <Option key={user?._id} value={user?._id}>
+//                               {user.name} (Room {user.roomNumber})
+//                             </Option>
+//                           ))}
+//                         </Select>
+//                       </Form.Item>
+//                     )}
+
+//                   {/* Show pre-selected user info */}
+//                   {preSelectedUser && selectedUser && (
+//                     <div
+//                       style={{
+//                         display: "flex",
+//                         gap: 16,
+//                         marginBottom: 16,
+//                         alignItems: "center",
+//                       }}
+//                     >
+//                       <div style={{display: "flex", flexDirection: "column"}}>
+//                         <label>
+//                           <strong>User Name</strong>
+//                         </label>
+//                         <Input
+//                           value={selectedUser.name}
+//                           readOnly
+//                           style={{width: 320}}
+//                         />
+//                       </div>
+
+//                       <div style={{display: "flex", flexDirection: "column"}}>
+//                         <label>
+//                           <strong>Property</strong>
+//                         </label>
+//                         <Input
+//                           value={
+//                             selectedUser.propertyName ||
+//                             selectedUser?.stayDetails?.propertyName ||
+//                             selectedUser?.messDetails?.kitchenName ||
+//                             selectedUser?.kitchenName ||
+//                             "N/A"
+//                           }
+//                           readOnly
+//                           style={{width: 320}}
+//                         />
+//                       </div>
+//                     </div>
 //                   )}
+
 //                   {userWithPayment && (
 //                     <>
 //                       {selectedOption === "monthly" ? (
-//                         // ✅ MONTHLY LAYOUT (no change)
 //                         <Row gutter={16}>
 //                           <Col span={12}>
 //                             <Form.Item label="Monthly Rent">
 //                               <Input
-//                                 value={`₹ ${userWithPayment.monthlyRent || 0}`}
+//                                 value={`₹ ${
+//                                   userWithPayment.monthlyRent ||
+//                                   userWithPayment?.financialDetails
+//                                     .monthlyRent ||
+//                                   0
+//                                 }`}
 //                                 readOnly
 //                               />
 //                             </Form.Item>
@@ -452,7 +659,10 @@
 //                           <Col span={12}>
 //                             <Form.Item label="Join Date">
 //                               <Input
-//                                 value={formatDate(userWithPayment.joinedDate)}
+//                                 value={formatDate(
+//                                   userWithPayment.joinedDate ||
+//                                     userWithPayment?.stayDetails?.joinDate,
+//                                 )}
 //                                 prefix={<FiCalendar />}
 //                                 readOnly
 //                               />
@@ -460,9 +670,7 @@
 //                           </Col>
 //                         </Row>
 //                       ) : (
-//                         // ✅ DAILY or MESS LAYOUT (rearranged)
 //                         <>
-//                           {/* 🔹 First Row — Check-in/Check-out or Mess Start/End */}
 //                           <Row gutter={16}>
 //                             <Col span={12}>
 //                               <Form.Item
@@ -475,8 +683,12 @@
 //                                 <Input
 //                                   value={formatDate(
 //                                     selectedOption === "mess"
-//                                       ? userWithPayment.messStartDate
-//                                       : userWithPayment.checkInDate
+//                                       ? userWithPayment.messStartDate ||
+//                                           userWithPayment?.messDetails
+//                                             .messStartDate
+//                                       : userWithPayment.checkInDate ||
+//                                           userWithPayment?.stayDetails
+//                                             .checkInDate,
 //                                   )}
 //                                   prefix={<FiCalendar />}
 //                                   readOnly
@@ -495,8 +707,15 @@
 //                                 <Input
 //                                   value={formatDate(
 //                                     selectedOption === "mess"
-//                                       ? userWithPayment.messEndDate
-//                                       : userWithPayment.checkOutDate
+//                                       ? userWithPayment?.messEndDate ||
+//                                           userWithPayment?.messDetails
+//                                             ?.messEndDate
+//                                       : (userWithPayment?.extendDate ??
+//                                           userWithPayment?.stayDetails
+//                                             ?.extendDate ??
+//                                           userWithPayment?.checkOutDate ??
+//                                           userWithPayment?.stayDetails
+//                                             ?.checkOutDate),
 //                                   )}
 //                                   prefix={<FiCalendar />}
 //                                   readOnly
@@ -505,7 +724,6 @@
 //                             </Col>
 //                           </Row>
 
-//                           {/* 🔹 Second Row — Total Days + Rent/Day */}
 //                           <Row gutter={16}>
 //                             <Col span={12}>
 //                               <Form.Item
@@ -518,7 +736,9 @@
 //                                 <Input
 //                                   value={
 //                                     userWithPayment.noOfDays ||
+//                                     userWithPayment?.stayDetails?.noOfDays ||
 //                                     userWithPayment.noOfDaysMess ||
+//                                     userWithPayment?.messDetails?.noOfDays ||
 //                                     0
 //                                   }
 //                                   readOnly
@@ -537,8 +757,13 @@
 //                                 <Input
 //                                   value={`₹ ${
 //                                     selectedOption === "mess"
-//                                       ? userWithPayment.rent || 0
-//                                       : userWithPayment.rent || 0
+//                                       ? userWithPayment.rent ||
+//                                         userWithPayment?.messDetails.rent ||
+//                                         0
+//                                       : userWithPayment.rent ||
+//                                         userWithPayment?.stayDetails
+//                                           .dailyRent ||
+//                                         0
 //                                   }`}
 //                                   readOnly
 //                                 />
@@ -548,7 +773,6 @@
 //                         </>
 //                       )}
 
-//                       {/* 🔹 Rent Cleared Till / Last Paid Date */}
 //                       <Row gutter={16}>
 //                         {userWithPayment?.clearedMonths?.length > 0 &&
 //                           selectedOption === "monthly" && (
@@ -575,21 +799,32 @@
 //                         )}
 //                       </Row>
 
-//                       {/* 🔹 Pending / Total Amount */}
 //                       <Form.Item label="Pending Amount">
 //                         <Input
 //                           value={`₹ ${
 //                             selectedOption === "monthly"
-//                               ? userWithPayment.pendingRent || 0
-//                               : userWithPayment.pendingAmount || 0
+//                               ? (userWithPayment?.financialDetails
+//                                   ?.pendingRent ??
+//                                 userWithPayment?.pendingRent ??
+//                                 0)
+//                               : (userWithPayment?.financialDetails
+//                                   ?.pendingAmount ??
+//                                 userWithPayment?.pendingAmount ??
+//                                 0)
 //                           }`}
 //                           style={{
 //                             fontWeight: "bold",
 //                             fontSize: "16px",
 //                             color:
 //                               (selectedOption === "monthly"
-//                                 ? userWithPayment.pendingRent
-//                                 : userWithPayment.pendingAmount) > 0
+//                                 ? (userWithPayment?.financialDetails
+//                                     ?.pendingRent ??
+//                                   userWithPayment?.pendingRent ??
+//                                   0)
+//                                 : (userWithPayment?.financialDetails
+//                                     ?.pendingAmount ??
+//                                   userWithPayment?.pendingAmount ??
+//                                   0)) > 0
 //                                 ? "#f56565"
 //                                 : "#10b981",
 //                           }}
@@ -597,7 +832,6 @@
 //                         />
 //                       </Form.Item>
 
-//                       {/* 🔹 Deposit Alert */}
 //                       {requiresDepositPayment && (
 //                         <Alert
 //                           message="Deposit Payment Pending"
@@ -613,7 +847,6 @@
 //                         />
 //                       )}
 
-//                       {/* 🔹 Outstanding Fines */}
 //                       {userWithPayment.outstandingFines > 0 && (
 //                         <Form.Item label="Outstanding Fines">
 //                           <Input
@@ -627,22 +860,27 @@
 //                           />
 //                         </Form.Item>
 //                       )}
-
-//                       {/* 🔹 Proceed Button */}
 //                       <Form.Item style={{textAlign: "right"}}>
 //                         <Button
 //                           type="primary"
 //                           onClick={() =>
 //                             setActiveTab(
-//                               requiresDepositPayment ? "deposit" : "payment"
+//                               requiresDepositPayment
+//                                 ? "deposit"
+//                                 : requiresBusFeePayment
+//                                   ? "busFee"
+//                                   : "payment",
 //                             )
 //                           }
 //                         >
 //                           {requiresDepositPayment
 //                             ? "Proceed to Deposit Payment"
-//                             : userWithPayment.pendingRent === 0
-//                             ? "Pay in Advance"
-//                             : "Proceed to Payment"}
+//                             : requiresBusFeePayment
+//                               ? "Proceed to Bus Fee Payment"
+//                               : userWithPayment.pendingRent === 0 &&
+//                                   userWithPayment.pendingAmount === 0
+//                                 ? "Pay in Advance"
+//                                 : "Proceed to Payment"}
 //                         </Button>
 //                       </Form.Item>
 //                     </>
@@ -650,6 +888,7 @@
 //                 </Form>
 //               ),
 //             },
+//             // ... rest of the tabs remain the same (deposit and payment tabs)
 //             {
 //               key: "deposit",
 //               label: "Make Deposit Payment",
@@ -667,7 +906,6 @@
 //                       borderBottom: "1px solid #d6e9ff",
 //                     }}
 //                   >
-//                     {/* Simplified Deposit Summary */}
 //                     <div style={{marginBottom: 20}}>
 //                       {depositPaid > 0 ? (
 //                         <Alert
@@ -697,7 +935,6 @@
 //                       )}
 //                     </div>
 
-//                     {/* Deposit Payment Form */}
 //                     <Row gutter={16}>
 //                       <Col span={12}>
 //                         <Form.Item
@@ -809,12 +1046,20 @@
 //                     >
 //                       Back to Basic Info
 //                     </Button>
+
 //                     <Button
 //                       style={{marginRight: "8px"}}
-//                       onClick={handleSkipDeposit}
+//                       onClick={() =>
+//                         setActiveTab(
+//                           requiresBusFeePayment ? "busFee" : "payment",
+//                         )
+//                       }
 //                     >
-//                       Skip & Proceed to Rent Payment
+//                       {requiresBusFeePayment
+//                         ? "Skip & Proceed to Bus Fee Payment"
+//                         : "Skip & Proceed to Rent Payment"}
 //                     </Button>
+
 //                     <Button
 //                       type="primary"
 //                       htmlType="submit"
@@ -822,6 +1067,201 @@
 //                       disabled={isDepositSubmitting}
 //                     >
 //                       Submit Deposit Payment
+//                     </Button>
+//                   </Form.Item>
+//                 </Form>
+//               ),
+//             },
+//             {
+//               key: "busFee",
+//               label: "Bus Fee Payment",
+//               disabled: !userWithPayment || !requiresBusFeePayment, // you may control this
+//               children: (
+//                 <Form
+//                   layout="vertical"
+//                   form={busFeeForm}
+//                   onFinish={handleBusPaymentSubmit}
+//                 >
+//                   <Card
+//                     style={{marginBottom: 16}}
+//                     headStyle={{
+//                       backgroundColor: "#f0f8ff",
+//                       borderBottom: "1px solid #d6e9ff",
+//                     }}
+//                   >
+//                     {/* BUS FEE STATUS INFO */}
+//                     <div style={{marginBottom: 20}}>
+//                       {busFeePaid > 0 ? (
+//                         <Alert
+//                           description={
+//                             <span>
+//                               Yearly Bus Fee: <strong>₹{totalBusFee}</strong>,
+//                               Paid: <strong>₹{busFeePaid}</strong>, Pending:{" "}
+//                               <strong>₹{busFeeRemaining}</strong>
+//                             </span>
+//                           }
+//                           type="info"
+//                           style={{marginBottom: 16}}
+//                         />
+//                       ) : (
+//                         <Alert
+//                           description={
+//                             <span>
+//                               Bus fee pending:{" "}
+//                               <strong>₹{busFeeRemaining}</strong>
+//                             </span>
+//                           }
+//                           type="warning"
+//                           style={{marginBottom: 16}}
+//                         />
+//                       )}
+//                     </div>
+
+//                     {/* AMOUNT + DATE */}
+//                     <Row gutter={16}>
+//                       <Col span={12}>
+//                         <Form.Item
+//                           name="busFeeAmountPaid"
+//                           label="Amount Paying"
+//                           rules={[
+//                             {
+//                               required: true,
+//                               message: "Please enter bus fee amount",
+//                             },
+//                           ]}
+//                         >
+//                           <InputNumber
+//                             style={{width: "100%"}}
+//                             placeholder="Enter amount"
+//                             prefix="₹"
+//                             min={0}
+//                           />
+//                         </Form.Item>
+//                       </Col>
+
+//                       <Col span={12}>
+//                         <Form.Item
+//                           name="busFeePaymentDate"
+//                           label="Payment Date"
+//                           rules={[
+//                             {
+//                               required: true,
+//                               message: "Please select payment date",
+//                             },
+//                           ]}
+//                         >
+//                           <DatePicker
+//                             style={{width: "100%"}}
+//                             suffixIcon={<FiCalendar />}
+//                           />
+//                         </Form.Item>
+//                       </Col>
+//                     </Row>
+
+//                     {/* PAYMENT MODE */}
+//                     <Row gutter={16}>
+//                       <Col span={12}>
+//                         <Form.Item
+//                           name="busFeePaymentMode"
+//                           label="Payment Mode"
+//                           rules={[
+//                             {
+//                               required: true,
+//                               message: "Please select payment mode",
+//                             },
+//                           ]}
+//                         >
+//                           <Select
+//                             placeholder="Select payment mode"
+//                             onChange={handleBusFeePaymentModeChange}
+//                           >
+//                             <Option value="cash">Cash</Option>
+//                             <Option value="bank_transfer">Bank Transfer</Option>
+//                             <Option value="upi">UPI</Option>
+//                             <Option value="card">Card</Option>
+//                           </Select>
+//                         </Form.Item>
+//                       </Col>
+
+//                       <Col span={12}>
+//                         {showBusFeeCollectedByField && (
+//                           <Form.Item
+//                             name="busFeeCollectedBy"
+//                             label="Collected By"
+//                             rules={[
+//                               {
+//                                 required: true,
+//                                 message: "Please enter collector name",
+//                               },
+//                             ]}
+//                           >
+//                             <Input placeholder="Enter collector name" />
+//                           </Form.Item>
+//                         )}
+//                       </Col>
+//                     </Row>
+
+//                     {/* TRANSACTION ID */}
+//                     {showBusFeeTransactionIdField && (
+//                       <Row gutter={16}>
+//                         <Col span={24}>
+//                           <Form.Item
+//                             name="busFeeTransactionId"
+//                             label="Transaction ID"
+//                             rules={[
+//                               {
+//                                 required: true,
+//                                 message: "Please enter transaction ID",
+//                               },
+//                             ]}
+//                           >
+//                             <Input placeholder="Enter transaction ID" />
+//                           </Form.Item>
+//                         </Col>
+//                       </Row>
+//                     )}
+
+//                     {/* REMARKS */}
+//                     <Form.Item name="busFeeRemarks" label="Remarks (Optional)">
+//                       <Input.TextArea
+//                         placeholder="Add remarks for bus fee payment"
+//                         rows={2}
+//                       />
+//                     </Form.Item>
+//                   </Card>
+
+//                   {/* ACTION BUTTONS */}
+//                   <Form.Item style={{textAlign: "right"}}>
+//                     {/* Back Button */}
+//                     <Button
+//                       style={{marginRight: "8px"}}
+//                       onClick={() =>
+//                         setActiveTab(
+//                           requiresDepositPayment ? "deposit" : "rent",
+//                         )
+//                       }
+//                     >
+//                       {requiresDepositPayment
+//                         ? "Back to Deposit"
+//                         : "Back to Rent"}
+//                     </Button>
+
+//                     {/* Skip Button */}
+//                     <Button
+//                       style={{marginRight: "8px"}}
+//                       onClick={() => setActiveTab("payment")}
+//                     >
+//                       Skip & Proceed to Rent Payment
+//                     </Button>
+
+//                     {/* Submit Button */}
+//                     <Button
+//                       type="primary"
+//                       htmlType="submit"
+//                       loading={isBusFeeSubmitting}
+//                       disabled={isBusFeeSubmitting}
+//                     >
+//                       Submit Bus Fee Payment
 //                     </Button>
 //                   </Form.Item>
 //                 </Form>
@@ -865,7 +1305,6 @@
 //                         }}
 //                         bodyStyle={{padding: "16px"}}
 //                       >
-//                         {/* Row 1: Waive-Off Amount + Amount After Waive-Off */}
 //                         <Row gutter={16}>
 //                           <Col xs={24} sm={24} md={12}>
 //                             <Form.Item
@@ -910,7 +1349,6 @@
 //                           </Col>
 //                         </Row>
 
-//                         {/* Row 2: Waive-Off Reason (full width) */}
 //                         <Row gutter={16}>
 //                           <Col xs={24}>
 //                             <Form.Item
@@ -928,7 +1366,6 @@
 
 //                         <Divider />
 
-//                         {/* Payment Action Selection */}
 //                         <Form.Item label="Select Payment Action" required>
 //                           <Radio.Group
 //                             onChange={handlePaymentActionChange}
@@ -938,6 +1375,7 @@
 //                             <Row gutter={[16, 16]}>
 //                               <Col xs={24} md={12}>
 //                                 <Radio
+//                                   disabled
 //                                   value="fullWaiveOff"
 //                                   style={{width: "100%"}}
 //                                 >
@@ -970,16 +1408,13 @@
 //                     )}
 //                   </div>
 
-//                   {/* Regular Payment Fields - Only show if waive-off is disabled OR if remaining payment is selected */}
 //                   {(paymentAction === "remainingPayment" ||
 //                     !enableWaiveOff) && (
 //                     <>
 //                       <Divider />
 
-//                       {/* Case 1: Waive-Off Disabled */}
 //                       {!enableWaiveOff && (
 //                         <>
-//                           {/* Row 1: Net Amount + Amount Paying */}
 //                           <Row gutter={16}>
 //                             <Col span={12}>
 //                               <Form.Item label="Net Amount to Pay">
@@ -1016,7 +1451,6 @@
 //                             </Col>
 //                           </Row>
 
-//                           {/* Row 2: Payment Date + Payment Mode */}
 //                           <Row gutter={16}>
 //                             <Col span={12}>
 //                               <Form.Item
@@ -1077,7 +1511,6 @@
 //                             </Col>
 //                           </Row>
 
-//                           {/* Transaction ID Field (shown only for UPI/Bank Transfer) */}
 //                           {showTransactionIdField && (
 //                             <Row gutter={16}>
 //                               <Col span={24}>
@@ -1102,11 +1535,9 @@
 //                         </>
 //                       )}
 
-//                       {/* Case 2: Waive-Off Enabled + Remaining Payment */}
 //                       {enableWaiveOff &&
 //                         paymentAction === "remainingPayment" && (
 //                           <>
-//                             {/* Row 1: Amount Paying + Payment Date */}
 //                             <Row gutter={16}>
 //                               <Col span={12}>
 //                                 <Form.Item
@@ -1122,8 +1553,8 @@
 //                                         if (value > remainingAmount) {
 //                                           return Promise.reject(
 //                                             new Error(
-//                                               `Amount cannot exceed ₹${remainingAmount}`
-//                                             )
+//                                               `Amount cannot exceed ₹${remainingAmount}`,
+//                                             ),
 //                                           );
 //                                         }
 //                                         return Promise.resolve();
@@ -1159,7 +1590,6 @@
 //                               </Col>
 //                             </Row>
 
-//                             {/* Row 2: Payment Mode */}
 //                             <Row gutter={16}>
 //                               <Col span={12}>
 //                                 <Form.Item
@@ -1186,7 +1616,6 @@
 //                                 </Form.Item>
 //                               </Col>
 //                               <Col span={12}>
-//                                 {/* Transaction ID Field (shown only for UPI/Bank Transfer) */}
 //                                 {showTransactionIdField && (
 //                                   <Form.Item
 //                                     name="transactionId"
@@ -1206,7 +1635,6 @@
 //                           </>
 //                         )}
 
-//                       {/* Row 3: Remarks (always shown) */}
 //                       <Form.Item name="remarks" label="Remarks">
 //                         <Input.TextArea
 //                           placeholder="Add any remarks here"
@@ -1222,7 +1650,7 @@
 //                       style={{marginRight: "8px"}}
 //                       onClick={() =>
 //                         setActiveTab(
-//                           requiresDepositPayment ? "deposit" : "basic"
+//                           requiresDepositPayment ? "deposit" : "basic",
 //                         )
 //                       }
 //                     >
@@ -1250,7 +1678,6 @@
 //     </>
 //   );
 // };
-
 // export default RentCollectionModal;
 import React, {useState, useEffect} from "react";
 import {
@@ -1283,9 +1710,9 @@ import {
   makeFeePayment,
 } from "../../hooks/accounts/useAccounts";
 import {useNavigate} from "react-router-dom";
+import {getKitchens} from "../../hooks/inventory/useInventory";
 
 const {Option} = Select;
-const {TabPane} = Tabs;
 
 const RentCollectionModal = ({
   visible,
@@ -1293,6 +1720,7 @@ const RentCollectionModal = ({
   selectedOption,
   preSelectedUser = null,
   preSelectedProperty = null,
+  preSelectedKitchen = null,
   onSuccess,
 }) => {
   console.log(preSelectedUser);
@@ -1300,9 +1728,12 @@ const RentCollectionModal = ({
   console.log(selectedOption);
 
   const {properties, selectedProperty} = useSelector(
-    (state) => state.properties
+    (state) => state.properties,
   );
+  const {kitchens} = useSelector((state) => state.kitchens || {});
+
   const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedKitchen, setSelectedKitchen] = useState(null);
   const [activeTab, setActiveTab] = useState("basic");
   const [form] = Form.useForm();
   const [depositForm] = Form.useForm();
@@ -1312,6 +1743,7 @@ const RentCollectionModal = ({
   const [remainingAmount, setRemainingAmount] = useState(0);
   const [paymentAction, setPaymentAction] = useState("fullPayment");
   const [currentProperty, setCurrentProperty] = useState(selectedProperty);
+  const [currentKitchen, setCurrentKitchen] = useState(selectedKitchen);
   const [paymentMode, setPaymentMode] = useState("");
   const [depositPaymentMode, setDepositPaymentMode] = useState("");
   const [busPaymentMode, setBusPaymentMode] = useState("");
@@ -1322,6 +1754,9 @@ const RentCollectionModal = ({
 
   const navigate = useNavigate();
 
+  // Determine if this is a mess collection
+  const isMessCollection = selectedOption === "mess";
+
   // Use pre-selected property or fallback to Redux selected property
   useEffect(() => {
     if (preSelectedProperty) {
@@ -1330,6 +1765,16 @@ const RentCollectionModal = ({
       setCurrentProperty(selectedProperty);
     }
   }, [preSelectedProperty, selectedProperty]);
+
+  // Use pre-selected kitchen for mess
+  useEffect(() => {
+    if (preSelectedKitchen) {
+      setCurrentKitchen(preSelectedKitchen);
+      setSelectedKitchen(preSelectedKitchen);
+    } else {
+      setCurrentKitchen(selectedKitchen);
+    }
+  }, [preSelectedKitchen, selectedKitchen]);
 
   // Auto-select user when preSelectedUser is provided
   useEffect(() => {
@@ -1340,26 +1785,45 @@ const RentCollectionModal = ({
           preSelectedUser?.financialDetails?.pendingRent ||
           preSelectedUser?.pendingAmount ||
           preSelectedUser?.financialDetails?.pendingAmount ||
-          0
+          0,
       );
       setWaiveOffAmount(0);
       setEnableWaiveOff(false);
       setPaymentAction("fullPayment");
 
       // If user has stayDetails with propertyId, use that property
-      if (preSelectedUser.stayDetails?.propertyId) {
+      if (!isMessCollection && preSelectedUser.stayDetails?.propertyId) {
         const userProperty = properties.find(
-          (p) => p._id === preSelectedUser.stayDetails.propertyId
+          (p) => p._id === preSelectedUser.stayDetails.propertyId,
         );
         if (userProperty) {
           setCurrentProperty(userProperty);
         }
       }
 
+      // If user has messDetails with kitchenId, use that kitchen
+      if (isMessCollection && preSelectedUser.messDetails?.kitchenId) {
+        const userKitchen = kitchens?.find(
+          (k) => k._id === preSelectedUser.messDetails.kitchenId,
+        );
+        if (userKitchen) {
+          setCurrentKitchen(userKitchen);
+        }
+      }
+
       setActiveTab("basic");
     }
-  }, [visible, preSelectedUser, properties]);
+  }, [visible, preSelectedUser, properties, kitchens, isMessCollection]);
 
+  // Fetch kitchens for mess option
+  const {data: kitchensData, isLoading: kitchensLoading} = useQuery({
+    queryKey: ["kitchens", isMessCollection ? "all" : null],
+    queryFn: () => getKitchens({}),
+    enabled: isMessCollection,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Fetch users based on selected option and property/kitchen
   const {
     data: usersData,
     isLoading: usersLoading,
@@ -1368,18 +1832,34 @@ const RentCollectionModal = ({
   } = useQuery({
     queryKey: [
       "users",
-      currentProperty?.id || currentProperty?._id,
+      isMessCollection
+        ? currentKitchen?.id || currentKitchen?._id
+        : currentProperty?.id || currentProperty?._id,
       selectedOption,
+      isMessCollection ? "kitchen" : "property",
     ],
-    queryFn: () =>
-      getUsers({
-        rentType: selectedOption,
-        propertyId: currentProperty?.id || currentProperty?._id,
-        all: true,
-      }),
+    queryFn: () => {
+      if (isMessCollection) {
+        return getUsers({
+          rentType: selectedOption,
+          kitchenId: currentKitchen?.id || currentKitchen?._id,
+          all: true,
+        });
+      } else {
+        return getUsers({
+          rentType: selectedOption,
+          propertyId: currentProperty?.id || currentProperty?._id,
+          all: true,
+        });
+      }
+    },
     refetchOnWindowFocus: false,
     staleTime: 5 * 60 * 1000,
-    enabled: !preSelectedUser, // Only fetch users if no pre-selected user
+    enabled:
+      !preSelectedUser &&
+      (isMessCollection
+        ? !!(currentKitchen?.id || currentKitchen?._id)
+        : !!(currentProperty?.id || currentProperty?._id)),
   });
 
   const users = usersData?.data || [];
@@ -1402,16 +1882,17 @@ const RentCollectionModal = ({
 
       queryClient.invalidateQueries({queryKey: ["resident"]});
       queryClient.invalidateQueries({queryKey: ["monthlyRentUsers"]});
+      queryClient.invalidateQueries({queryKey: ["dailyRentUsers"]});
+      queryClient.invalidateQueries({queryKey: ["messOnlyUsers"]});
       queryClient.invalidateQueries({queryKey: ["accountDashboard"]});
       queryClient.invalidateQueries({queryKey: ["availableCash"]});
 
       const refreshed = await refetchUsers();
       const freshUsers = refreshed?.data?.data || [];
       const updatedUser = freshUsers.find((u) => u._id === selectedUser?._id);
-      console.log(updatedUser);
+
       if (updatedUser) setSelectedUser(updatedUser);
 
-      // Call onSuccess callback if provided
       if (onSuccess) {
         onSuccess(data);
       }
@@ -1424,7 +1905,7 @@ const RentCollectionModal = ({
         content: `${error.message}`,
         duration: 3,
       });
-      console.error("Deposit payment failed:", error);
+      console.error("Fee payment failed:", error);
     },
   });
 
@@ -1441,6 +1922,8 @@ const RentCollectionModal = ({
 
         queryClient.invalidateQueries({queryKey: ["resident"]});
         queryClient.invalidateQueries({queryKey: ["monthlyRentUsers"]});
+        queryClient.invalidateQueries({queryKey: ["dailyRentUsers"]});
+        queryClient.invalidateQueries({queryKey: ["messOnlyUsers"]});
         queryClient.invalidateQueries({queryKey: ["accountDashboardDeposit"]});
         queryClient.invalidateQueries({queryKey: ["availableCash"]});
 
@@ -1456,7 +1939,7 @@ const RentCollectionModal = ({
           content: `${error.message}`,
           duration: 3,
         });
-        console.error("Fee payment failed:", error);
+        console.error("Deposit payment failed:", error);
       },
     });
 
@@ -1473,6 +1956,8 @@ const RentCollectionModal = ({
 
         queryClient.invalidateQueries({queryKey: ["resident"]});
         queryClient.invalidateQueries({queryKey: ["monthlyRentUsers"]});
+        queryClient.invalidateQueries({queryKey: ["dailyRentUsers"]});
+        queryClient.invalidateQueries({queryKey: ["messOnlyUsers"]});
         queryClient.invalidateQueries({queryKey: ["accountDashboardDeposit"]});
         queryClient.invalidateQueries({queryKey: ["availableCash"]});
 
@@ -1488,9 +1973,9 @@ const RentCollectionModal = ({
           content: `${error.message}`,
           duration: 3,
         });
-        console.error("Fee payment failed:", error);
+        console.error("Bus fee payment failed:", error);
       },
-    }
+    },
   );
 
   const handleModalClose = () => {
@@ -1506,6 +1991,8 @@ const RentCollectionModal = ({
     setDepositPaymentMode("");
     setBusPaymentMode("");
     setCurrentProperty(preSelectedProperty || selectedProperty);
+    setCurrentKitchen(preSelectedKitchen || selectedKitchen);
+    setSelectedKitchen(null);
     onCancel();
   };
 
@@ -1521,6 +2008,19 @@ const RentCollectionModal = ({
     setDepositPaymentMode("");
   };
 
+  const handleKitchenChange = (kitchenId) => {
+    if (kitchenId) {
+      const kitchen = kitchensData?.find((k) => k._id === kitchenId);
+      setCurrentKitchen(kitchen);
+      setSelectedKitchen(kitchen);
+      setSelectedUser(null);
+    } else {
+      setCurrentKitchen(null);
+      setSelectedKitchen(null);
+      setSelectedUser(null);
+    }
+  };
+
   const userWithPayment = React.useMemo(() => {
     if (!selectedUser) return null;
 
@@ -1533,7 +2033,9 @@ const RentCollectionModal = ({
           : [],
     };
   }, [selectedUser, latestPayment]);
+
   console.log(userWithPayment);
+
   const handleWaiveOffToggle = (checked) => {
     setEnableWaiveOff(checked);
     if (!checked) {
@@ -1543,7 +2045,7 @@ const RentCollectionModal = ({
           selectedUser?.financialDetails?.pendingRent ||
           selectedUser?.pendingAmount ||
           selectedUser?.financialDetails?.pendingAmount ||
-          0
+          0,
       );
       setPaymentAction("fullPayment");
     }
@@ -1590,10 +2092,10 @@ const RentCollectionModal = ({
         paymentMode === "upi"
           ? "UPI"
           : paymentMode === "bank_transfer"
-          ? "Bank Transfer"
-          : paymentMode === "card"
-          ? "Card"
-          : "Cash",
+            ? "Bank Transfer"
+            : paymentMode === "card"
+              ? "Card"
+              : "Cash",
       paymentDate: values.paymentDate,
       collectedBy: values.collectedBy || "",
       transactionId: values.transactionId || null,
@@ -1616,10 +2118,10 @@ const RentCollectionModal = ({
         depositPaymentMode === "upi"
           ? "UPI"
           : depositPaymentMode === "bank_transfer"
-          ? "Bank Transfer"
-          : depositPaymentMode === "card"
-          ? "Card"
-          : "Cash",
+            ? "Bank Transfer"
+            : depositPaymentMode === "card"
+              ? "Card"
+              : "Cash",
       paymentDate: values.depositPaymentDate,
       collectedBy: values.depositCollectedBy || "",
       transactionId: values.depTransactionId || null,
@@ -1642,10 +2144,10 @@ const RentCollectionModal = ({
         busPaymentMode === "upi"
           ? "UPI"
           : busPaymentMode === "bank_transfer"
-          ? "Bank Transfer"
-          : busPaymentMode === "card"
-          ? "Card"
-          : "Cash",
+            ? "Bank Transfer"
+            : busPaymentMode === "card"
+              ? "Card"
+              : "Cash",
       paymentDate: values.busFeePaymentDate,
       collectedBy: values.busFeeCollectedBy || "",
       transactionId: values.busFeeTransactionId || null,
@@ -1662,6 +2164,7 @@ const RentCollectionModal = ({
       setSelectedUser(null);
     } else {
       setCurrentProperty(null);
+      setSelectedUser(null);
     }
   };
 
@@ -1714,7 +2217,8 @@ const RentCollectionModal = ({
   const filterOption = (input, option) => {
     const user = users?.find((u) => u._id === option.value);
     if (user) {
-      const searchString = `${user.name} ${user.roomNumber}`.toLowerCase();
+      const searchString =
+        `${user.name} ${user.roomNumber || user.kitchenName || ""}`.toLowerCase();
       return searchString.includes(input.toLowerCase());
     }
     return false;
@@ -1730,12 +2234,21 @@ const RentCollectionModal = ({
     });
   };
 
-  // Clean property name
-  const cleanName =
-    currentProperty?.name?.replace(/^Heavens Living -\s*/, "") || "";
-  const modalTitle = cleanName
-    ? `${getModalTitle()} - ${cleanName}`
-    : `${getModalTitle()}`;
+  const getTitleSuffix = () => {
+    if (isMessCollection) {
+      const kitchenName = selectedKitchen?.name || "";
+      return kitchenName && kitchenName !== "All Kitchens"
+        ? ` - ${kitchenName}`
+        : "";
+    } else {
+      const propertyName = currentProperty?.name || "";
+      return propertyName && propertyName !== "All Properties"
+        ? ` - ${propertyName}`
+        : "";
+    }
+  };
+
+  const modalTitle = `${getModalTitle()}${getTitleSuffix()}`;
 
   // Check if transaction ID field is needed for rent payment
   const showTransactionIdField =
@@ -1755,8 +2268,11 @@ const RentCollectionModal = ({
 
   const showCollectedByField = paymentMode === "cash";
 
-  // Check if we should show property selection (only show if no pre-selected data)
-  const showPropertySelection = !preSelectedProperty && !selectedProperty?.id;
+  // Check if we should show property/kitchen selection
+  const showSelection =
+    !preSelectedProperty &&
+    !preSelectedKitchen &&
+    (isMessCollection ? !selectedKitchen?.id : !selectedProperty?.id);
 
   return (
     <>
@@ -1780,55 +2296,101 @@ const RentCollectionModal = ({
               label: "Basic Information",
               children: (
                 <Form layout="vertical" form={form}>
-                  {/* Property Selection (only show if no pre-selected property) */}
-                  {showPropertySelection && (
+                  {/* Property/Kitchen Selection */}
+                  {showSelection && (
                     <Card size="small" style={{marginBottom: 16}}>
-                      <Form.Item
-                        label="Select Property"
-                        name="propertyId"
-                        rules={[
-                          {required: true, message: "Please select a property"},
-                        ]}
-                      >
-                        <Select
-                          placeholder="Choose a property"
-                          onChange={handlePropertyChange}
-                          suffixIcon={<HomeOutlined />}
-                          allowClear
+                      {isMessCollection ? (
+                        <Form.Item
+                          label="Select Kitchen"
+                          name="kitchenId"
+                          rules={[
+                            {
+                              required: true,
+                              message: "Please select a kitchen",
+                            },
+                          ]}
                         >
-                          {properties
-                            .filter((property) => property._id !== null)
-                            .map((property) => (
-                              <Option key={property._id} value={property._id}>
-                                {property.name}
+                          <Select
+                            placeholder="Choose a kitchen"
+                            onChange={handleKitchenChange}
+                            suffixIcon={<HomeOutlined />}
+                            allowClear
+                            loading={kitchensLoading}
+                          >
+                            {kitchensData?.map((kitchen) => (
+                              <Option key={kitchen._id} value={kitchen._id}>
+                                {kitchen.name} - {kitchen.location}
                               </Option>
                             ))}
-                        </Select>
-                      </Form.Item>
+                          </Select>
+                        </Form.Item>
+                      ) : (
+                        <Form.Item
+                          label="Select Property"
+                          name="propertyId"
+                          rules={[
+                            {
+                              required: true,
+                              message: "Please select a property",
+                            },
+                          ]}
+                        >
+                          <Select
+                            placeholder="Choose a property"
+                            onChange={handlePropertyChange}
+                            suffixIcon={<HomeOutlined />}
+                            allowClear
+                          >
+                            {properties
+                              .filter((property) => property._id !== null)
+                              .map((property) => (
+                                <Option key={property._id} value={property._id}>
+                                  {property.name}
+                                </Option>
+                              ))}
+                          </Select>
+                        </Form.Item>
+                      )}
                     </Card>
                   )}
 
-                  {/* If property is selected from dropdown, show it as a hidden field */}
-                  {currentProperty?.id && !selectedProperty?.id && (
-                    <Form.Item
-                      name="propertyId"
-                      initialValue={currentProperty.id}
-                      style={{display: "none"}}
-                    >
-                      <Input />
-                    </Form.Item>
-                  )}
+                  {/* Hidden fields for pre-selected values */}
+                  {!isMessCollection &&
+                    currentProperty?.id &&
+                    !selectedProperty?.id && (
+                      <Form.Item
+                        name="propertyId"
+                        initialValue={currentProperty.id}
+                        style={{display: "none"}}
+                      >
+                        <Input />
+                      </Form.Item>
+                    )}
 
-                  {/* User Selection - Only show if no pre-selected user */}
+                  {isMessCollection &&
+                    currentKitchen?.id &&
+                    !selectedKitchen?.id && (
+                      <Form.Item
+                        name="kitchenId"
+                        initialValue={currentKitchen.id}
+                        style={{display: "none"}}
+                      >
+                        <Input />
+                      </Form.Item>
+                    )}
+
+                  {/* User Selection */}
                   {!preSelectedUser &&
-                    (selectedProperty?.id || currentProperty?._id) && (
+                    (isMessCollection
+                      ? currentKitchen?.id || currentKitchen?._id
+                      : selectedProperty?.id || currentProperty?._id) && (
                       <Form.Item
                         label={`Select User (${users.length})`}
                         required
                       >
                         <Select
                           showSearch
-                          placeholder="Search user by name or room number"
+                          placeholder={`Search user by name or ${isMessCollection ? "kitchen" : "room"}`}
                           value={selectedUser?._id || undefined}
                           onChange={handleUserSelect}
                           filterOption={filterOption}
@@ -1842,7 +2404,10 @@ const RentCollectionModal = ({
                         >
                           {users.map((user) => (
                             <Option key={user?._id} value={user?._id}>
-                              {user.name} (Room {user.roomNumber})
+                              {user.name}{" "}
+                              {isMessCollection
+                                ? `(${user.kitchenName || "No Kitchen"})`
+                                : `(Room ${user.roomNumber || "N/A"})`}
                             </Option>
                           ))}
                         </Select>
@@ -1872,13 +2437,19 @@ const RentCollectionModal = ({
 
                       <div style={{display: "flex", flexDirection: "column"}}>
                         <label>
-                          <strong>Property</strong>
+                          <strong>
+                            {isMessCollection ? "Kitchen" : "Property"}
+                          </strong>
                         </label>
                         <Input
                           value={
-                            selectedUser.propertyName ||
-                            selectedUser?.stayDetails?.propertyName ||
-                            "N/A"
+                            isMessCollection
+                              ? selectedUser.messDetails?.kitchenName ||
+                                selectedUser.kitchenName ||
+                                "N/A"
+                              : selectedUser.propertyName ||
+                                selectedUser?.stayDetails?.propertyName ||
+                                "N/A"
                           }
                           readOnly
                           style={{width: 320}}
@@ -1897,7 +2468,7 @@ const RentCollectionModal = ({
                                 value={`₹ ${
                                   userWithPayment.monthlyRent ||
                                   userWithPayment?.financialDetails
-                                    .monthlyRent ||
+                                    ?.monthlyRent ||
                                   0
                                 }`}
                                 readOnly
@@ -1910,7 +2481,7 @@ const RentCollectionModal = ({
                               <Input
                                 value={formatDate(
                                   userWithPayment.joinedDate ||
-                                    userWithPayment?.stayDetails?.joinDate
+                                    userWithPayment?.stayDetails?.joinDate,
                                 )}
                                 prefix={<FiCalendar />}
                                 readOnly
@@ -1932,10 +2503,12 @@ const RentCollectionModal = ({
                                 <Input
                                   value={formatDate(
                                     selectedOption === "mess"
-                                      ? userWithPayment.messStartDate
+                                      ? userWithPayment.messStartDate ||
+                                          userWithPayment?.messDetails
+                                            .messStartDate
                                       : userWithPayment.checkInDate ||
                                           userWithPayment?.stayDetails
-                                            .checkInDate
+                                            .checkInDate,
                                   )}
                                   prefix={<FiCalendar />}
                                   readOnly
@@ -1954,13 +2527,15 @@ const RentCollectionModal = ({
                                 <Input
                                   value={formatDate(
                                     selectedOption === "mess"
-                                      ? userWithPayment?.messEndDate
-                                      : userWithPayment?.extendDate ??
+                                      ? userWithPayment?.messEndDate ||
+                                          userWithPayment?.messDetails
+                                            ?.messEndDate
+                                      : (userWithPayment?.extendDate ??
                                           userWithPayment?.stayDetails
                                             ?.extendDate ??
                                           userWithPayment?.checkOutDate ??
                                           userWithPayment?.stayDetails
-                                            ?.checkOutDate
+                                            ?.checkOutDate),
                                   )}
                                   prefix={<FiCalendar />}
                                   readOnly
@@ -1983,6 +2558,7 @@ const RentCollectionModal = ({
                                     userWithPayment.noOfDays ||
                                     userWithPayment?.stayDetails?.noOfDays ||
                                     userWithPayment.noOfDaysMess ||
+                                    userWithPayment?.messDetails?.noOfDays ||
                                     0
                                   }
                                   readOnly
@@ -2001,7 +2577,9 @@ const RentCollectionModal = ({
                                 <Input
                                   value={`₹ ${
                                     selectedOption === "mess"
-                                      ? userWithPayment.rent || 0
+                                      ? userWithPayment.rent ||
+                                        userWithPayment?.messDetails?.rent ||
+                                        0
                                       : userWithPayment.rent ||
                                         userWithPayment?.stayDetails
                                           .dailyRent ||
@@ -2045,28 +2623,28 @@ const RentCollectionModal = ({
                         <Input
                           value={`₹ ${
                             selectedOption === "monthly"
-                              ? userWithPayment?.financialDetails
+                              ? (userWithPayment?.financialDetails
                                   ?.pendingRent ??
                                 userWithPayment?.pendingRent ??
-                                0
-                              : userWithPayment?.financialDetails
+                                0)
+                              : (userWithPayment?.financialDetails
                                   ?.pendingAmount ??
                                 userWithPayment?.pendingAmount ??
-                                0
+                                0)
                           }`}
                           style={{
                             fontWeight: "bold",
                             fontSize: "16px",
                             color:
                               (selectedOption === "monthly"
-                                ? userWithPayment?.financialDetails
+                                ? (userWithPayment?.financialDetails
                                     ?.pendingRent ??
                                   userWithPayment?.pendingRent ??
-                                  0
-                                : userWithPayment?.financialDetails
+                                  0)
+                                : (userWithPayment?.financialDetails
                                     ?.pendingAmount ??
                                   userWithPayment?.pendingAmount ??
-                                  0) > 0
+                                  0)) > 0
                                 ? "#f56565"
                                 : "#10b981",
                           }}
@@ -2110,19 +2688,19 @@ const RentCollectionModal = ({
                               requiresDepositPayment
                                 ? "deposit"
                                 : requiresBusFeePayment
-                                ? "busFee"
-                                : "payment"
+                                  ? "busFee"
+                                  : "payment",
                             )
                           }
                         >
                           {requiresDepositPayment
                             ? "Proceed to Deposit Payment"
                             : requiresBusFeePayment
-                            ? "Proceed to Bus Fee Payment"
-                            : userWithPayment.pendingRent === 0 &&
-                              userWithPayment.pendingAmount === 0
-                            ? "Pay in Advance"
-                            : "Proceed to Payment"}
+                              ? "Proceed to Bus Fee Payment"
+                              : userWithPayment.pendingRent === 0 &&
+                                  userWithPayment.pendingAmount === 0
+                                ? "Pay in Advance"
+                                : "Proceed to Payment"}
                         </Button>
                       </Form.Item>
                     </>
@@ -2130,7 +2708,7 @@ const RentCollectionModal = ({
                 </Form>
               ),
             },
-            // ... rest of the tabs remain the same (deposit and payment tabs)
+            // ... rest of the tabs remain the same (deposit, busFee, and payment tabs)
             {
               key: "deposit",
               label: "Make Deposit Payment",
@@ -2293,7 +2871,7 @@ const RentCollectionModal = ({
                       style={{marginRight: "8px"}}
                       onClick={() =>
                         setActiveTab(
-                          requiresBusFeePayment ? "busFee" : "payment"
+                          requiresBusFeePayment ? "busFee" : "payment",
                         )
                       }
                     >
@@ -2317,7 +2895,7 @@ const RentCollectionModal = ({
             {
               key: "busFee",
               label: "Bus Fee Payment",
-              disabled: !userWithPayment || !requiresBusFeePayment, // you may control this
+              disabled: !userWithPayment || !requiresBusFeePayment,
               children: (
                 <Form
                   layout="vertical"
@@ -2331,7 +2909,6 @@ const RentCollectionModal = ({
                       borderBottom: "1px solid #d6e9ff",
                     }}
                   >
-                    {/* BUS FEE STATUS INFO */}
                     <div style={{marginBottom: 20}}>
                       {busFeePaid > 0 ? (
                         <Alert
@@ -2359,7 +2936,6 @@ const RentCollectionModal = ({
                       )}
                     </div>
 
-                    {/* AMOUNT + DATE */}
                     <Row gutter={16}>
                       <Col span={12}>
                         <Form.Item
@@ -2400,7 +2976,6 @@ const RentCollectionModal = ({
                       </Col>
                     </Row>
 
-                    {/* PAYMENT MODE */}
                     <Row gutter={16}>
                       <Col span={12}>
                         <Form.Item
@@ -2443,7 +3018,6 @@ const RentCollectionModal = ({
                       </Col>
                     </Row>
 
-                    {/* TRANSACTION ID */}
                     {showBusFeeTransactionIdField && (
                       <Row gutter={16}>
                         <Col span={24}>
@@ -2463,7 +3037,6 @@ const RentCollectionModal = ({
                       </Row>
                     )}
 
-                    {/* REMARKS */}
                     <Form.Item name="busFeeRemarks" label="Remarks (Optional)">
                       <Input.TextArea
                         placeholder="Add remarks for bus fee payment"
@@ -2472,23 +3045,20 @@ const RentCollectionModal = ({
                     </Form.Item>
                   </Card>
 
-                  {/* ACTION BUTTONS */}
                   <Form.Item style={{textAlign: "right"}}>
-                    {/* Back Button */}
                     <Button
                       style={{marginRight: "8px"}}
                       onClick={() =>
                         setActiveTab(
-                          requiresDepositPayment ? "deposit" : "rent"
+                          requiresDepositPayment ? "deposit" : "basic",
                         )
                       }
                     >
                       {requiresDepositPayment
                         ? "Back to Deposit"
-                        : "Back to Rent"}
+                        : "Back to Basic Info"}
                     </Button>
 
-                    {/* Skip Button */}
                     <Button
                       style={{marginRight: "8px"}}
                       onClick={() => setActiveTab("payment")}
@@ -2496,7 +3066,6 @@ const RentCollectionModal = ({
                       Skip & Proceed to Rent Payment
                     </Button>
 
-                    {/* Submit Button */}
                     <Button
                       type="primary"
                       htmlType="submit"
@@ -2795,8 +3364,8 @@ const RentCollectionModal = ({
                                         if (value > remainingAmount) {
                                           return Promise.reject(
                                             new Error(
-                                              `Amount cannot exceed ₹${remainingAmount}`
-                                            )
+                                              `Amount cannot exceed ₹${remainingAmount}`,
+                                            ),
                                           );
                                         }
                                         return Promise.resolve();
@@ -2892,13 +3461,19 @@ const RentCollectionModal = ({
                       style={{marginRight: "8px"}}
                       onClick={() =>
                         setActiveTab(
-                          requiresDepositPayment ? "deposit" : "basic"
+                          requiresDepositPayment
+                            ? "deposit"
+                            : requiresBusFeePayment
+                              ? "busFee"
+                              : "basic",
                         )
                       }
                     >
                       {requiresDepositPayment
                         ? "Back to Deposit"
-                        : "Back to Basic Info"}
+                        : requiresBusFeePayment
+                          ? "Back to Bus Fee"
+                          : "Back to Basic Info"}
                     </Button>
                     <Button
                       type="primary"

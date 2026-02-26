@@ -25,14 +25,7 @@ import {staffManualPayment} from "../../../hooks/accounts/useAccounts";
 const {Option} = Select;
 const {TabPane} = Tabs;
 
-const PaymentModal = ({
-  open,
-  onCancel,
-  staff,
-  onSubmit,
-  employeeList = [],
-  propertyList = [],
-}) => {
+const PaymentModal = ({open, onCancel, staff, onSubmit, employeeList = []}) => {
   const [form] = Form.useForm();
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [activeTab, setActiveTab] = useState("employee");
@@ -62,7 +55,7 @@ const PaymentModal = ({
     onSuccess: (result, variables) => {
       if (result.success) {
         message.success(
-          `Payment of ₹${variables.paidAmount} processed for ${variables.employeeName}`
+          `Payment of ₹${variables.paidAmount} processed for ${variables.employeeName}`,
         );
 
         // Invalidate related queries to refresh data
@@ -195,7 +188,7 @@ const PaymentModal = ({
     // Filter pending salary records
     const pendingRecords = salaryData.filter(
       (record) =>
-        record.status === "pending" || record.paymentStatus === "pending"
+        record.status === "pending" || record.paymentStatus === "pending",
     );
 
     // Sum up pending amounts
@@ -517,7 +510,7 @@ const PaymentModal = ({
                       validator: (_, value) => {
                         if (value && value <= 0) {
                           return Promise.reject(
-                            new Error("Amount must be greater than 0")
+                            new Error("Amount must be greater than 0"),
                           );
                         }
                         return Promise.resolve();

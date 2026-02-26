@@ -36,6 +36,7 @@ const TodaysCheckoutsSection = () => {
           displayAmount: resident.totalAmount || 0,
           pendingAmount: resident.pendingAmount || 0,
           paymentStatus: resident.paymentStatus || "pending",
+          noOfDays: resident.noOfDays || 0,
         })) || [];
 
       const messResidents =
@@ -45,6 +46,7 @@ const TodaysCheckoutsSection = () => {
           displayRoom: resident.kitchenName || "N/A",
           checkInDate: resident.messStartDate || null,
           checkOutDate: resident.messEndDate || null,
+          noOfDays: resident.noOfDays || 0,
           displayAmount: resident.totalAmount || 0,
           pendingAmount: resident.pendingAmount || 0,
           paymentStatus: resident.paymentStatus || "pending",
@@ -111,6 +113,7 @@ const TodaysCheckoutsSection = () => {
               >
                 <CheckoutCard
                   id={resident._id}
+                  userData={resident}
                   type={resident.type}
                   name={resident.name}
                   userType={resident.userType}

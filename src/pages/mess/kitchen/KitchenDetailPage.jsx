@@ -1,26 +1,26 @@
-import { useParams } from "react-router-dom";
-import { Tabs } from "antd";
+import {useParams} from "react-router-dom";
+import {Tabs} from "antd";
 import PageHeader from "../../../components/common/PageHeader";
 import InventoryDetailPage from "../inventory/InventoryDetailPage";
-import { getKitchenById } from "../../../hooks/inventory/useInventory";
-import { useQuery } from "@tanstack/react-query";
+import {getKitchenById} from "../../../hooks/inventory/useInventory";
+import {useQuery} from "@tanstack/react-query";
 import RecipeCategoryPage from "../recipe/RecipeCategoryPage";
 import StaffPage from "../staff/StaffPage";
 import MessMenuPage from "../MessMenuPage";
-import { useSelector } from "react-redux";
+import {useSelector} from "react-redux";
 import AddonPage from "../AddonPage";
 
-const { TabPane } = Tabs;
+const {TabPane} = Tabs;
 
 const KitchenDetailPage = () => {
-  const { kitchenId } = useParams();
+  const {kitchenId} = useParams();
 
   const selectedKitchenId = useSelector(
-    (state) => state.properties.selectedProperty.kitchenId
+    (state) => state.properties.selectedProperty.kitchenId,
   );
   console.log("selectedKitchenId", selectedKitchenId);
 
-  const { data: kitchen } = useQuery({
+  const {data: kitchen} = useQuery({
     queryKey: ["kitchen-by-id", kitchenId],
     queryFn: () => getKitchenById(kitchenId),
   });
@@ -32,10 +32,8 @@ const KitchenDetailPage = () => {
       case "2":
         return <RecipeCategoryPage />;
       case "3":
-        return <StaffPage />;
-      case "4":
         return <MessMenuPage />;
-      case "5":
+      case "4":
         return <AddonPage />;
       default:
         return null;
@@ -57,14 +55,11 @@ const KitchenDetailPage = () => {
           <TabPane tab="Recipe" key="2">
             {renderTabContent("2")}
           </TabPane>
-          <TabPane tab="Staff" key="3">
+          <TabPane tab="Menu" key="3">
             {renderTabContent("3")}
           </TabPane>
-          <TabPane tab="Menu" key="4">
+          <TabPane tab="Addons" key="4">
             {renderTabContent("4")}
-          </TabPane>
-          <TabPane tab="Addons" key="5">
-            {renderTabContent("5")}
           </TabPane>
         </Tabs>
       </div>

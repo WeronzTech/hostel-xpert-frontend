@@ -487,14 +487,14 @@ const ProfileSummary = ({resident}) => {
                     resident.stayDetails?.extendDate
                       ? `${dayjs(resident.stayDetails.extendDate).format(
                           "DD MMMM, YYYY",
-                        )} 
+                        )}
              (Extended from ${dayjs(resident.stayDetails.checkOutDate).format(
                "DD MMMM, YYYY",
              )})`
                       : resident.stayDetails?.checkOutDate
                         ? `${dayjs(resident.stayDetails.checkOutDate).format(
                             "DD MMMM, YYYY",
-                          )} 
+                          )}
              (${resident.stayDetails?.noOfDays || 0} days)`
                         : "Not Provided"
                   }

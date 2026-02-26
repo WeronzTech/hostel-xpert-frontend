@@ -20,9 +20,9 @@ const EmployeePage = () => {
         <TabPane tab="Roles & Permissions" key="3">
           <RolePage />
         </TabPane>
-        <TabPane tab="Events & Permissions" key="4">
+        {/* <TabPane tab="Events & Permissions" key="4">
           <SocketEventPage />
-        </TabPane>
+        </TabPane> */}
       </Tabs>
     </div>
   );

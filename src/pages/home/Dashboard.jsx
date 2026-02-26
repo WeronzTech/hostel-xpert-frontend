@@ -211,26 +211,6 @@ const Dashboard = () => {
     },
   ];
 
-  const paymentReminders = [
-    {
-      id: 1,
-      residentName: "John Doe",
-      note: "Will pay rent on 15th July",
-      dueDate: "2023-07-15",
-      amount: 15000,
-      status: "pending",
-    },
-    {
-      id: 2,
-      residentName: "John Doe",
-      note: "Will pay rent on 15th July",
-      dueDate: "2023-07-15",
-      amount: 15000,
-      status: "pending",
-    },
-    // ... more reminders
-  ];
-
   const handleVacate = (resident) => {
     console.log("Checkout processing for:", resident);
     // Navigate or show modal if needed

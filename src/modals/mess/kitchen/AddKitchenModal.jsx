@@ -2,19 +2,15 @@ import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import {Form, Input, message, Modal, Select} from "antd";
 import {getAllHeavensProperties} from "../../../hooks/property/useProperty";
 import {addKitchen} from "../../../hooks/inventory/useInventory.js";
-import {getAllStaff} from "../../../hooks/staff/useStaff.js";
+import {useDispatch} from "react-redux";
+import {createKitchen} from "../../../redux/kitchensSlice.js";
 
 const AddKitchenModal = ({open, onClose}) => {
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
+  const dispatch = useDispatch();
 
   const [messageApi, contextHolder] = message.useMessage();
-
-  const {data: staffData, isLoading: staffLoading} = useQuery({
-    queryKey: ["all-staff"],
-    queryFn: () => getAllStaff(),
-    enabled: open,
-  });
 
   const {data: propertiesData, isLoading: propertiesLoading} = useQuery({
     queryKey: ["all-properties"],
@@ -25,7 +21,8 @@ const AddKitchenModal = ({open, onClose}) => {
   // Mutation for creating a new kitchen
   const AddKitchen = useMutation({
     mutationFn: (values) => addKitchen(values),
-    onSuccess: () => {
+    onSuccess: (data) => {
+      dispatch(createKitchen({name: data.name, _id: data._id}));
       messageApi.success("Kitchen created successfully!");
       queryClient.invalidateQueries({queryKey: ["kitchens"]});
       onClose();
@@ -79,22 +76,6 @@ const AddKitchenModal = ({open, onClose}) => {
             rules={[{required: true, message: "Please enter the location"}]}
           >
             <Input placeholder="e.g., Jigani" />
-          </Form.Item>
-
-          <Form.Item
-            name="incharge"
-            label="Incharge"
-            rules={[
-              {required: true, message: "Please select an incharge person"},
-            ]}
-          >
-            <Select placeholder="Select a staff member" loading={staffLoading}>
-              {staffData?.map((staff) => (
-                <Select.Option key={staff._id} value={staff._id}>
-                  {staff.name}
-                </Select.Option>
-              ))}
-            </Select>
           </Form.Item>
 
           <Form.Item

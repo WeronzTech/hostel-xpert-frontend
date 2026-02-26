@@ -49,10 +49,6 @@ const EmployeeDetail = () => {
   }
 
   const personalDetailsItems = [
-    {
-      label: "Date of Birth",
-      value: dayjs(employee.dob).format("DD MMMM, YYYY"),
-    },
     {label: "Gender", value: employee.gender},
     {label: "Address", value: employee.address},
   ];
@@ -198,10 +194,6 @@ const EmployeeDetail = () => {
                 </Tag>
               </div>
               <div className="mt-6 space-y-4">
-                <div className="flex items-center">
-                  <MailOutlined className="mr-3 text-gray-500" />
-                  <span>{employee.email}</span>
-                </div>
                 <div className="flex items-center">
                   <PhoneOutlined className="mr-3 text-gray-500" />
                   <span>{employee.contactNumber}</span>

@@ -11,14 +11,15 @@ import {
 import {ActionButton} from "../../components/index.js";
 import {greenButton} from "../../data/common/color.js";
 import {formatDate, formatLabel} from "../../utils/formatUtils.js";
-import {ExtendStayModal} from "./ExtendStayModal.jsx";
 import {useState} from "react";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {vacateResident} from "../../hooks/users/useUser.js";
 import ConfirmModal from "../../modals/common/ConfirmModal.jsx";
+import {RentUpdateModal} from "./RentUpdateModal.jsx";
 
 export default function CheckoutCard({
   id,
+  userData,
   type,
   name,
   userType,
@@ -185,14 +186,10 @@ export default function CheckoutCard({
         </div>
       </div>
 
-      <ExtendStayModal
+      <RentUpdateModal
         visible={extendModalVisible}
         onCancel={() => setExtendModalVisible(false)}
-        userId={id}
-        currentCheckOutDate={checkOutDate}
-        extendDate={extendDate}
-        currentRent={rent}
-        userType={userType}
+        userData={userData}
       />
 
       <ConfirmModal

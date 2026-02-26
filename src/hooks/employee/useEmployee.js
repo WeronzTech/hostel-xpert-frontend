@@ -15,8 +15,8 @@ export const editStaff = async (staffId, updatedStaffData) => {
   try {
     console.log("updatedStaffData", updatedStaffData);
     const res = await apiClient.put(
-      `/property/staff/update/${staffId}`,
-      updatedStaffData
+      `/staff/update/${staffId}`,
+      updatedStaffData,
     );
     return res.data;
   } catch (err) {
@@ -26,7 +26,7 @@ export const editStaff = async (staffId, updatedStaffData) => {
 };
 export const deleteStaff = async (staffId) => {
   try {
-    const res = await apiClient.delete(`/property/staff/delete/${staffId}`);
+    const res = await apiClient.delete(`/staff/delete/${staffId}`);
     return res.data;
   } catch (err) {
     console.error(`Error deleting staff:`, err);
@@ -40,7 +40,7 @@ export const changeStaffStatus = async (staffId) => {
   } catch (err) {
     console.error(`Error changing staff status:`, err);
     throw new Error(
-      err.response?.data?.message || "Failed to change staff status"
+      err.response?.data?.message || "Failed to change staff status",
     );
   }
 };
@@ -69,7 +69,7 @@ export const editManager = async (managerId, managerData) => {
   try {
     const res = await apiClient.put(
       `/client/manager/edit/${managerId}`,
-      managerData
+      managerData,
     );
     return res.data;
   } catch (err) {
@@ -117,7 +117,7 @@ export const changeManagerStatus = async (managerId) => {
   } catch (err) {
     console.error(`Error changing manager status:`, err);
     throw new Error(
-      err.response?.data?.message || "Failed to change manager status"
+      err.response?.data?.message || "Failed to change manager status",
     );
   }
 };
@@ -183,7 +183,7 @@ export const getAllEventPermissions = async () => {
   } catch (err) {
     console.error(`Error fetching event permissions:`, err);
     throw new Error(
-      err.response?.data?.message || "Failed to fetch event permissions"
+      err.response?.data?.message || "Failed to fetch event permissions",
     );
   }
 };
@@ -195,7 +195,7 @@ export const addEventPermissions = async (eventData) => {
   } catch (err) {
     console.error(`Error adding event permissions:`, err);
     throw new Error(
-      err.response?.data?.message || "Failed to add event permissions"
+      err.response?.data?.message || "Failed to add event permissions",
     );
   }
 };
@@ -207,7 +207,7 @@ export const getEventPermissionsById = async (eventId) => {
   } catch (err) {
     console.error(`Error fetching event permissions:`, err);
     throw new Error(
-      err.response?.data?.message || "Failed to fetch event permissions"
+      err.response?.data?.message || "Failed to fetch event permissions",
     );
   }
 };
@@ -219,7 +219,7 @@ export const editEventPermissions = async (eventId, eventData) => {
   } catch (err) {
     console.error(`Error editing event permissions:`, err);
     throw new Error(
-      err.response?.data?.message || "Failed to edit event permissions"
+      err.response?.data?.message || "Failed to edit event permissions",
     );
   }
 };
@@ -231,7 +231,7 @@ export const deleteEventPermissions = async (eventId) => {
   } catch (err) {
     console.error(`Error deleting event permissions:`, err);
     throw new Error(
-      err.response?.data?.message || "Failed to delete event permissions"
+      err.response?.data?.message || "Failed to delete event permissions",
     );
   }
 };

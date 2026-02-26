@@ -44,15 +44,29 @@ import {useRequestCount} from "../../hooks/offboarding/useRequestCount.js";
 import RequestCountBadge from "../../components/offboarding/RequestCountBadge.jsx";
 import {HiOutlineCalendarDays} from "react-icons/hi2";
 import {HiOutlineDocumentText} from "react-icons/hi";
+import {getKitchens} from "../../hooks/inventory/useInventory.js";
+import {selectKitchen, setKitchens} from "../../redux/kitchensSlice.js";
 
 const {Header} = Layout;
 const {Text} = Typography;
+
+// Define kitchen-related routes
+const KITCHEN_ROUTES = [
+  "/inventory",
+  "/menu",
+  "/food-only",
+  "/accounts/transactions/mess",
+];
 
 const Navbar = () => {
   const {user} = useSelector((state) => state.auth);
   const {properties, selectedProperty} = useSelector(
     (state) => state.properties,
   );
+  const {kitchens, selectedKitchen} = useSelector(
+    (state) => state.kitchens || {},
+  );
+
   const [searchTerm, setSearchTerm] = useState("");
   const [isCarouselModalOpen, setIsCarouselModalOpen] = useState(false);
   const [isReferralSettingsModalOpen, setIsReferralSettingsModalOpen] =
@@ -68,12 +82,27 @@ const Navbar = () => {
   const [accountsDropdownOpen, setAccountsDropdownOpen] = useState(false);
   const [moreDropdownOpen, setMoreDropdownOpen] = useState(false);
 
+  const dispatch = useDispatch();
+
   const roleId = useSelector((state) => state?.auth?.user?.role?.id);
 
   const {data: role} = useQuery({
     queryKey: ["get-role", roleId],
     queryFn: () => getRoleById(roleId),
   });
+
+  const {data: kitchensData, isLoading: kitchensLoading} = useQuery({
+    queryKey: ["kitchens"],
+    queryFn: () => getKitchens({}),
+    enabled: true, // Always fetch kitchens
+  });
+
+  // Dispatch kitchens to Redux store when data is received
+  useEffect(() => {
+    if (kitchensData) {
+      dispatch(setKitchens(kitchensData));
+    }
+  }, [kitchensData, dispatch]);
 
   const permissions = role?.permissions;
 
@@ -84,12 +113,20 @@ const Navbar = () => {
     return permissions?.includes(requiredPermission);
   };
 
-  const dispatch = useDispatch();
   const location = useLocation();
   const navigate = useNavigate();
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
   const isMobile = window.innerWidth < 768;
+
+  // Check if current route is a kitchen-related page
+  const isKitchenRoute = useMemo(() => {
+    return KITCHEN_ROUTES.some(
+      (route) =>
+        location.pathname === route ||
+        location.pathname.startsWith(route + "/"),
+    );
+  }, [location.pathname]);
 
   // Close mobile menu when any modal opens
   useEffect(() => {
@@ -231,8 +268,22 @@ const Navbar = () => {
     return properties.filter((p) => user?.properties?.includes(p._id));
   }, [properties, user]);
 
-  const filteredList = propertyList.filter((p) =>
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()),
+  const filteredPropertyList = propertyList.filter((p) =>
+    p.name?.toLowerCase().includes(searchTerm?.toLowerCase()),
+  );
+
+  // Kitchen list
+  const kitchenList = useMemo(() => {
+    if (!kitchens) return [];
+    // Add "All Kitchens" option for admin or based on permissions
+    const hasAllOption = kitchens.some((k) => k.name === "All Kitchens");
+    return hasAllOption
+      ? kitchens
+      : [{name: "All Kitchens", _id: "all"}, ...kitchens];
+  }, [kitchens]);
+
+  const filteredKitchenList = kitchenList.filter((k) =>
+    k.name?.toLowerCase().includes(searchTerm?.toLowerCase()),
   );
 
   useEffect(() => {
@@ -254,12 +305,34 @@ const Navbar = () => {
     }
   }, [user, properties, selectedProperty, dispatch]);
 
+  // Initialize kitchen selection if on kitchen route and no kitchen selected
+  // useEffect(() => {
+  //   if (isKitchenRoute && kitchens?.length > 0 && !selectedKitchen?.id) {
+  //     // Select first kitchen by default or "All Kitchens"
+  //     const firstKitchen = kitchens[0];
+  //     dispatch(
+  //       selectKitchen({
+  //         name: firstKitchen.name,
+  //         id: firstKitchen._id,
+  //       }),
+  //     );
+  //   }
+  // }, [isKitchenRoute, kitchens, selectedKitchen, dispatch]);
+
   const handlePropertySelect = (property) => {
     const selected =
       property.name === "All Properties"
         ? {name: "", id: null}
         : {name: `${user.companyName} - ${property.name}`, id: property._id};
     dispatch(selectProperty(selected));
+  };
+
+  const handleKitchenSelect = (kitchen) => {
+    const selected =
+      kitchen.name === "All Kitchens"
+        ? {name: "All Kitchens", id: "all"}
+        : {name: kitchen.name, id: kitchen._id};
+    dispatch(selectKitchen(selected));
   };
 
   const isActive = (path) => {
@@ -302,7 +375,7 @@ const Navbar = () => {
       className="property-dropdown-antd"
       style={{maxHeight: "400px", overflow: "auto", minWidth: "250px"}}
     >
-      {filteredList.map((property) => {
+      {filteredPropertyList.map((property) => {
         const isSelected =
           (!selectedProperty?.id && property.name === "All Properties") ||
           selectedProperty?.id === property._id;
@@ -332,9 +405,53 @@ const Navbar = () => {
           </Menu.Item>
         );
       })}
-      {filteredList.length === 0 && (
+      {filteredPropertyList.length === 0 && (
         <Menu.Item disabled style={{textAlign: "center", color: "#999"}}>
           No properties found
+        </Menu.Item>
+      )}
+    </Menu>
+  );
+
+  // Kitchen selector menu
+  const kitchenMenu = (
+    <Menu
+      className="kitchen-dropdown-antd"
+      style={{maxHeight: "400px", overflow: "auto", minWidth: "250px"}}
+    >
+      {filteredKitchenList.map((kitchen) => {
+        const isSelected =
+          (!selectedKitchen?.id && kitchen.name === "All Kitchens") ||
+          selectedKitchen?.id === kitchen._id;
+        return (
+          <Menu.Item
+            key={kitchen._id || kitchen.name}
+            onClick={() => handleKitchenSelect(kitchen)}
+            style={{
+              backgroundColor: isSelected ? "#f3f4f6" : "transparent",
+              color: isSelected ? "#059669" : "inherit",
+              fontWeight: isSelected ? "600" : "normal",
+            }}
+          >
+            <Space style={{justifyContent: "space-between", width: "100%"}}>
+              <span
+                style={{
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  fontWeight: isSelected ? "600" : "600",
+                }}
+              >
+                {kitchen.name}
+              </span>
+              {isSelected && <span style={{color: "#059669"}}>✓</span>}
+            </Space>
+          </Menu.Item>
+        );
+      })}
+      {filteredKitchenList.length === 0 && (
+        <Menu.Item disabled style={{textAlign: "center", color: "#999"}}>
+          No kitchens found
         </Menu.Item>
       )}
     </Menu>
@@ -1478,52 +1595,94 @@ const Navbar = () => {
               </Text>
             </Link>
             <Text style={{color: "white", opacity: 0.5}}>|</Text>
-            <Dropdown
-              overlay={propertyMenu}
-              trigger={["click"]}
-              placement="bottomLeft"
-            >
-              <Button
-                type="text"
-                style={{
-                  color: "white",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "4px",
-                  padding: "4px 8px",
-                  height: "auto",
-                  fontWeight: 600,
-                }}
+
+            {/* Conditional Dropdown - Property or Kitchen based on route */}
+            {isKitchenRoute ? (
+              <Dropdown
+                overlay={kitchenMenu}
+                trigger={["click"]}
+                placement="bottomLeft"
               >
-                <span style={{whiteSpace: "nowrap"}}>
-                  {!selectedProperty?.id ||
-                  selectedProperty.id === "null" ||
-                  selectedProperty?.name === ""
-                    ? `${user?.companyName}`
-                    : selectedProperty?.name?.includes(
-                          `${user?.companyName} - `,
-                        ) && isMobile
-                      ? selectedProperty.name.replace(
-                          `${user?.companyName} - `,
-                          "",
-                        )
-                      : selectedProperty?.name}
-                </span>
-                <span
+                <Button
+                  type="text"
                   style={{
-                    display: "inline-flex",
-                    flexDirection: "column",
+                    color: "white",
+                    display: "flex",
                     alignItems: "center",
-                    justifyContent: "center",
-                    height: "16px",
-                    width: "16px",
+                    gap: "4px",
+                    padding: "4px 8px",
+                    height: "auto",
+                    fontWeight: 600,
                   }}
                 >
-                  <FiChevronUp size={10} style={{marginBottom: "-2px"}} />
-                  <FiChevronDown size={10} style={{marginTop: "-2px"}} />
-                </span>
-              </Button>
-            </Dropdown>
+                  <span style={{whiteSpace: "nowrap"}}>
+                    {!selectedKitchen?.id || selectedKitchen.id === "all"
+                      ? "All Kitchens"
+                      : selectedKitchen?.name}
+                  </span>
+                  <span
+                    style={{
+                      display: "inline-flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      height: "16px",
+                      width: "16px",
+                    }}
+                  >
+                    <FiChevronUp size={10} style={{marginBottom: "-2px"}} />
+                    <FiChevronDown size={10} style={{marginTop: "-2px"}} />
+                  </span>
+                </Button>
+              </Dropdown>
+            ) : (
+              <Dropdown
+                overlay={propertyMenu}
+                trigger={["click"]}
+                placement="bottomLeft"
+              >
+                <Button
+                  type="text"
+                  style={{
+                    color: "white",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "4px",
+                    padding: "4px 8px",
+                    height: "auto",
+                    fontWeight: 600,
+                  }}
+                >
+                  <span style={{whiteSpace: "nowrap"}}>
+                    {!selectedProperty?.id ||
+                    selectedProperty.id === "null" ||
+                    selectedProperty?.name === ""
+                      ? `${user?.companyName}`
+                      : selectedProperty?.name?.includes(
+                            `${user?.companyName} - `,
+                          ) && isMobile
+                        ? selectedProperty.name.replace(
+                            `${user?.companyName} - `,
+                            "",
+                          )
+                        : selectedProperty?.name}
+                  </span>
+                  <span
+                    style={{
+                      display: "inline-flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      height: "16px",
+                      width: "16px",
+                    }}
+                  >
+                    <FiChevronUp size={10} style={{marginBottom: "-2px"}} />
+                    <FiChevronDown size={10} style={{marginTop: "-2px"}} />
+                  </span>
+                </Button>
+              </Dropdown>
+            )}
           </div>
         </div>
 

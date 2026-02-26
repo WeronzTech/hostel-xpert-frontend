@@ -40,6 +40,7 @@ export {
   FiMapPin,
   FiTrash2,
   FiMessageSquare,
+  FiSave,
   FiUpload,
   FiEdit2,
   FiFileText,

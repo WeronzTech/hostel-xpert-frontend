@@ -1,19 +1,20 @@
-import { Table } from "antd";
-import { AiOutlineEdit } from "react-icons/ai";
-import { Tag } from "antd";
-import { MdDelete } from "react-icons/md";
-import { redButton } from "../../../data/common/color";
+import {Table} from "antd";
+import {AiOutlineEdit} from "react-icons/ai";
+import {Tag} from "antd";
+import {MdDelete} from "react-icons/md";
+import {redButton} from "../../../data/common/color";
 import ActionButton from "../../common/ActionButton";
-import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { selectProperty } from "../../../redux/propertiesSlice";
+import {useNavigate} from "react-router-dom";
+import {useDispatch, useSelector} from "react-redux";
+import {selectProperty} from "../../../redux/propertiesSlice";
 
-const KitchenDetailTable = ({ kitchenData, loading, onEdit, onDelete }) => {
+const KitchenDetailTable = ({kitchenData, loading, onEdit, onDelete}) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const selectedProperty = useSelector(
-    (state) => state.properties.selectedProperty
+    (state) => state.properties.selectedProperty,
   );
+
   const kitchenTableColumns = [
     {
       title: "Name",
@@ -29,7 +30,7 @@ const KitchenDetailTable = ({ kitchenData, loading, onEdit, onDelete }) => {
               selectProperty({
                 ...selectedProperty,
                 kitchenId: record._id,
-              })
+              }),
             );
             navigate(`/kitchen/${record._id}`);
           }}
@@ -67,14 +68,6 @@ const KitchenDetailTable = ({ kitchenData, loading, onEdit, onDelete }) => {
       ),
     },
     {
-      title: "Incharge",
-      dataIndex: "incharge",
-      key: "incharge",
-      align: "center",
-      width: 200,
-      render: (incharge) => (incharge ? incharge.name : "N/A"),
-    },
-    {
       title: "Action",
       key: "action",
       align: "center",
@@ -102,7 +95,7 @@ const KitchenDetailTable = ({ kitchenData, loading, onEdit, onDelete }) => {
         loading={loading}
         columns={kitchenTableColumns}
         dataSource={kitchenData}
-        scroll={{ x: 850 }}
+        scroll={{x: 850}}
         rowKey="_id"
         pagination={false}
         bordered

@@ -5,7 +5,6 @@ import RentCollectionModal from "../../modals/accounts/RentCollectionModal";
 import {PageHeader} from "../../components";
 import ExpenseOverviewCard from "../../components/accounts/ExpenseOverviewCard";
 import PettyCashCarousel from "../../components/accounts/PettyCashCarousel";
-import RecentTransactions from "../../components/accounts/RecentTransactions";
 import QuickActionsBar from "../../components/accounts/QuickActionsBar";
 import {useSelector} from "react-redux";
 import {useQuery} from "@tanstack/react-query";
@@ -29,7 +28,7 @@ const AccountsDashboard = () => {
 
   const handleRentCollection = (type) => {
     setShowRentModal(false);
-    console.log(`Collecting ${type} rent`);
+    // console.log(`Collecting ${type} rent`);
   };
 
   const handleYearChange = (year) => {
@@ -168,40 +167,7 @@ const AccountsDashboard = () => {
           />
         </Col>
       </Row>
-      {/* Finance Overview Chart and Recent Transactions Section */}
-      {/* <Row gutter={[16, 16]} style={{marginBottom: "32px"}}>
-        <Col xs={24} xl={13} lg={12}>
-          <div className="bg-white rounded-xl p-4 shadow-sm h-full">
-            {/* Header with filter on the right */}
-      {/* <div className="flex justify-between items-center mb-4">
-              <h4 className="text-lg font-semibold text-gray-700 transition-all duration-300">
-                Finance Overview{selectedYear ? ` - ${selectedYear}` : ""}
-              </h4>
-              <Select
-                value={selectedYear}
-                onChange={handleYearChange}
-                size="small"
-              >
-                {availableYears.map((year) => (
-                  <Option key={year} value={year}>
-                    {year}
-                  </Option>
-                ))}
-              </Select>
-            </div>
 
-            <FinanceBarChart
-              data={summaryData?.data}
-              loading={summaryLoading}
-              height="380px"
-            />
-          </div>
-        </Col>
-
-        <Col xs={24} xl={11} lg={12}>
-          <RecentTransactions />
-        </Col>
-      </Row> */}
       <Row gutter={[16, 16]} style={{marginBottom: "32px"}}>
         <Col xs={24}>
           <div className="bg-white rounded-xl p-4 shadow-sm h-full">

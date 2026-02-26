@@ -16,17 +16,11 @@ import {
   MoreOutlined,
   CreditCardOutlined,
 } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import {useNavigate} from "react-router-dom";
+import {useState} from "react";
 import PaymentModal from "../../modals/employee/staff/PaymentModal"; // 👈 Import modal
 
-const StaffTable = ({
-  staffList,
-  loading,
-  onEdit,
-  onDelete,
-  onStatusChange,
-}) => {
+const StaffTable = ({staffList, loading, onEdit, onDelete, onStatusChange}) => {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState(null);
@@ -45,7 +39,7 @@ const StaffTable = ({
 
   // Handle submit
   const handlePaymentSubmit = (values, staff) => {
-    console.log("Payment Submitted:", { values, staff });
+    console.log("Payment Submitted:", {values, staff});
     // You can replace this console.log with your API call
     setIsModalOpen(false);
   };
@@ -66,7 +60,7 @@ const StaffTable = ({
             e.stopPropagation();
             const employeeType = record.managerId ? "manager" : "staff";
             navigate(`/employees/${record._id}`, {
-              state: { type: employeeType },
+              state: {type: employeeType},
             });
           }}
           className="text-blue-600 hover:underline"
@@ -87,20 +81,36 @@ const StaffTable = ({
       ),
     },
     {
-      title: "Email",
-      dataIndex: "email",
-      key: "email",
+      title: "User Access",
+      key: "userAccess",
+      render: (_, record) => {
+        const isSystemUser = !!record.managerId || !!record.managerType;
+
+        return isSystemUser ? (
+          <Tag color="blue">System User</Tag>
+        ) : (
+          <Tag color="default">Normal Staff</Tag>
+        );
+      },
     },
     {
-      title: "Contact Number",
+      title: "Contact",
       dataIndex: "contactNumber",
       key: "contactNumber",
     },
     {
-      title: "Role",
-      dataIndex: "role",
-      key: "role",
-      render: (role) => role?.roleName || "N/A",
+      title: "Employee Type",
+      key: "employeeType",
+      render: (_, record) => {
+        return record.employeeType || record.managerType || "-";
+      },
+    },
+    {
+      title: "Join Date",
+      dataIndex: "joinDate",
+      key: "joinDate",
+      render: (date) =>
+        date ? new Date(date).toLocaleDateString("en-IN") : "N/A",
     },
     {
       title: "Status",
@@ -142,7 +152,7 @@ const StaffTable = ({
             <Tooltip title="Process Payment" placement="top">
               <Button
                 type="text"
-                icon={<CreditCardOutlined style={{ color: "#1890ff" }} />}
+                icon={<CreditCardOutlined style={{color: "#1890ff"}} />}
                 shape="circle"
                 style={{
                   border: "1px solid #d9d9d9",
@@ -152,7 +162,7 @@ const StaffTable = ({
               />
             </Tooltip>
 
-            <Dropdown menu={{ items: menuItems }} trigger={["click"]}>
+            <Dropdown menu={{items: menuItems}} trigger={["click"]}>
               <Button type="text" icon={<MoreOutlined />} />
             </Dropdown>
           </Space>
@@ -168,8 +178,8 @@ const StaffTable = ({
           columns={columns}
           dataSource={staffList}
           rowKey="_id"
-          pagination={{ pageSize: 10 }}
-          scroll={{ x: "max-content" }}
+          pagination={false}
+          scroll={{x: "max-content"}}
         />
       </Spin>
 

@@ -44,7 +44,7 @@ const EmployeeDashboard = () => {
   const [messageApi, contextHolder] = message.useMessage();
 
   const selectedPropertyId = useSelector(
-    (state) => state.properties.selectedProperty?.id
+    (state) => state.properties.selectedProperty?.id,
   );
 
   const [stats, setStats] = useState([
@@ -108,7 +108,7 @@ const EmployeeDashboard = () => {
     },
     onError: (error) => {
       messageApi.error(
-        error.response?.data?.message || "Failed to change manager status."
+        error.response?.data?.message || "Failed to change manager status.",
       );
     },
   });
@@ -121,7 +121,7 @@ const EmployeeDashboard = () => {
     },
     onError: (error) => {
       messageApi.error(
-        error.response?.data?.message || "Failed to change staff status."
+        error.response?.data?.message || "Failed to change staff status.",
       );
     },
   });
@@ -134,7 +134,7 @@ const EmployeeDashboard = () => {
     },
     onError: (error) => {
       messageApi.error(
-        error.response?.data?.message || "Failed to delete staff."
+        error.response?.data?.message || "Failed to delete staff.",
       );
     },
   });
@@ -147,7 +147,7 @@ const EmployeeDashboard = () => {
     },
     onError: (error) => {
       messageApi.error(
-        error.response?.data?.message || "Failed to delete manager."
+        error.response?.data?.message || "Failed to delete manager.",
       );
     },
   });
@@ -225,48 +225,98 @@ const EmployeeDashboard = () => {
         />
         <StatsGrid stats={stats} />
 
-        <div className="bg-white p-4 rounded-lg shadow-sm mb-6 flex justify-between items-center">
-          {/* Filters on the left */}
-          <Space wrap>
+        <div className="bg-white p-4 rounded-lg shadow-sm mb-6">
+          {/* Desktop View - unchanged */}
+          <div className="hidden lg:flex lg:justify-between lg:items-center">
+            <Space wrap>
+              <Search
+                placeholder="Search by employee name..."
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{width: 250}}
+                allowClear
+              />
+              <Select
+                placeholder="Filter by status"
+                onChange={(value) => setStatusFilter(value)}
+                style={{width: 200}}
+                allowClear
+              >
+                <Option value="Active">Active</Option>
+                <Option value="Inactive">Inactive</Option>
+              </Select>
+              <DatePicker
+                placeholder="Filter by join date"
+                onChange={(date) => setJoinDateFilter(date)}
+                style={{width: 200}}
+              />
+            </Space>
+
+            <Space>
+              <Button
+                type="primary"
+                icon={<FiPlus />}
+                onClick={() => setIsAddStaffModalOpen(true)}
+              >
+                Add Employee
+              </Button>
+              <Button
+                type="primary"
+                icon={<FiPlus />}
+                onClick={() => setIsAddManagerModalOpen(true)}
+              >
+                Add Manager
+              </Button>
+            </Space>
+          </div>
+
+          {/* Mobile View - exactly as requested */}
+          <div className="lg:hidden space-y-3">
+            {/* First row: Full width search */}
             <Search
               placeholder="Search by employee name..."
               onChange={(e) => setSearchTerm(e.target.value)}
-              style={{width: 250}}
+              className="w-full"
               allowClear
             />
-            <Select
-              placeholder="Filter by status"
-              onChange={(value) => setStatusFilter(value)}
-              style={{width: 200}}
-              allowClear
-            >
-              <Option value="Active">Active</Option>
-              <Option value="Inactive">Inactive</Option>
-            </Select>
-            <DatePicker
-              placeholder="Filter by join date"
-              onChange={(date) => setJoinDateFilter(date)}
-              style={{width: 200}}
-            />
-          </Space>
 
-          {/* Action Buttons on the right */}
-          <Space>
-            <Button
-              type="primary"
-              icon={<FiPlus />}
-              onClick={() => setIsAddStaffModalOpen(true)}
-            >
-              Add Employee
-            </Button>
-            <Button
-              type="primary"
-              icon={<FiPlus />}
-              onClick={() => setIsAddManagerModalOpen(true)}
-            >
-              Add Manager
-            </Button>
-          </Space>
+            {/* Second row: Two filters side by side */}
+            <div className="flex gap-3">
+              <Select
+                placeholder="Filter by status"
+                onChange={(value) => setStatusFilter(value)}
+                className="flex-1"
+                allowClear
+              >
+                <Option value="Active">Active</Option>
+                <Option value="Inactive">Inactive</Option>
+              </Select>
+              <DatePicker
+                placeholder="Join date"
+                onChange={(date) => setJoinDateFilter(date)}
+                className="flex-1"
+              />
+            </div>
+
+            {/* Third row: Two buttons side by side */}
+            <div className="flex gap-3">
+              <Button
+                type="primary"
+                icon={<FiPlus />}
+                onClick={() => setIsAddStaffModalOpen(true)}
+                className="flex-1"
+              >
+                Add Employee
+              </Button>
+              <Button
+                type="primary"
+                icon={<FiPlus />}
+                onClick={() => setIsAddManagerModalOpen(true)}
+                className="flex-1"
+              >
+                Add Manager
+              </Button>
+            </div>
+          </div>
         </div>
 
         <StaffTable
@@ -282,15 +332,18 @@ const EmployeeDashboard = () => {
           onClose={() => setIsAddStaffModalOpen(false)}
         />
         <AddManagerModal
+          kitchens={kitchens}
           open={isAddManagerModalOpen}
           onClose={() => setIsAddManagerModalOpen(false)}
         />
         <EditStaffModal
+          kitchens={kitchens}
           open={isEditStaffModalOpen}
           onClose={() => setIsEditStaffModalOpen(false)}
           staff={selectedData}
         />
         <EditManagerModal
+          kitchens={kitchens}
           open={isEditManagerModalOpen}
           onClose={() => setIsEditManagerModalOpen(false)}
           manager={selectedData}

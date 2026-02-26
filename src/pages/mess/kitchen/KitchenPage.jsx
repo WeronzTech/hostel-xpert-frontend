@@ -1,79 +1,3 @@
-// import { IoAddCircleOutline } from "react-icons/io5";
-// import { Button, Input } from "antd";
-// import { useState } from "react";
-// import { useQuery } from "@tanstack/react-query";
-// import PageHeader from "../../../components/common/PageHeader";
-// import { getKitchens } from "../../../hooks/inventory/useInventory.js";
-// import { useSelector } from "react-redux";
-// import AddInventoryModal from "../../../modals/mess/inventory/AddInventoryModal.jsx";
-// import KitchenDetailTable from "../../../components/mess/kitchen/KitchenDetailTable.jsx";
-// import AddKitchenModal from "../../../modals/mess/kitchen/AddKitchenModal.jsx";
-
-// const { Search } = Input;
-
-// const KitchenDetail = () => {
-//   const [search, setSearch] = useState("");
-//   const [isKitchenModalOpen, setIsKitchenModalOpen] = useState(false);
-
-//   const selectedPropertyId = useSelector(
-//     (state) => state.properties.selectedProperty.id
-//   );
-
-//   const { data: kitchens, isLoading: kitchensLoading } = useQuery({
-//     queryKey: ["kitchens", selectedPropertyId, search],
-//     queryFn: () =>
-//       getKitchens({ propertyId: selectedPropertyId, search: search }),
-//   });
-
-//   const handleSearch = (value) => {
-//     setSearch(value);
-//   };
-
-//   const showKitchenModal = () => {
-//     setIsKitchenModalOpen(true);
-//   };
-
-//   const handleKitchenModalClose = () => {
-//     setIsKitchenModalOpen(false);
-//   };
-
-//   return (
-//     <>
-//       <div className="min-h-screen bg-gray-50 xl:px-12 lg:px-4 lg:pt-6 lg:pb-12 px-4 pt-4 pb-8">
-//         <PageHeader title="Kitchen" subtitle="Manage all the Kitchens" />
-
-//         <div className="bg-white p-4 rounded-lg shadow-sm">
-//           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 my-4">
-//             <Search
-//               placeholder="Search by kitchen name..."
-//               onChange={handleSearch}
-//               style={{ width: 250 }}
-//               enterButton
-//             />
-//             <Button
-//               type="primary"
-//               icon={<IoAddCircleOutline className="text-lg" />}
-//               onClick={showKitchenModal}
-//             >
-//               Create Kitchen
-//             </Button>
-//           </div>
-
-//           <KitchenDetailTable
-//             kitchenData={kitchens || []}
-//             loading={kitchensLoading}
-//           />
-//         </div>
-//       </div>
-//       <AddKitchenModal
-//         open={isKitchenModalOpen}
-//         onClose={handleKitchenModalClose}
-//       />
-//     </>
-//   );
-// };
-
-// export default KitchenDetail;
 import {IoAddCircleOutline} from "react-icons/io5";
 import {Button, Input} from "antd";
 import {useState} from "react";
@@ -97,7 +21,7 @@ const KitchenPage = () => {
   const [deletingKitchen, setDeletingKitchen] = useState(null);
 
   const selectedPropertyId = useSelector(
-    (state) => state.properties.selectedProperty.id
+    (state) => state.properties.selectedProperty.id,
   );
 
   const {data: kitchens, isLoading: kitchensLoading} = useQuery({
