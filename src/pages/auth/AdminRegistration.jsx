@@ -47,8 +47,8 @@ const AdminRegistration = () => {
       street: "",
       city: "",
       state: "",
-      country: "India",
-      zipCode: "",
+      country: "",
+      // zipCode: "",
     },
   };
 
@@ -356,20 +356,17 @@ const AdminRegistration = () => {
                       label="Country"
                       name={["address", "country"]}
                       rules={[
-                        {required: true, message: "Please select country"},
+                        {required: true, message: "Please enter country"},
                       ]}
                       style={{marginBottom: 0}}
                     >
-                      <Select
-                        placeholder="Select country"
+                      <Input
+                        placeholder="Enter country"
                         style={{borderRadius: "8px"}}
-                      >
-                        <Option value="India">India</Option>
-                        <Option value="Other">Other</Option>
-                      </Select>
+                      />
                     </Form.Item>
                   </Col>
-                  <Col span={12}>
+                  {/* <Col span={12}>
                     <Form.Item
                       label="ZIP Code"
                       name={["address", "zipCode"]}
@@ -383,7 +380,7 @@ const AdminRegistration = () => {
                         style={{borderRadius: "8px"}}
                       />
                     </Form.Item>
-                  </Col>
+                  </Col> */}
                 </Row>
               </Col>
             </Row>

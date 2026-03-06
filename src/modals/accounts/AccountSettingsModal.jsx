@@ -10,7 +10,7 @@ import {
   Typography,
   Input,
 } from "antd";
-import {useState, useEffect} from "react";
+import {useState, useEffect, useMemo} from "react";
 import {
   setAccountMapping,
   getAccountMappings,
@@ -69,16 +69,28 @@ const AccountSettingsModal = ({
   });
 
   // Format system names
-  const formattedSystems = systemNames?.map((item) => ({
-    label: item.replace(/_/g, " "),
-    value: item,
-  }));
+  const formattedSystems = useMemo(
+    () =>
+      systemNames?.map((item) => ({
+        label: item.replace(/_/g, " "),
+        value: item,
+      })),
+    [systemNames],
+  );
 
-  // Format accounts
-  const formattedAccounts = accounts?.map((acc) => ({
-    label: acc.name,
-    value: acc._id,
-  }));
+  // Format accounts - FILTER TO ONLY SHOW LEDGER ACCOUNTS (not groups)
+  const formattedAccounts = useMemo(
+    () =>
+      accounts
+        ?.filter((acc) => !acc.isGroup) // Only show ledger accounts
+        ?.map((acc) => ({
+          label: `${acc.name} ${acc.code ? `(${acc.code})` : ""}`,
+          value: acc._id,
+          accountType: acc.accountType,
+          gstEnabled: !!acc.gstType,
+        })),
+    [accounts],
+  );
 
   useEffect(() => {
     if (!open) {
@@ -108,32 +120,42 @@ const AccountSettingsModal = ({
   };
 
   // Prepare data for the mappings table
-  const mappingsData = existingMappings?.data?.map((mapping, index) => ({
-    key: mapping._id || index,
-    systemName: mapping.systemName,
-    formattedSystemName: mapping.systemName?.replace(/_/g, " "),
-    accountId: mapping.accountId,
-    accountName: mapping.accountId?.name || "-",
-    accountType: mapping.accountId?.accountType || "N/A",
-    description: mapping.description,
-    status: mapping.accountId ? "Mapped" : "Not Mapped",
-    isMapped: !!mapping.accountId,
-    createdAt: mapping.createdAt,
-    updatedAt: mapping.updatedAt,
-  }));
+  const mappingsData = useMemo(
+    () =>
+      existingMappings?.data?.map((mapping, index) => ({
+        key: mapping._id || index,
+        systemName: mapping.systemName,
+        formattedSystemName: mapping.systemName?.replace(/_/g, " "),
+        accountId: mapping.accountId,
+        accountName: mapping.accountId?.name || "-",
+        accountType: mapping.accountId?.accountType || "N/A",
+        description: mapping.description,
+        status: mapping.accountId ? "Mapped" : "Not Mapped",
+        isMapped: !!mapping.accountId,
+        createdAt: mapping.createdAt,
+        updatedAt: mapping.updatedAt,
+      })),
+    [existingMappings],
+  );
 
   // Filter data based on search text and status filter
-  const filteredMappingsData = mappingsData?.filter((item) => {
-    const matchesSearch =
-      item.formattedSystemName
-        .toLowerCase()
-        .includes(searchText.toLowerCase()) ||
-      item.systemName.toLowerCase().includes(searchText.toLowerCase());
+  const filteredMappingsData = useMemo(
+    () =>
+      mappingsData?.filter((item) => {
+        const matchesSearch =
+          item.formattedSystemName
+            .toLowerCase()
+            .includes(searchText.toLowerCase()) ||
+          item.systemName.toLowerCase().includes(searchText.toLowerCase());
 
-    const matchesStatus = statusFilter ? item.status === statusFilter : true;
+        const matchesStatus = statusFilter
+          ? item.status === statusFilter
+          : true;
 
-    return matchesSearch && matchesStatus;
-  });
+        return matchesSearch && matchesStatus;
+      }),
+    [mappingsData, searchText, statusFilter],
+  );
 
   // Columns for the mappings table
   const mappingsColumns = [
@@ -190,20 +212,46 @@ const AccountSettingsModal = ({
               size="large"
               allowClear
               loading={loading}
+              showSearch
+              optionFilterProp="label"
             />
           </Form.Item>
 
-          {/* Account Dropdown */}
+          {/* Account Dropdown - Now shows only ledger accounts */}
           <Form.Item label="Account" required>
             <Select
-              placeholder="Select an account"
+              placeholder="Select a ledger account"
               options={formattedAccounts}
               value={selectedAccount}
               onChange={setSelectedAccount}
               size="large"
               allowClear
+              showSearch
+              optionFilterProp="label"
+              optionRender={(option) => (
+                <Space direction="vertical" size={0} style={{width: "100%"}}>
+                  <Space align="center">
+                    <Text strong>{option.data.label}</Text>
+                    {option.data.gstEnabled && (
+                      <Tag color="gold" size="small">
+                        GST
+                      </Tag>
+                    )}
+                  </Space>
+                  <Text type="secondary" style={{fontSize: "12px"}}>
+                    {option.data.accountType}
+                  </Text>
+                </Space>
+              )}
             />
           </Form.Item>
+
+          {/* Helper text showing count */}
+          <Text type="secondary" style={{fontSize: "12px"}}>
+            Showing {formattedAccounts?.length || 0} ledger accounts
+            {accounts &&
+              ` (${accounts.filter((acc) => acc.isGroup).length} groups hidden)`}
+          </Text>
         </Form>
       ),
     },
@@ -297,13 +345,13 @@ const AccountSettingsModal = ({
         onOk={activeTab === "create" ? handleSubmit : null}
         okText={
           activeTab === "create"
-            ? createAccountSettingsMutation.isLoading
+            ? createAccountSettingsMutation.isPending
               ? "Saving..."
               : "Save"
             : null
         }
         okButtonProps={{
-          loading: createAccountSettingsMutation.isLoading,
+          loading: createAccountSettingsMutation.isPending,
           disabled:
             activeTab !== "create" || !selectedSystem || !selectedAccount,
         }}
@@ -314,7 +362,7 @@ const AccountSettingsModal = ({
         }
         centered
         width={800}
-        confirmLoading={createAccountSettingsMutation.isLoading}
+        confirmLoading={createAccountSettingsMutation.isPending}
       >
         <Tabs activeKey={activeTab} onChange={setActiveTab} items={tabItems} />
       </Modal>

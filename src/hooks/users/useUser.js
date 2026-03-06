@@ -1154,6 +1154,29 @@ export const respondToGatePass = async (payload) => {
   }
 };
 
+// Add this function to your existing useUser.js file
+export const generateFoodToken = async (userId) => {
+  try {
+    const response = await apiClient.post(
+      "/inventory/mess-booking/manual-token",
+      {
+        userId,
+      },
+    );
+    return response.data;
+  } catch (error) {
+    const apiError = {
+      message: error.response?.data?.message || "Creating Booking Token failed",
+      details:
+        error.response?.data?.errors ||
+        error.response?.data?.error ||
+        error.message,
+      status: error.response?.status,
+    };
+    throw apiError;
+  }
+};
+
 export const updateRentAndDates = async ({
   userId,
   dailyRent,

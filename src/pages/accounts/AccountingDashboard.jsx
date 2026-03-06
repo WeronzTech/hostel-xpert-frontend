@@ -1,38 +1,36 @@
 import {useState} from "react";
-import {Row, Col, Card, Button, Select, Space, message} from "antd";
+import {Row, Col, Card, Button, message, Dropdown, Space} from "antd";
 import {
   ReconciliationOutlined,
   PlusCircleOutlined,
   FileAddOutlined,
   SettingOutlined,
+  TableOutlined,
+  FileTextOutlined,
+  DownOutlined,
+  HomeOutlined,
+  ShopOutlined,
 } from "@ant-design/icons";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
-import {useSelector} from "react-redux";
 import ChartOfAccountsModal from "../../modals/accounts/ChartOfAccountsModal";
 import JournalEntryModal from "../../modals/accounts/JournalEntryModal";
-import RecentJournalEntries from "../../components/accounts/RecentJournalEntries";
 import AccountsList from "../../components/accounts/AccountsList";
 import {PageHeader} from "../../components";
 import {
   getAccounts,
-  getJournalEntries,
   getSystemNames,
   getTransactionDetails,
 } from "../../hooks/accounts/useAccounts";
 import {useNavigate} from "react-router-dom";
 import TransactionDetailModal from "../../modals/accounts/TransactionDetailModal";
 import AccountSettingsModal from "../../modals/accounts/AccountSettingsModal";
-
-const {Option} = Select;
+import AccountsHierarchy from "../../components/accounts/AccountsHierarchy ";
 
 const AccountingDashboard = () => {
-  const {selectedProperty} = useSelector((state) => state.properties);
   const [showJournalEntryModal, setShowJournalEntryModal] = useState(false);
   const [showChartOfAccountModal, setShowChartOfAccountModal] = useState(false);
   const [showAccountSettingsModal, setShowAccountSettingsModal] =
     useState(false);
-  const [selectedAccountType, setSelectedAccountType] = useState("all");
-  const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedTransactionId, setSelectedTransactionId] = useState(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
@@ -41,47 +39,18 @@ const AccountingDashboard = () => {
 
   // Fetch accounts from API
   const {data: accountsData, isLoading: accountsLoading} = useQuery({
-    queryKey: [
-      "c-o-accounts",
-      selectedProperty?.id,
-      selectedAccountType,
-      selectedCategory,
-    ],
-    queryFn: () =>
-      getAccounts({
-        propertyId: selectedProperty?.id,
-        accountType:
-          selectedAccountType !== "all" ? selectedAccountType : undefined,
-        categoryId: selectedCategory !== "all" ? selectedCategory : undefined,
-      }),
+    queryKey: ["c-o-accounts"],
+    queryFn: () => getAccounts({}),
     refetchOnWindowFocus: false,
   });
 
-  const uniqueCategories =
-    accountsData?.data
-      ?.filter((acc) => acc.categoryId)
-      ?.reduce((acc, current) => {
-        const exists = acc.find((c) => c._id === current.categoryId._id);
-        if (!exists) acc.push(current.categoryId);
-        return acc;
-      }, []) || [];
-
-  // Fetch recent journal entries
-  const {data: journalEntriesData, isLoading: journalEntriesLoading} = useQuery(
-    {
-      queryKey: ["journalEntries", selectedProperty?.id],
-      queryFn: () => getJournalEntries({propertyId: selectedProperty?.id}),
-      refetchOnWindowFocus: false,
-    },
-  );
+  const entityTypes = accountsData?.entityTypes || [];
 
   const {data: systemNames, isLoading: systemNamesLoading} = useQuery({
     queryKey: ["systemNames"],
     queryFn: () => getSystemNames(),
     refetchOnWindowFocus: false,
   });
-
-  const accountTypes = ["Asset", "Liability", "Equity", "Income", "Expense"];
 
   const handleJournalEntrySuccess = () => {
     setShowJournalEntryModal(false);
@@ -114,6 +83,60 @@ const AccountingDashboard = () => {
   const handleCloseModal = () => {
     setIsDetailModalOpen(false);
     setSelectedTransactionId(null);
+  };
+
+  const handleGeneralLedgerClick = (entityType) => {
+    navigate(`/accounting/generalLedger/${entityType}`);
+  };
+
+  const handleTrialBalanceClick = (entityType) => {
+    navigate(`/accounting/financial-reports/${entityType}`);
+  };
+
+  const handleProfitAndLossClick = (entityType) => {
+    navigate(`/accounting/balance-sheet/${entityType}`);
+  };
+
+  // Menu items for General Ledger dropdown
+  const generalLedgerMenu = {
+    items: entityTypes.map((type) => ({
+      key: type,
+      label: (
+        <Space>
+          {type === "PROPERTY" ? <HomeOutlined /> : <ShopOutlined />}
+          {type.charAt(0) + type.slice(1).toLowerCase()}
+        </Space>
+      ),
+      onClick: () => handleGeneralLedgerClick(type),
+    })),
+  };
+
+  // Menu items for Trial Balance dropdown
+  const trialBalanceMenu = {
+    items: entityTypes.map((type) => ({
+      key: type,
+      label: (
+        <Space>
+          {type === "PROPERTY" ? <HomeOutlined /> : <ShopOutlined />}
+          {type.charAt(0) + type.slice(1).toLowerCase()}
+        </Space>
+      ),
+      onClick: () => handleTrialBalanceClick(type),
+    })),
+  };
+
+  // Menu items for Financial Reports dropdown
+  const financialReportsMenu = {
+    items: entityTypes.map((type) => ({
+      key: type,
+      label: (
+        <Space>
+          {type === "PROPERTY" ? <HomeOutlined /> : <ShopOutlined />}
+          {type.charAt(0) + type.slice(1).toLowerCase()}
+        </Space>
+      ),
+      onClick: () => handleProfitAndLossClick(type),
+    })),
   };
 
   return (
@@ -168,105 +191,83 @@ const AccountingDashboard = () => {
               </Button>
             </div>
 
-            {/* Right side button */}
-            <div className="w-full sm:w-auto  sm:mt-0">
-              <Button
-                icon={<ReconciliationOutlined />}
-                size="large"
-                style={{
-                  color: "#059669",
-                  borderColor: "#059669",
-                }}
-                className="hover-effect-uniform w-full sm:w-auto"
-                onClick={() => navigate("/accounting/generalLedger")}
+            {/* Right side buttons with dropdowns */}
+            <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 w-full sm:w-auto">
+              {/* General Ledger Dropdown */}
+              <Dropdown
+                menu={generalLedgerMenu}
+                trigger={["hover"]}
+                placement="bottom"
               >
-                View General Ledger
-              </Button>
+                <Button
+                  icon={<ReconciliationOutlined />}
+                  size="large"
+                  style={{
+                    color: "#059669",
+                    borderColor: "#059669",
+                  }}
+                  className="hover-effect-uniform w-full sm:w-auto"
+                >
+                  <Space>
+                    General Ledger
+                    <DownOutlined />
+                  </Space>
+                </Button>
+              </Dropdown>
+
+              {/* Trial Balance Dropdown */}
+              <Dropdown
+                menu={trialBalanceMenu}
+                trigger={["hover"]}
+                placement="bottom"
+              >
+                <Button
+                  icon={<TableOutlined />}
+                  size="large"
+                  style={{
+                    color: "#059669",
+                    borderColor: "#059669",
+                  }}
+                  className="hover-effect-uniform w-full sm:w-auto"
+                >
+                  <Space>
+                    Trial Balance
+                    <DownOutlined />
+                  </Space>
+                </Button>
+              </Dropdown>
+
+              {/* Financial Reports Dropdown */}
+              <Dropdown
+                menu={financialReportsMenu}
+                trigger={["hover"]}
+                placement="bottom"
+              >
+                <Button
+                  icon={<FileTextOutlined />}
+                  size="large"
+                  style={{
+                    color: "#059669",
+                    borderColor: "#059669",
+                  }}
+                  className="hover-effect-uniform w-full sm:w-auto"
+                >
+                  <Space>
+                    Financial Reports
+                    <DownOutlined />
+                  </Space>
+                </Button>
+              </Dropdown>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Main Content */}
+      {/* Main Content - Two Column Layout */}
       <Row gutter={[16, 16]}>
-        {/* Chart of Accounts Section */}
-        <Col xs={24} lg={16}>
+        {/* Chart of Accounts Section - Left Column */}
+        <Col xs={24} lg={14}>
           <Card
-            title={
-              window.innerWidth > 768 ? (
-                "Chart of Accounts"
-              ) : (
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    gap: 8,
-                    width: "100%",
-                  }}
-                >
-                  <Select
-                    value={selectedAccountType}
-                    onChange={setSelectedAccountType}
-                    style={{width: 120}}
-                    size="small"
-                  >
-                    <Option value="all">All Types</Option>
-                    {accountTypes.map((type) => (
-                      <Option key={type} value={type}>
-                        {type}
-                      </Option>
-                    ))}
-                  </Select>
-                  <Select
-                    value={selectedCategory}
-                    onChange={setSelectedCategory}
-                    style={{width: 140}}
-                    size="small"
-                    loading={accountsLoading}
-                  >
-                    <Option value="all">All Categories</Option>
-                    {uniqueCategories?.map((category) => (
-                      <Option key={category._id} value={category._id}>
-                        {category.name}
-                      </Option>
-                    ))}
-                  </Select>
-                </div>
-              )
-            }
-            extra={
-              window.innerWidth > 768 && (
-                <Space>
-                  <Select
-                    value={selectedAccountType}
-                    onChange={setSelectedAccountType}
-                    style={{width: 120}}
-                    size="small"
-                  >
-                    <Option value="all">All Types</Option>
-                    {accountTypes.map((type) => (
-                      <Option key={type} value={type}>
-                        {type}
-                      </Option>
-                    ))}
-                  </Select>
-                  <Select
-                    value={selectedCategory}
-                    onChange={setSelectedCategory}
-                    style={{width: 140}}
-                    size="small"
-                    loading={accountsLoading}
-                  >
-                    <Option value="all">All Categories</Option>
-                    {uniqueCategories.map((category) => (
-                      <Option key={category._id} value={category._id}>
-                        {category.name}
-                      </Option>
-                    ))}
-                  </Select>
-                </Space>
-              )
-            }
             style={{
               borderRadius: "8px",
               boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1)",
@@ -279,13 +280,20 @@ const AccountingDashboard = () => {
           </Card>
         </Col>
 
-        {/* Recent Journal Entries */}
-        <Col xs={24} lg={8}>
-          <RecentJournalEntries
-            entries={journalEntriesData?.data}
-            loading={journalEntriesLoading}
-            handleClick={handleListClick}
-          />
+        {/* Hierarchy View Section - Right Column - Hidden on mobile */}
+        <Col xs={0} lg={10}>
+          <Card
+            style={{
+              borderRadius: "8px",
+              boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1)",
+              height: "100%",
+            }}
+          >
+            <AccountsHierarchy
+              accounts={accountsData?.data || []}
+              loading={accountsLoading}
+            />
+          </Card>
         </Col>
       </Row>
 
@@ -301,7 +309,6 @@ const AccountingDashboard = () => {
         isOpen={showChartOfAccountModal}
         onClose={() => setShowChartOfAccountModal(false)}
         onSuccess={handleChartOfAccountSuccess}
-        // categories={categoriesData}
       />
 
       <TransactionDetailModal

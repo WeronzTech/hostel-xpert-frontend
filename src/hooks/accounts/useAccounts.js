@@ -124,7 +124,7 @@ export const addExpense = async (data) => {
       // Handle case where it might be an upload file object
       formData.append(
         "billImage",
-        data.billImage.originFileObj || data.billImage
+        data.billImage.originFileObj || data.billImage,
       );
     }
     const response = await apiClient.post("/expense/add", formData, {
@@ -251,7 +251,7 @@ export const deleteCategory = async (categoryId) => {
     // console.log("Deleting category with ID:", categoryId);
 
     const response = await apiClient.delete(
-      `/expense/categories/${categoryId}`
+      `/expense/categories/${categoryId}`,
     );
 
     console.debug("Category deleted:", response.data);
@@ -290,7 +290,7 @@ export const getPettyCashByManagerId = async (managerId) => {
   } catch (err) {
     console.error(`Error getting petty cash:`, err);
     throw new Error(
-      err.response?.data?.message || "Failed to fetch petty cash"
+      err.response?.data?.message || "Failed to fetch petty cash",
     );
   }
 };
@@ -313,7 +313,7 @@ export const getAllPettyCashes = async (filters = {}) => {
   } catch (err) {
     console.error(`Error getting petty cash:`, err);
     throw new Error(
-      err.response?.data?.message || "Failed to fetch petty cash"
+      err.response?.data?.message || "Failed to fetch petty cash",
     );
   }
 };
@@ -328,7 +328,7 @@ export const getPettyCashPaymentsByManager = async (managerId) => {
   } catch (err) {
     console.error("Error fetching Petty Cash Payments by Manager:", err);
     throw new Error(
-      err.response?.data?.message || "Failed to fetch petty cash payments"
+      err.response?.data?.message || "Failed to fetch petty cash payments",
     );
   }
 };
@@ -424,7 +424,7 @@ export const getCommissionData = async (filters = {}) => {
   } catch (error) {
     console.error("Error fetching available cash:", error);
     throw new Error(
-      error.response?.data?.message || "Failed to fetch available cash"
+      error.response?.data?.message || "Failed to fetch available cash",
     );
   }
 };
@@ -436,7 +436,7 @@ export const getAllAccountsPayments = async () => {
   } catch (err) {
     console.error("Error fetching Accounts Payments:", err);
     throw new Error(
-      err.response?.data?.message || "Failed to fetch Accounts Payments"
+      err.response?.data?.message || "Failed to fetch Accounts Payments",
     );
   }
 };
@@ -451,7 +451,7 @@ export const getWaveOffPayments = async (filters = {}) => {
   } catch (error) {
     console.error("Error fetching available cash:", error);
     throw new Error(
-      error.response?.data?.message || "Failed to fetch available cash"
+      error.response?.data?.message || "Failed to fetch available cash",
     );
   }
 };
@@ -467,7 +467,7 @@ export const getAvailableCash = async (propertyId) => {
   } catch (error) {
     console.error("Error fetching available cash:", error);
     throw new Error(
-      error.response?.data?.message || "Failed to fetch available cash"
+      error.response?.data?.message || "Failed to fetch available cash",
     );
   }
 };
@@ -506,7 +506,7 @@ export const getVoucherData = async (filters = {}) => {
   } catch (error) {
     console.error("Error fetching available cash:", error);
     throw new Error(
-      error.response?.data?.message || "Failed to fetch available cash"
+      error.response?.data?.message || "Failed to fetch available cash",
     );
   }
 };
@@ -611,7 +611,7 @@ export const makeDepositPayment = async (data) => {
 
     const response = await apiClient.post(
       "/depositPayments/record-manual",
-      data
+      data,
     );
 
     console.debug("Deposit Payment added:", response.data);
@@ -678,7 +678,7 @@ export const makeRefundPayment = async (data) => {
 
     const response = await apiClient.post(
       "/depositPayments/record-refund",
-      data
+      data,
     );
 
     console.debug("Refund Payment added:", response.data);
@@ -702,7 +702,7 @@ export const getLatestFeePaymentByUserId = async (userId) => {
     // console.log("Fetching userId:", userId);
 
     const response = await apiClient.get(
-      `/feePayments/latestPayment/${userId}`
+      `/feePayments/latestPayment/${userId}`,
     );
 
     console.debug("Fetched data:", response.data);
@@ -762,7 +762,7 @@ export const getStaffSalaryData = async (filters = {}) => {
   } catch (error) {
     console.error("Error fetching staff salary data:", error);
     throw new Error(
-      error.response?.data?.message || "Failed to fetch staff salary data"
+      error.response?.data?.message || "Failed to fetch staff salary data",
     );
   }
 };
@@ -795,7 +795,7 @@ export const getGstReport = async ({format, month, year} = {}) => {
   } catch (error) {
     console.error("Error fetching GST report data:", error);
     throw new Error(
-      error.response?.data?.message || "Failed to fetch GST report data"
+      error.response?.data?.message || "Failed to fetch GST report data",
     );
   }
 };
@@ -814,7 +814,7 @@ export const getAccountsLogData = async (filter) => {
   } catch (error) {
     console.error("Error fetching accounts log data:", error);
     throw new Error(
-      error.response?.data?.message || "Failed to fetch accounts log data"
+      error.response?.data?.message || "Failed to fetch accounts log data",
     );
   }
 };
@@ -855,19 +855,22 @@ export const getAccounts = async (filters = {}) => {
   } catch (error) {
     console.error("Error fetching accounts data:", error);
     throw new Error(
-      error.response?.data?.message || "Failed to fetch accounts data"
+      error.response?.data?.message || "Failed to fetch accounts data",
     );
   }
 };
 
 export const getJournalEntries = async (filters = {}) => {
   try {
-    // ✅ Safely construct query params
     const params = {};
 
     // Property filter
-    if (filters.propertyId && filters.propertyId !== "all") {
-      params.propertyId = filters.propertyId;
+    if (filters.entityId && filters.entityId !== "all") {
+      params.entityId = filters.entityId;
+    }
+
+    if (filters.entityType) {
+      params.entityType = filters.entityType;
     }
 
     // Account filter
@@ -875,26 +878,31 @@ export const getJournalEntries = async (filters = {}) => {
       params.accountId = filters.accountId;
     }
 
+    if (filters.type && filters.type !== "all") {
+      params.type = filters.type;
+    }
+
     // Search filter
     if (filters.search && filters.search.trim() !== "") {
       params.search = filters.search.trim();
     }
 
-    // ✅ Date range filter (converted to consistent format)
-    if (Array.isArray(filters.dateRange) && filters.dateRange.length === 2) {
-      params["dateRange[]"] = filters.dateRange; // sends as array
-      // Example serialized by axios: ?dateRange[]=2025-11-12T00:00:00Z&dateRange[]=2025-11-20T23:59:59Z
+    // ✅ Handle fromDate and toDate separately
+    if (filters.fromDate) {
+      params.fromDate = filters.fromDate;
     }
 
-    // console.log("📤 Sending GET /accounting with params:", params);
+    if (filters.toDate) {
+      params.toDate = filters.toDate;
+    }
 
-    const res = await apiClient.get("/accounting", {params});
-
+    console.log("📤 Sending GET /accounting with params:", params);
+    const res = await apiClient.get("/accounting/ledger-report", {params});
     return res.data || [];
   } catch (error) {
     console.error("❌ Error fetching journal entries:", error);
     throw new Error(
-      error.response?.data?.message || "Failed to fetch journal entries"
+      error.response?.data?.message || "Failed to fetch journal entries",
     );
   }
 };
@@ -905,7 +913,7 @@ export const updateSalaryStatus = async (salaryId, data) => {
 
     const response = await apiClient.patch(
       `/staff-salary/${salaryId}/status`,
-      data
+      data,
     );
 
     console.debug("Salary status updated:", response.data);
@@ -930,6 +938,28 @@ export const createChartOfAccount = async (data) => {
     console.log("Adding account :", data);
 
     const response = await apiClient.post("/chart-of-accounts/account", data);
+
+    console.debug("Account added:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Account adding failed:", error);
+
+    const apiError = {
+      message: error.response?.data?.message || "Failed to add account",
+      details:
+        error.response?.data?.errors || error.response?.data || error.message,
+      status: error.response?.status,
+    };
+
+    throw apiError;
+  }
+};
+
+export const createDefaultPrimaryHeads = async () => {
+  try {
+    const response = await apiClient.post(
+      "/chart-of-accounts/accounts/default-heads",
+    );
 
     console.debug("Account added:", response.data);
     return response.data;
@@ -983,7 +1013,8 @@ export const getAccountCategories = async (filters = {}) => {
   } catch (error) {
     console.error("Error fetching accounts categories data:", error);
     throw new Error(
-      error.response?.data?.message || "Failed to fetch account categories data"
+      error.response?.data?.message ||
+        "Failed to fetch account categories data",
     );
   }
 };
@@ -1022,7 +1053,7 @@ export const getTransactionDetails = async (ledgerId) => {
   } catch (error) {
     console.error("Error fetching ledget data:", error);
     throw new Error(
-      error.response?.data?.message || "Failed to fetch ledger data"
+      error.response?.data?.message || "Failed to fetch ledger data",
     );
   }
 };
@@ -1123,5 +1154,148 @@ export const deleteExpense = async (expenseId) => {
     };
 
     throw apiError;
+  }
+};
+
+export const exportLedger = async (format, params) => {
+  try {
+    const response = await apiClient.post(
+      `/accounting/export/ledger/${format}`,
+      params,
+    );
+
+    const {fileData, fileName, mimeType} = response.data.data;
+
+    // Convert base64 to blob
+    const byteCharacters = atob(fileData);
+    const byteNumbers = new Array(byteCharacters.length);
+
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], {type: mimeType});
+
+    // Create download link
+    const link = document.createElement("a");
+    link.href = window.URL.createObjectURL(blob);
+    link.download = fileName;
+    link.click();
+
+    window.URL.revokeObjectURL(link.href);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export const getTrialBalance = async (filters = {}) => {
+  try {
+    const params = {};
+
+    // Property filter
+    if (filters.entityId && filters.entityId !== "all") {
+      params.entityId = filters.entityId;
+    }
+
+    if (filters.entityType) {
+      params.entityType = filters.entityType;
+    }
+
+    // ✅ Handle fromDate and toDate separately
+    if (filters.fromDate) {
+      params.fromDate = filters.fromDate;
+    }
+
+    if (filters.toDate) {
+      params.toDate = filters.toDate;
+    }
+
+    if (filters.includeZero !== undefined) {
+      params.includeZero = filters.includeZero;
+    }
+
+    console.log("📤 Sending GET /accounting with params:", params);
+    const res = await apiClient.get("/accounting/trial-balance", {params});
+    return res.data || [];
+  } catch (error) {
+    console.error("❌ Error fetching trial balance:", error);
+    throw new Error(
+      error.response?.data?.message || "Failed to fetch trial balance",
+    );
+  }
+};
+
+export const getProfitAndLoss = async (filters = {}) => {
+  try {
+    const params = {};
+
+    // Property filter
+    if (filters.entityId && filters.entityId !== "all") {
+      params.entityId = filters.entityId;
+    }
+
+    if (filters.entityType) {
+      params.entityType = filters.entityType;
+    }
+
+    // ✅ Handle fromDate and toDate separately
+    if (filters.fromDate) {
+      params.fromDate = filters.fromDate;
+    }
+
+    if (filters.toDate) {
+      params.toDate = filters.toDate;
+    }
+
+    if (filters.includeZero !== undefined) {
+      params.includeZero = filters.includeZero;
+    }
+
+    console.log("📤 Sending GET /accounting with params:", params);
+    const res = await apiClient.get("/accounting/profit-loss", {params});
+    return res.data || [];
+  } catch (error) {
+    console.error("❌ Error fetching profit and loss:", error);
+    throw new Error(
+      error.response?.data?.message || "Failed to fetch profit and loss",
+    );
+  }
+};
+
+export const getBalanceSheet = async (filters = {}) => {
+  try {
+    const params = {};
+
+    // Property filter
+    if (filters.entityId && filters.entityId !== "all") {
+      params.entityId = filters.entityId;
+    }
+
+    if (filters.entityType) {
+      params.entityType = filters.entityType;
+    }
+
+    // ✅ Handle fromDate and toDate separately
+    if (filters.fromDate) {
+      params.fromDate = filters.fromDate;
+    }
+
+    if (filters.toDate) {
+      params.toDate = filters.toDate;
+    }
+
+    if (filters.includeZero !== undefined) {
+      params.includeZero = filters.includeZero;
+    }
+
+    console.log("📤 Sending GET /accounting with params:", params);
+    const res = await apiClient.get("/accounting/balance-sheet", {params});
+    return res.data || [];
+  } catch (error) {
+    console.error("❌ Error fetching balance sheet:", error);
+    throw new Error(
+      error.response?.data?.message || "Failed to fetch balance sheet",
+    );
   }
 };

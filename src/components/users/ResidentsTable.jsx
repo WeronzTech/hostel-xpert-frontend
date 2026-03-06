@@ -2,14 +2,15 @@ import {useState, useEffect, useMemo, useRef, useCallback} from "react";
 import {Table, Button, Tag, message, Tooltip, Spin} from "antd";
 import {useNavigate} from "react-router-dom";
 import ConfirmModal from "../../modals/common/ConfirmModal";
-import {FaRupeeSign, FaSignOutAlt} from "../../icons/index.js";
+import {FaRupeeSign, FaSignOutAlt, FaUtensils} from "../../icons/index.js";
 import {FiLock} from "react-icons/fi";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
-import {vacateResident} from "../../hooks/users/useUser.js";
+import {generateFoodToken, vacateResident} from "../../hooks/users/useUser.js";
 import {useSelector} from "react-redux";
 
 // Import your payment modal component
 import RentCollectionModal from "../../modals/accounts/RentCollectionModal.jsx";
+import {useHasPermission} from "../../utils/useHasPermission.js";
 
 const ResidentsTable = ({
   residents = [],
@@ -23,10 +24,14 @@ const ResidentsTable = ({
   const {selectedProperty} = useSelector((state) => state.properties);
   const {selectedKitchen} = useSelector((state) => state.kitchens);
 
+  const canManagePayment = useHasPermission("FEE_PAYMENT_MANAGE");
+
   const [selectedResident, setSelectedResident] = useState(null);
   const [showVacateModal, setShowVacateModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [residentForPayment, setResidentForPayment] = useState(null);
+  const [showTokenConfirmModal, setShowTokenConfirmModal] = useState(false);
+  const [residentForToken, setResidentForToken] = useState(null);
   const [allResidents, setAllResidents] = useState([]);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -46,6 +51,91 @@ const ResidentsTable = ({
     const totalLoaded = allResidents.length;
     setHasMore(totalLoaded < total);
   }, [allResidents.length, total]);
+
+  const tokenMutation = useMutation({
+    mutationFn: generateFoodToken,
+    onSuccess: (data) => {
+      if (data.success) {
+        // Store the token data for success modal
+
+        messageApi.success({
+          content: data.message || "Token generated successfully!",
+          duration: 3,
+        });
+      } else {
+        // Handle backend errors (user not found, no property, etc.)
+        messageApi.warning({
+          content: data.message || "Could not generate token",
+          duration: 4,
+        });
+      }
+    },
+    onError: (error) => {
+      // Handle network/API errors
+      const errorMessage = error.message || "Failed to generate token";
+      messageApi.error({
+        content: errorMessage,
+        duration: 3,
+      });
+      console.error("Token generation failed:", error);
+    },
+  });
+
+  // Simplified handleTokenGeneration function
+  const handleTokenGeneration = (resident) => {
+    // Basic validation
+    if (!resident._id) {
+      messageApi.error({
+        content: "Invalid user ID",
+        duration: 3,
+      });
+      return;
+    }
+
+    // Optional: Check if user is mess-enabled
+    if (resident.messDetails && !resident.messDetails?.isEnabled) {
+      messageApi.warning({
+        content: "User does not have mess service enabled",
+        duration: 3,
+      });
+      return;
+    }
+
+    // Store resident for token generation and show confirmation modal
+    setResidentForToken(resident);
+    setShowTokenConfirmModal(true);
+  };
+
+  // Separate function for actual token generation after confirmation
+  const proceedWithTokenGeneration = () => {
+    if (!residentForToken) return;
+
+    const userId = residentForToken._id;
+
+    // Show loading
+    messageApi.loading({
+      content: "Generating food token...",
+      key: "tokenLoading",
+      duration: 0,
+    });
+
+    // Call the mutation
+    tokenMutation.mutate(userId, {
+      onSettled: () => {
+        // Close the loading message
+        messageApi.destroy("tokenLoading");
+        // Close confirmation modal
+        setShowTokenConfirmModal(false);
+        setResidentForToken(null);
+      },
+    });
+  };
+
+  // Function to cancel token generation
+  const cancelTokenGeneration = () => {
+    setShowTokenConfirmModal(false);
+    setResidentForToken(null);
+  };
 
   // Handle window scroll event for infinite scroll
   const handleScroll = useCallback(() => {
@@ -486,19 +576,35 @@ const ResidentsTable = ({
         title: "Actions",
         key: "actions",
         align: "center",
-        width: 100,
+        width: 140, // Increased width to accommodate additional button
         render: (_, record) => (
-          <div className="flex justify-center items-center space-x-3">
-            <Button
-              shape="circle"
-              title="Initiate Payment"
-              onClick={(e) => {
-                e.stopPropagation();
-                handlePaymentClick(record.originalData);
-              }}
-              style={{backgroundColor: "#059669", border: "none"}}
-              icon={<FaRupeeSign color="white" />}
-            />
+          <div className="flex justify-center items-center space-x-2">
+            <Tooltip title="Generate Food Token">
+              <Button
+                shape="circle"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleTokenGeneration(record.originalData);
+                }}
+                style={{
+                  backgroundColor: "#10b981",
+                  border: "none",
+                }}
+                icon={<FaUtensils color="white" />}
+              />
+            </Tooltip>
+            {canManagePayment && (
+              <Button
+                shape="circle"
+                title="Initiate Payment"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handlePaymentClick(record.originalData);
+                }}
+                style={{backgroundColor: "#4d44b5", border: "none"}}
+                icon={<FaRupeeSign color="white" />}
+              />
+            )}
             <Button
               shape="circle"
               title="Vacate"
@@ -571,6 +677,37 @@ const ResidentsTable = ({
           preSelectedKitchen={selectedKitchen}
           selectedOption={rentType}
         />
+      )}
+
+      {/* Token Generation Confirmation Modal */}
+      {showTokenConfirmModal && residentForToken && (
+        <Modal
+          title="Confirm Food Token Generation"
+          open={showTokenConfirmModal}
+          onCancel={cancelTokenGeneration}
+          centered
+          footer={[
+            <Button key="cancel" onClick={cancelTokenGeneration}>
+              Cancel
+            </Button>,
+            <Button
+              key="generate"
+              type="primary"
+              onClick={proceedWithTokenGeneration}
+              loading={tokenMutation.isLoading}
+              style={{backgroundColor: "#10b981", borderColor: "#10b981"}}
+            >
+              Generate Token
+            </Button>,
+          ]}
+        >
+          <div style={{padding: "20px 0"}}>
+            <p>
+              Are you sure you want to generate a food token for{" "}
+              <strong>{residentForToken.name}</strong>?
+            </p>
+          </div>
+        </Modal>
       )}
     </>
   );

@@ -1,5 +1,5 @@
-import { createSlice } from "@reduxjs/toolkit";
-import { encryptedStorage } from "../utils/encryptedStorage";
+import {createSlice} from "@reduxjs/toolkit";
+import {encryptedStorage} from "../utils/encryptedStorage";
 
 const initialState = {
   properties: [],
@@ -18,14 +18,14 @@ const propertiesSlice = createSlice({
   reducers: {
     setProperties: (state, action) => {
       state.properties = [
-        { name: "All Properties", _id: null },
+        {name: "All Properties", _id: null},
         ...action.payload,
       ];
     },
     addProperty: (state, action) => {
       if (!state.properties.some((p) => p.name === action.payload.name)) {
         state.properties = [
-          { name: "All Properties", _id: null },
+          {name: "All Properties", _id: null},
           ...state.properties.filter((p) => p.name !== "All Properties"),
           action.payload,
         ];

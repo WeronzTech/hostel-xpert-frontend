@@ -56,6 +56,9 @@ const KITCHEN_ROUTES = [
   "/menu",
   "/food-only",
   "/accounts/transactions/mess",
+  "/accounting/generalLedger/KITCHEN",
+  "/accounting/trialBalance/KITCHEN",
+  "/accounting/financial-reports/KITCHEN",
 ];
 
 const Navbar = () => {
@@ -304,20 +307,6 @@ const Navbar = () => {
       }
     }
   }, [user, properties, selectedProperty, dispatch]);
-
-  // Initialize kitchen selection if on kitchen route and no kitchen selected
-  // useEffect(() => {
-  //   if (isKitchenRoute && kitchens?.length > 0 && !selectedKitchen?.id) {
-  //     // Select first kitchen by default or "All Kitchens"
-  //     const firstKitchen = kitchens[0];
-  //     dispatch(
-  //       selectKitchen({
-  //         name: firstKitchen.name,
-  //         id: firstKitchen._id,
-  //       }),
-  //     );
-  //   }
-  // }, [isKitchenRoute, kitchens, selectedKitchen, dispatch]);
 
   const handlePropertySelect = (property) => {
     const selected =

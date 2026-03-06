@@ -1,9 +1,7 @@
+import {useState, useMemo, useEffect} from "react";
 import {
-  Table,
-  Tag,
   Space,
   Typography,
-  Button,
   Tree,
   Input,
   Badge,
@@ -11,29 +9,24 @@ import {
   Card,
   Drawer,
   Flex,
+  Tag,
+  Button,
 } from "antd";
 import {
   FolderOutlined,
   FileOutlined,
-  RightOutlined,
   ExpandAltOutlined,
   CompressOutlined,
   InfoCircleOutlined,
-  FileTextOutlined,
+  ApartmentOutlined,
 } from "@ant-design/icons";
-import {useState, useMemo, useEffect} from "react";
 import {useQuery} from "@tanstack/react-query";
 import {getAccounts} from "../../hooks/accounts/useAccounts";
 
 const {Text, Title} = Typography;
 const {Search} = Input;
 
-const AccountsList = ({accounts, loading}) => {
-  const [viewMode, setViewMode] = useState("ledger"); // 'ledger' or 'hierarchy'
-  const [pagination, setPagination] = useState({
-    current: 1,
-    pageSize: 10,
-  });
+const AccountsHierarchy = ({accounts}) => {
   const [expandedKeys, setExpandedKeys] = useState([]);
   const [autoExpandParent, setAutoExpandParent] = useState(true);
   const [searchValue, setSearchValue] = useState("");
@@ -45,14 +38,9 @@ const AccountsList = ({accounts, loading}) => {
   // Handle resize for responsive
   useEffect(() => {
     const handleResize = () => {
-      const mobile = window.innerWidth <= 768;
-      setIsMobile(mobile);
-      // Force hierarchy view on mobile
-      if (mobile) {
-        setViewMode("hierarchy");
-      }
+      setIsMobile(window.innerWidth <= 768);
     };
-    handleResize(); // Call once on mount
+    handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
@@ -72,12 +60,12 @@ const AccountsList = ({accounts, loading}) => {
   }, [groupsData, accounts]);
 
   // Build hierarchical tree data
-  const buildTreeData = (parentId = null, level = 0) => {
+  const buildTreeData = (parentId = null) => {
     return allAccounts
       .filter((item) => item.parentId === parentId)
       .map((item) => {
         const isGroup = item.isGroup;
-        const children = buildTreeData(item._id, level + 1);
+        const children = buildTreeData(item._id);
         const hasChildren = children.length > 0;
 
         // Highlight if matches search
@@ -143,111 +131,9 @@ const AccountsList = ({accounts, loading}) => {
     [allAccounts, searchValue, isMobile],
   );
 
-  // Filter postable accounts for ledger view
-  const postableAccounts = accounts?.filter((acc) => !acc.isGroup) || [];
-
-  // Ledger View Columns (Desktop only)
-  const ledgerColumns = [
-    {
-      title: "#",
-      key: "serial",
-      align: "center",
-      width: 60,
-      render: (text, record, index) =>
-        (pagination.current - 1) * pagination.pageSize + index + 1,
-    },
-    {
-      title: "Account Name",
-      dataIndex: "name",
-      key: "name",
-      render: (text, record) => (
-        <Space style={{cursor: "default"}}>
-          <FileOutlined style={{color: "#52c41a"}} />
-          <strong style={{fontSize: 14}}>{text}</strong>
-          {record.code && (
-            <Tag color="default" style={{fontSize: 11}}>
-              {record.code}
-            </Tag>
-          )}
-        </Space>
-      ),
-    },
-    {
-      title: "Hierarchy Path",
-      key: "path",
-      render: (_, record) => {
-        const path = [];
-        let currentId = record.parentId;
-
-        const findPath = (id) => {
-          const group = groupsData?.data?.find((g) => g._id === id);
-          if (group) {
-            path.unshift(group.name);
-            if (group.parentId) findPath(group.parentId);
-          }
-        };
-
-        if (record.parentId) findPath(record.parentId);
-
-        return path.length > 0 ? (
-          <Space size={2} wrap>
-            {path.map((name, idx) => (
-              <span key={idx}>
-                <FolderOutlined
-                  style={{fontSize: 11, marginRight: 2, color: "#faad14"}}
-                />
-                <Text type="secondary" style={{fontSize: 12}}>
-                  {name.length > 15 ? `${name.substring(0, 15)}...` : name}
-                </Text>
-                {idx < path.length - 1 && (
-                  <RightOutlined
-                    style={{fontSize: 10, color: "#ccc", margin: "0 2px"}}
-                  />
-                )}
-              </span>
-            ))}
-          </Space>
-        ) : (
-          <Text type="secondary">—</Text>
-        );
-      },
-    },
-    {
-      title: "Primary Head",
-      dataIndex: "accountType",
-      key: "accountType",
-      render: (type) => {
-        const colors = {
-          Asset: "blue",
-          Liability: "red",
-          Equity: "purple",
-          Income: "green",
-          Expense: "orange",
-        };
-        return (
-          <Tag color={colors[type] || "default"} style={{fontSize: 12}}>
-            {type}
-          </Tag>
-        );
-      },
-      width: 120,
-    },
-    // {
-    //   title: "GST",
-    //   key: "gst",
-    //   render: (_, record) =>
-    //     record.gstType ? (
-    //       <Tooltip title={`${record.gstType} - ${record.gstRate}%`}>
-    //         <Tag color="gold" style={{fontSize: 12}}>
-    //           GST
-    //         </Tag>
-    //       </Tooltip>
-    //     ) : (
-    //       <Text type="secondary">—</Text>
-    //     ),
-    //   width: 80,
-    // },
-  ];
+  // Get stats
+  const groupsCount = groupsData?.data?.length || 0;
+  const ledgersCount = accounts?.filter((acc) => !acc.isGroup)?.length || 0;
 
   // Custom tree node renderer
   const renderTreeNode = (nodeData) => {
@@ -345,155 +231,101 @@ const AccountsList = ({accounts, loading}) => {
 
   return (
     <div style={{width: "100%"}}>
-      {/* Row 1: Title and View Toggle (Desktop only) */}
-      <Flex
-        justify="space-between"
-        align="center"
-        wrap="wrap"
-        gap="middle"
-        style={{marginBottom: 16}}
-      >
+      {/* Title */}
+      <Flex justify="space-between" align="center" style={{marginBottom: 16}}>
         <Title level={4} style={{margin: 0, color: "#1f2937"}}>
-          <FileTextOutlined style={{marginRight: 8}} />
-          Chart of Accounts
+          <ApartmentOutlined style={{marginRight: 8}} />
+          Accounts Hierarchy
         </Title>
-
-        <Space size={16} wrap>
-          <Space>
-            <FolderOutlined style={{color: "#faad14", fontSize: 14}} />
-            <Text style={{fontSize: 14}}>
-              Groups: <strong>{groupsData?.data?.length || 0}</strong>
-            </Text>
-          </Space>
-          <Space>
-            <FileOutlined style={{color: "#52c41a", fontSize: 14}} />
-            <Text style={{fontSize: 14}}>
-              Ledgers: <strong>{postableAccounts.length}</strong>
-            </Text>
-          </Space>
-        </Space>
       </Flex>
 
-      {/* Row 2: Stats on Left, Search & Controls on Right */}
+      {/* Stats */}
       <Flex
         justify="space-between"
         align="center"
         wrap="wrap"
         gap="middle"
         style={{marginBottom: 16}}
-      >
-        {/* Right: Search and Controls - Only show in hierarchy view */}
-        {viewMode === "hierarchy" && (
-          <>
-            {isMobile ? (
-              <div
-                style={{
-                  width: "100%",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 8,
-                }}
-              >
-                <Search
-                  placeholder="Search accounts"
-                  onSearch={handleSearch}
-                  onChange={(e) => handleSearch(e.target.value)}
-                  style={{width: "100%"}}
-                  size="middle"
-                  allowClear
-                />
-                <Flex gap="small">
-                  <Button
-                    icon={<ExpandAltOutlined />}
-                    onClick={expandAll}
-                    block
-                  >
-                    Expand All
-                  </Button>
-                  <Button
-                    icon={<CompressOutlined />}
-                    onClick={collapseAll}
-                    block
-                  >
-                    Collapse All
-                  </Button>
-                </Flex>
-              </div>
-            ) : (
-              <Space size="middle">
-                <>
-                  <Button
-                    icon={<ExpandAltOutlined />}
-                    onClick={expandAll}
-                    size="middle"
-                  >
-                    Expand All
-                  </Button>
-                  <Button
-                    icon={<CompressOutlined />}
-                    onClick={collapseAll}
-                    size="middle"
-                  >
-                    Collapse All
-                  </Button>
-                </>
-                <Search
-                  placeholder="Search accounts"
-                  onSearch={handleSearch}
-                  onChange={(e) => handleSearch(e.target.value)}
-                  style={{width: 250}}
-                  size="middle"
-                  allowClear
-                />
-              </Space>
-            )}
-          </>
-        )}
-      </Flex>
+      ></Flex>
 
-      {/* Main Content */}
-      {viewMode === "ledger" && !isMobile ? (
-        // Ledger View - Desktop only
-        <Table
-          columns={ledgerColumns}
-          dataSource={postableAccounts}
-          loading={loading}
-          rowKey="_id"
-          pagination={false}
-          size="middle"
-          scroll={{x: "max-content"}}
-        />
-      ) : (
-        // Hierarchy View - Always show on mobile, toggle on desktop
-        <div
-          bordered={false}
-          style={{
-            background: "#fff",
-            borderRadius: 8,
-          }}
-          bodyStyle={{padding: isMobile ? 8 : 16}}
-        >
-          {treeData.length > 0 ? (
-            <Tree
-              showLine
-              showIcon={!isMobile}
-              expandedKeys={expandedKeys}
-              autoExpandParent={autoExpandParent}
-              onExpand={onExpand}
-              treeData={treeData}
-              titleRender={renderTreeNode}
-              selectedKeys={[selectedNode]}
-              onSelect={(keys) => setSelectedNode(keys[0])}
-              style={{background: "transparent"}}
+      {/* Search and Controls */}
+      <div style={{marginBottom: 16}}>
+        {isMobile ? (
+          <div style={{width: "100%"}}>
+            <Search
+              placeholder="Search accounts"
+              onSearch={handleSearch}
+              onChange={(e) => handleSearch(e.target.value)}
+              style={{width: "100%", marginBottom: 8}}
+              size="middle"
+              allowClear
             />
-          ) : (
-            <Empty
-              image={Empty.PRESENTED_IMAGE_SIMPLE}
-              description="No accounts found"
+            <Flex gap="small">
+              <Button icon={<ExpandAltOutlined />} onClick={expandAll} block>
+                Expand All
+              </Button>
+              <Button icon={<CompressOutlined />} onClick={collapseAll} block>
+                Collapse All
+              </Button>
+            </Flex>
+          </div>
+        ) : (
+          <Flex gap="middle" align="center">
+            <Button
+              icon={<ExpandAltOutlined />}
+              onClick={expandAll}
+              size="middle"
+            >
+              Expand All
+            </Button>
+            <Button
+              icon={<CompressOutlined />}
+              onClick={collapseAll}
+              size="middle"
+            >
+              Collapse All
+            </Button>
+            <Search
+              placeholder="Search accounts"
+              onSearch={handleSearch}
+              onChange={(e) => handleSearch(e.target.value)}
+              style={{width: 250, marginLeft: "auto"}}
+              size="middle"
+              allowClear
             />
-          )}
-        </div>
-      )}
+          </Flex>
+        )}
+      </div>
+
+      {/* Tree View */}
+      <div
+        bordered={false}
+        style={{
+          background: "#fff",
+          borderRadius: 8,
+        }}
+        bodyStyle={{padding: isMobile ? 8 : 16}}
+      >
+        {treeData.length > 0 ? (
+          <Tree
+            showLine
+            showIcon={!isMobile}
+            expandedKeys={expandedKeys}
+            autoExpandParent={autoExpandParent}
+            onExpand={onExpand}
+            treeData={treeData}
+            titleRender={renderTreeNode}
+            selectedKeys={[selectedNode]}
+            onSelect={(keys) => setSelectedNode(keys[0])}
+            style={{background: "transparent"}}
+          />
+        ) : (
+          <Empty
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            description="No accounts found"
+          />
+        )}
+      </div>
 
       {/* Mobile Drawer for Account Details */}
       <Drawer
@@ -591,4 +423,4 @@ const AccountsList = ({accounts, loading}) => {
   );
 };
 
-export default AccountsList;
+export default AccountsHierarchy;

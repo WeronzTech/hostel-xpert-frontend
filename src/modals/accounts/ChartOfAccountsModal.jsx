@@ -1,348 +1,402 @@
+
 import {
   Modal,
   Form,
   Input,
   Select,
+  Button,
+  message,
+  Switch,
+  Space,
+  Alert,
   InputNumber,
   Row,
   Col,
-  Button,
-  message,
+  TreeSelect,
+  Divider,
+  Tag,
 } from "antd";
-import {PlusOutlined} from "@ant-design/icons";
-import {useState, useEffect} from "react";
-import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
+import { useState, useEffect, useMemo } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  createAccountCategory,
   createChartOfAccount,
-  getAccountCategories,
+  createDefaultPrimaryHeads,
+  getAccounts,
 } from "../../hooks/accounts/useAccounts";
+import { FolderOutlined, FileOutlined, PlusOutlined } from "@ant-design/icons";
 
-const ChartOfAccountsModal = ({isOpen, onClose, onSuccess}) => {
+const ChartOfAccountsModal = ({ isOpen, onClose, onSuccess }) => {
   const [form] = Form.useForm();
-  const [categoryForm] = Form.useForm();
-  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
-  const [selectedAccountType, setSelectedAccountType] = useState(null);
   const queryClient = useQueryClient();
   const [messageApi, contextHolder] = message.useMessage();
+  const [isGroup, setIsGroup] = useState(false);
+  const [showNoHeadsAlert, setShowNoHeadsAlert] = useState(false);
+  const [enableGST, setEnableGST] = useState(false);
+  const [selectedParentPath, setSelectedParentPath] = useState([]);
 
-  // TanStack Query for categories
-  const {data: categories = [], isLoading: categoriesLoading} = useQuery({
-    queryKey: ["accountCategories"],
-    queryFn: () => getAccountCategories(),
-    enabled: isOpen, // Only fetch when modal is open
+  // 🔹 Fetch ALL group accounts (for hierarchy)
+  const {
+    data: groupsData,
+    isLoading: groupsLoading,
+    refetch: refetchGroups,
+  } = useQuery({
+    queryKey: ["all-groups"],
+    queryFn: async () => {
+      const response = await getAccounts({
+        isGroup: "true", // Get all groups at all levels
+      });
+
+      if (response.success && (!response.data || response.data.length === 0)) {
+        setShowNoHeadsAlert(true);
+      } else {
+        setShowNoHeadsAlert(false);
+      }
+
+      return response;
+    },
+    enabled: isOpen,
+    refetchOnWindowFocus: false,
   });
 
-  // Mutation for creating account
+  // 🔹 Build hierarchical tree data
+  const groupTreeData = useMemo(() => {
+    if (!groupsData?.data) return [];
+
+    const buildTree = (parentId = null) => {
+      return groupsData.data
+        .filter(item => item.parentId === parentId)
+        .map(item => ({
+          title: (
+            <Space>
+              <FolderOutlined style={{ color: "#faad14" }} />
+              <span>{item.name}</span>
+              <Tag color="blue" style={{ fontSize: 10 }}>Group</Tag>
+            </Space>
+          ),
+          value: item._id,
+          key: item._id,
+          children: buildTree(item._id),
+          selectable: true,
+          isLeaf: false,
+        }));
+    };
+
+    return buildTree(null);
+  }, [groupsData]);
+
+  // 🔹 Get ancestors of selected node for path display
+  const findNodePath = (nodeId, nodes = groupsData?.data || []) => {
+    const path = [];
+    let currentId = nodeId;
+    
+    while (currentId) {
+      const node = nodes.find(n => n._id === currentId);
+      if (node) {
+        path.unshift(node.name);
+        currentId = node.parentId;
+      } else {
+        break;
+      }
+    }
+    
+    return path;
+  };
+
+  // 🔹 Create Default Primary Heads
+  const createDefaultHeadsMutation = useMutation({
+    mutationFn: createDefaultPrimaryHeads,
+    onSuccess: async () => {
+      messageApi.success({
+        content: "Default heads created successfully!",
+      });
+
+      await refetchGroups();
+      setShowNoHeadsAlert(false);
+    },
+    onError: (error) => {
+      messageApi.error({
+        content: error.message,
+      });
+    },
+  });
+
+  // 🔹 Create Account Mutation
   const createAccountMutation = useMutation({
     mutationFn: createChartOfAccount,
     onSuccess: (data) => {
       messageApi.success({
-        content: `${data.message}`,
-        duration: 3,
+        content: data.message,
       });
-      queryClient.invalidateQueries({queryKey: ["chartOfAccounts"]});
+
+      queryClient.invalidateQueries({ queryKey: ["chartOfAccounts"] });
+      queryClient.invalidateQueries({ queryKey: ["all-groups"] });
+
       onSuccess();
       form.resetFields();
-      setSelectedAccountType(null);
+      setIsGroup(false);
+      setEnableGST(false);
+      setSelectedParentPath([]);
     },
     onError: (error) => {
       messageApi.error({
-        content: `${error.message}`,
-        duration: 3,
+        content: error.message,
       });
     },
   });
 
-  // Mutation for creating category
-  const createCategoryMutation = useMutation({
-    mutationFn: createAccountCategory,
-    onSuccess: (data) => {
-      messageApi.success({
-        content: `${data.message}`,
-        duration: 3,
-      });
-      queryClient.invalidateQueries({queryKey: ["accountCategories"]});
-      categoryForm.resetFields();
-      setIsCategoryModalOpen(false);
-    },
-    onError: (error) => {
-      messageApi.error({
-        content: `${error.message}`,
-        duration: 3,
-      });
-    },
-  });
+  const handleSubmit = (values) => {
+    const accountData = {
+      name: values.name,
+      parentId: values.parentId || null,
+      isGroup: values.isGroup || false,
+      gstType: enableGST ? values.gstType : undefined,
+      gstRate: enableGST ? values.gstRate : undefined,
+    };
 
-  // Filter categories based on selected account type
-  const filteredCategories = categories?.data?.filter(
-    (category) => category.accountType === selectedAccountType
-  );
-
-  const handleSubmit = async (values) => {
-    createAccountMutation.mutate(values);
+    createAccountMutation.mutate(accountData);
   };
 
-  const handleCreateCategory = async (values) => {
-    createCategoryMutation.mutate(values);
+  const handleCreateDefaultHeads = () => {
+    createDefaultHeadsMutation.mutate();
   };
 
-  const handleAccountTypeChange = (value) => {
-    setSelectedAccountType(value);
-    // Reset category when account type changes
-    form.setFieldValue("categoryId", undefined);
+  const handleParentChange = (value) => {
+    form.setFieldValue("parentId", value);
+    
+    // Update path display
+    if (value) {
+      const path = findNodePath(value);
+      setSelectedParentPath(path);
+    } else {
+      setSelectedParentPath([]);
+    }
   };
 
-  // Reset form when modal closes
   useEffect(() => {
     if (!isOpen) {
       form.resetFields();
-      setSelectedAccountType(null);
+      setIsGroup(false);
+      setShowNoHeadsAlert(false);
+      setEnableGST(false);
+      setSelectedParentPath([]);
     }
   }, [isOpen, form]);
-
-  // Reset category form when account type changes
-  useEffect(() => {
-    if (selectedAccountType && isCategoryModalOpen) {
-      categoryForm.setFieldValue("accountType", selectedAccountType);
-    }
-  }, [selectedAccountType, isCategoryModalOpen, categoryForm]);
 
   return (
     <>
       {contextHolder}
+
       <Modal
-        title="Add New Account"
+        title={
+          <Space>
+            <PlusOutlined />
+            <span>Add New {isGroup ? "Group" : "Ledger"} Account</span>
+          </Space>
+        }
         open={isOpen}
-        maskClosable={false}
         centered
+        maskClosable={false}
         onCancel={onClose}
         onOk={() => form.submit()}
-        width={600}
         confirmLoading={createAccountMutation.isPending}
+        width={650}
       >
         <Form form={form} layout="vertical" onFinish={handleSubmit}>
-          {/* 🧾 Row 1: Account Name + Account Type */}
+          {/* Alert if no groups exist */}
+          {showNoHeadsAlert && (
+            <Alert
+              style={{ marginBottom: 16 }}
+              message="No Chart of Accounts Found"
+              description="Create default primary heads to initialize Chart of Accounts."
+              type="warning"
+              showIcon
+              action={
+                <Button
+                  type="primary"
+                  danger
+                  size="small"
+                  onClick={handleCreateDefaultHeads}
+                  loading={createDefaultHeadsMutation.isPending}
+                >
+                  Create Default Heads
+                </Button>
+              }
+            />
+          )}
+
+          {/* Account Name */}
           <Row gutter={16}>
-            <Col span={12}>
+            <Col span={24}>
               <Form.Item
                 name="name"
                 label="Account Name"
-                rules={[{required: true, message: "Please enter account name"}]}
+                rules={[{ required: true, message: "Please enter account name" }]}
               >
-                <Input placeholder="e.g., Cash, Bank Account, Sales Revenue" />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="accountType"
-                label="Account Type"
-                rules={[
-                  {required: true, message: "Please select account type"},
-                ]}
-              >
-                <Select
-                  placeholder="Select account type"
-                  onChange={handleAccountTypeChange}
-                  loading={categoriesLoading}
-                >
-                  <Select.Option value="Asset">Asset</Select.Option>
-                  <Select.Option value="Liability">Liability</Select.Option>
-                  <Select.Option value="Equity">Equity</Select.Option>
-                  <Select.Option value="Income">Income</Select.Option>
-                  <Select.Option value="Expense">Expense</Select.Option>
-                </Select>
+                <Input 
+                  placeholder="Enter account name" 
+                  prefix={isGroup ? <FolderOutlined /> : <FileOutlined />}
+                />
               </Form.Item>
             </Col>
           </Row>
 
-          {/* 🧾 Row 2: Category with Add Button */}
+          {/* Parent Account - Tree Select for infinite hierarchy */}
           <Row gutter={16}>
             <Col span={24}>
-              <Form.Item name="categoryId" label="Category">
-                <Select
-                  placeholder={
-                    selectedAccountType
-                      ? "Select category"
-                      : "Select account type first"
-                  }
-                  disabled={!selectedAccountType}
-                  loading={categoriesLoading}
-                  dropdownRender={(menu) => (
-                    <>
-                      {menu}
-                      <div
-                        style={{padding: "8px", borderTop: "1px solid #d9d9d9"}}
+              <Form.Item
+                name="parentId"
+                label="Parent Account"
+                rules={[{ required: true, message: "Please select parent account" }]}
+              >
+                <TreeSelect
+                  style={{ width: '100%' }}
+                  placeholder="Select parent account from hierarchy"
+                  treeData={groupTreeData}
+                  loading={groupsLoading}
+                  treeDefaultExpandAll={false}
+                  treeLine={true}
+                  showSearch
+                  treeNodeFilterProp="title"
+                  disabled={showNoHeadsAlert}
+                  onChange={handleParentChange}
+                  dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+                  allowClear
+                />
+              </Form.Item>
+              
+              {/* Show selected path */}
+              {selectedParentPath.length > 0 && (
+                <div style={{ marginTop: -12, marginBottom: 12, fontSize: 12, color: '#666' }}>
+                  Selected path: {selectedParentPath.join(' → ')}
+                </div>
+              )}
+            </Col>
+          </Row>
+
+          {/* Account Type Toggle */}
+          <Row gutter={16}>
+            <Col span={24}>
+              <Form.Item label="Account Type">
+                <Space size="large">
+                  <Form.Item name="isGroup" valuePropName="checked" noStyle>
+                    <Switch 
+                      checkedChildren="Group" 
+                      unCheckedChildren="Ledger" 
+                      onChange={(checked) => setIsGroup(checked)}
+                    />
+                  </Form.Item>
+                  <Tag color={isGroup ? "orange" : "green"}>
+                    {isGroup ? "Group Account (can have children)" : "Ledger Account (postable)"}
+                  </Tag>
+                </Space>
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Divider style={{ margin: '12px 0' }} />
+
+          {/* GST Section (Only if Ledger - not group) */}
+          {!isGroup && (
+            <>
+              <Row gutter={16}>
+                <Col span={24}>
+                  <Form.Item label="GST Configuration">
+                    <Space>
+                      <Switch
+                        checked={enableGST}
+                        onChange={(checked) => setEnableGST(checked)}
+                      />
+                      <span style={{ color: "#666" }}>
+                        {enableGST ? "GST enabled for this ledger" : "GST not applicable"}
+                      </span>
+                    </Space>
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              {enableGST && (
+                <>
+                  <Row gutter={16}>
+                    <Col xs={24} sm={12}>
+                      <Form.Item
+                        name="gstType"
+                        label="GST Type"
+                        rules={[{ required: true, message: "Please select GST type" }]}
                       >
-                        <Button
-                          type="text"
-                          icon={<PlusOutlined />}
-                          onClick={() => setIsCategoryModalOpen(true)}
-                          block
-                          disabled={!selectedAccountType}
-                        >
-                          Add New Category
-                        </Button>
-                      </div>
-                    </>
-                  )}
-                >
-                  {filteredCategories?.map((category) => (
-                    <Select.Option key={category._id} value={category._id}>
-                      {category.name}
-                    </Select.Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </Col>
-          </Row>
+                        <Select placeholder="Select GST Type">
+                          <Select.OptGroup label="Input GST">
+                            <Select.Option value="GST-Input-CGST">
+                              CGST (Input)
+                            </Select.Option>
+                            <Select.Option value="GST-Input-SGST">
+                              SGST (Input)
+                            </Select.Option>
+                            <Select.Option value="GST-Input-IGST">
+                              IGST (Input)
+                            </Select.Option>
+                          </Select.OptGroup>
+                          <Select.OptGroup label="Output GST">
+                            <Select.Option value="GST-Output-CGST">
+                              CGST (Output)
+                            </Select.Option>
+                            <Select.Option value="GST-Output-SGST">
+                              SGST (Output)
+                            </Select.Option>
+                            <Select.Option value="GST-Output-IGST">
+                              IGST (Output)
+                            </Select.Option>
+                          </Select.OptGroup>
+                        </Select>
+                      </Form.Item>
+                    </Col>
 
-          {/* 🧾 Row 3: GST Type + GST Rate */}
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="gstType"
-                label="GST Type"
-                initialValue="Not-Applicable"
-              >
-                <Select>
-                  <Select.Option value="Not-Applicable">
-                    Not Applicable
-                  </Select.Option>
-                  <Select.Option value="GST-Input-CGST">
-                    GST Input CGST
-                  </Select.Option>
-                  <Select.Option value="GST-Input-SGST">
-                    GST Input SGST
-                  </Select.Option>
-                  <Select.Option value="GST-Input-IGST">
-                    GST Input IGST
-                  </Select.Option>
-                  <Select.Option value="GST-Output-CGST">
-                    GST Output CGST
-                  </Select.Option>
-                  <Select.Option value="GST-Output-SGST">
-                    GST Output SGST
-                  </Select.Option>
-                  <Select.Option value="GST-Output-IGST">
-                    GST Output IGST
-                  </Select.Option>
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item name="gstRate" label="GST Rate">
-                <Input placeholder="e.g., 18%" />
-              </Form.Item>
-            </Col>
-          </Row>
+                    <Col xs={24} sm={12}>
+                      <Form.Item
+                        name="gstRate"
+                        label="GST Rate (%)"
+                        rules={[{ required: true, message: "Please enter GST rate" }]}
+                      >
+                        <Select placeholder="Select GST rate">
+                          <Select.Option value={0}>0% (Exempted)</Select.Option>
+                          <Select.Option value={5}>5%</Select.Option>
+                          <Select.Option value={12}>12%</Select.Option>
+                          <Select.Option value={18}>18%</Select.Option>
+                          <Select.Option value={28}>28%</Select.Option>
+                          <Select.Option value="custom">Custom Rate</Select.Option>
+                        </Select>
+                      </Form.Item>
+                    </Col>
+                  </Row>
 
-          {/* 🧾 Row 4: Opening Balance */}
-          <Row gutter={16}>
-            <Col span={24}>
-              <Form.Item
-                name="balance"
-                label="Opening Balance"
-                initialValue={0}
-              >
-                <InputNumber
-                  style={{width: "100%"}}
-                  placeholder="0.00"
-                  formatter={(value) =>
-                    `₹ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                  }
-                  parser={(value) => value.replace(/₹\s?|(,*)/g, "")}
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          {/* 🧾 Row 5: Description */}
-          <Row gutter={16}>
-            <Col span={24}>
-              <Form.Item name="description" label="Description">
-                <Input.TextArea
-                  rows={3}
-                  placeholder="Account description (optional)"
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          {/* 🧾 Row 6: Active Switch */}
-          {/* <Row gutter={16}>
-            <Col span={24}>
-              <Form.Item
-                name="isActive"
-                label="Active"
-                valuePropName="checked"
-                initialValue={true}
-              >
-                <Switch />
-              </Form.Item>
-            </Col>
-          </Row> */}
-        </Form>
-      </Modal>
-
-      {/* Category Creation Modal */}
-      <Modal
-        title="Add New Category"
-        centered
-        maskClosable={false}
-        open={isCategoryModalOpen}
-        onCancel={() => setIsCategoryModalOpen(false)}
-        onOk={() => categoryForm.submit()}
-        confirmLoading={createCategoryMutation.isPending}
-      >
-        <Form
-          form={categoryForm}
-          layout="vertical"
-          onFinish={handleCreateCategory}
-          initialValues={{accountType: selectedAccountType}}
-        >
-          <Form.Item
-            name="name"
-            label="Category Name"
-            rules={[{required: true, message: "Please enter category name"}]}
-          >
-            <Input placeholder="e.g., Utilities, Payroll, Sales" />
-          </Form.Item>
-
-          <Form.Item
-            name="accountType"
-            label="Account Type"
-            rules={[{required: true, message: "Please select account type"}]}
-          >
-            <Select placeholder="Select account type">
-              <Select.Option value="Asset">Asset</Select.Option>
-              <Select.Option value="Liability">Liability</Select.Option>
-              <Select.Option value="Equity">Equity</Select.Option>
-              <Select.Option value="Income">Income</Select.Option>
-              <Select.Option value="Expense">Expense</Select.Option>
-            </Select>
-          </Form.Item>
-
-          {/* <Form.Item name="parent" label="Parent Category (Optional)">
-            <Select
-              placeholder="Select parent category"
-              allowClear
-              loading={categoriesLoading}
-            >
-              {categories?.data?.map((category) => (
-                <Select.Option key={category._id} value={category._id}>
-                  {category.name} ({category.accountType})
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item> */}
-
-          <Form.Item name="description" label="Description">
-            <Input.TextArea
-              rows={3}
-              placeholder="Category description (optional)"
-            />
-          </Form.Item>
+                  {/* Custom rate input if "Custom Rate" is selected */}
+                  <Form.Item noStyle shouldUpdate>
+                    {({ getFieldValue }) => 
+                      getFieldValue('gstRate') === 'custom' && (
+                        <Row gutter={16}>
+                          <Col span={24}>
+                            <Form.Item
+                              name="customGstRate"
+                              label="Custom GST Rate"
+                              rules={[{ required: true, message: "Please enter custom rate" }]}
+                            >
+                              <InputNumber
+                                min={0}
+                                max={100}
+                                style={{ width: "100%" }}
+                                placeholder="Enter custom rate"
+                                formatter={(value) => `${value}%`}
+                                parser={(value) => value.replace("%", "")}
+                              />
+                            </Form.Item>
+                          </Col>
+                        </Row>
+                      )
+                    }
+                  </Form.Item>
+                </>
+              )}
+            </>
+          )}
         </Form>
       </Modal>
     </>

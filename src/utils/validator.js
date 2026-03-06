@@ -11,7 +11,7 @@ export function validateRegistrationForm(formData) {
   if (!address.street.trim()) errors.push("Street is required.");
   if (!address.city.trim()) errors.push("City is required.");
   if (!address.state.trim()) errors.push("State is required.");
-  if (!address.zipCode.trim()) errors.push("Zip code is required.");
+  // if (!address.zipCode.trim()) errors.push("Zip code is required.");
 
   // Email validation
   if (primaryAdmin.email && !validateEmail(primaryAdmin.email)) {
@@ -21,7 +21,7 @@ export function validateRegistrationForm(formData) {
   // Phone validation
   if (primaryAdmin.phone && !validatePhoneNumber(primaryAdmin.phone)) {
     errors.push(
-      "Invalid phone number. Enter a 10-digit number starting with 6-9."
+      "Invalid phone number. Enter a 10-digit number starting with 6-9.",
     );
   }
 
