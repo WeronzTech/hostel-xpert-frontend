@@ -1,6 +1,15 @@
-import {Card, Space, Typography, Tag, Table, Divider, Row, Col} from "antd";
 import {
-  CheckCircleOutlined,
+  Card,
+  Space,
+  Typography,
+  Tag,
+  Table,
+  Divider,
+  Row,
+  Col,
+  Grid,
+} from "antd";
+import {
   CloseCircleOutlined,
   BankOutlined,
   ShoppingOutlined,
@@ -9,13 +18,147 @@ import {
 } from "@ant-design/icons";
 
 const {Text} = Typography;
+const {useBreakpoint} = Grid;
 
 const TrialBalanceTab = ({data, loading}) => {
+  const screens = useBreakpoint();
+  const isMobile = !screens.md;
+
   const trialBalance = data?.trialBalance || [];
   const totals = data?.totals || {};
   const isBalanced = data?.isBalanced;
 
-  const columns = [
+  // Mobile-optimized columns
+  const mobileColumns = [
+    {
+      title: "Account",
+      key: "account",
+      render: (_, record) => (
+        <Space direction="vertical" size={2} style={{width: "100%"}}>
+          <Space align="center" wrap>
+            {record.accountType === "Asset" && (
+              <BankOutlined style={{color: "#1890ff", fontSize: 14}} />
+            )}
+            {record.accountType === "Liability" && (
+              <ShoppingOutlined style={{color: "#fa8c16", fontSize: 14}} />
+            )}
+            {record.accountType === "Equity" && (
+              <DollarOutlined style={{color: "#722ed1", fontSize: 14}} />
+            )}
+            {record.accountType === "Income" && (
+              <ReconciliationOutlined
+                style={{color: "#52c41a", fontSize: 14}}
+              />
+            )}
+            {record.accountType === "Expense" && (
+              <CloseCircleOutlined style={{color: "#f5222d", fontSize: 14}} />
+            )}
+            <Text strong style={{fontSize: 14}}>
+              {record.accountName}
+            </Text>
+          </Space>
+          <div style={{marginLeft: 22}}>
+            <Tag color="default" style={{fontSize: 10, padding: "0 4px"}}>
+              {record.accountType}
+            </Tag>
+          </div>
+        </Space>
+      ),
+    },
+    {
+      title: "Opening",
+      key: "opening",
+      align: "right",
+      render: (_, record) => (
+        <Space direction="vertical" size={2} style={{width: "100%"}}>
+          {record.openingDebit > 0 && (
+            <Text style={{color: "#f5222d", fontSize: 12}}>
+              Dr: ₹{" "}
+              {record.openingDebit.toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+              })}
+            </Text>
+          )}
+          {record.openingCredit > 0 && (
+            <Text style={{color: "#52c41a", fontSize: 12}}>
+              Cr: ₹{" "}
+              {record.openingCredit.toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+              })}
+            </Text>
+          )}
+          {record.openingDebit === 0 && record.openingCredit === 0 && (
+            <Text type="secondary" style={{fontSize: 12}}>
+              -
+            </Text>
+          )}
+        </Space>
+      ),
+    },
+    {
+      title: "Period",
+      key: "period",
+      align: "right",
+      render: (_, record) => (
+        <Space direction="vertical" size={2} style={{width: "100%"}}>
+          {record.periodDebit > 0 && (
+            <Text style={{color: "#f5222d", fontSize: 12}}>
+              Dr: ₹{" "}
+              {record.periodDebit.toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+              })}
+            </Text>
+          )}
+          {record.periodCredit > 0 && (
+            <Text style={{color: "#52c41a", fontSize: 12}}>
+              Cr: ₹{" "}
+              {record.periodCredit.toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+              })}
+            </Text>
+          )}
+          {record.periodDebit === 0 && record.periodCredit === 0 && (
+            <Text type="secondary" style={{fontSize: 12}}>
+              -
+            </Text>
+          )}
+        </Space>
+      ),
+    },
+    {
+      title: "Closing",
+      key: "closing",
+      align: "right",
+      render: (_, record) => (
+        <Space direction="vertical" size={2} style={{width: "100%"}}>
+          {record.closingDebit > 0 && (
+            <Text strong style={{color: "#f5222d", fontSize: 12}}>
+              Dr: ₹{" "}
+              {record.closingDebit.toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+              })}
+            </Text>
+          )}
+          {record.closingCredit > 0 && (
+            <Text strong style={{color: "#52c41a", fontSize: 12}}>
+              Cr: ₹{" "}
+              {record.closingCredit.toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+              })}
+            </Text>
+          )}
+          {record.closingDebit === 0 && record.closingCredit === 0 && (
+            <Text type="secondary" style={{fontSize: 12}}>
+              -
+            </Text>
+          )}
+        </Space>
+      ),
+    },
+  ];
+
+  // Desktop columns (unchanged)
+  const desktopColumns = [
     {
       title: "Account Name",
       dataIndex: "accountName",
@@ -154,158 +297,216 @@ const TrialBalanceTab = ({data, loading}) => {
     },
   ];
 
-  return (
-    <>
-      {/* Status Banner */}
-      <Card
-        style={{
-          borderRadius: "12px",
-          marginBottom: "24px",
-          background: isBalanced ? "#f6ffed" : "#fff2f0",
-          border: isBalanced ? "1px solid #b7eb8f" : "1px solid #ffccc7",
-        }}
-      >
-        <Row align="middle" justify="space-between">
-          <Col>
-            <Space size="middle">
-              {isBalanced ? (
-                <CheckCircleOutlined style={{fontSize: 20, color: "#52c41a"}} />
-              ) : (
-                <CloseCircleOutlined style={{fontSize: 20, color: "#f5222d"}} />
-              )}
-              <Text type="secondary">
-                Total Debits: ₹{" "}
+  // Mobile footer
+  const mobileFooter = () => (
+    <div style={{padding: "8px 12px", background: "#fafafa"}}>
+      <Space direction="vertical" size="small" style={{width: "100%"}}>
+        <Row justify="space-between">
+          <Text strong>Opening:</Text>
+          <Space size="small">
+            <Text strong style={{color: "#f5222d"}}>
+              Dr: ₹{" "}
+              {totals.openingDebit?.toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+              })}
+            </Text>
+            <Text strong style={{color: "#52c41a"}}>
+              Cr: ₹{" "}
+              {totals.openingCredit?.toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+              })}
+            </Text>
+          </Space>
+        </Row>
+        <Row justify="space-between">
+          <Text strong>Period:</Text>
+          <Space size="small">
+            <Text strong style={{color: "#f5222d"}}>
+              Dr: ₹{" "}
+              {totals.periodDebit?.toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+              })}
+            </Text>
+            <Text strong style={{color: "#52c41a"}}>
+              Cr: ₹{" "}
+              {totals.periodCredit?.toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+              })}
+            </Text>
+          </Space>
+        </Row>
+        <Row justify="space-between">
+          <Text strong>Closing:</Text>
+          <Space size="small">
+            <Text strong style={{color: "#f5222d"}}>
+              Dr: ₹{" "}
+              {totals.closingDebit?.toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+              })}
+            </Text>
+            <Text strong style={{color: "#52c41a"}}>
+              Cr: ₹{" "}
+              {totals.closingCredit?.toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+              })}
+            </Text>
+          </Space>
+        </Row>
+        <Divider style={{margin: "8px 0"}} />
+        <Row justify="space-between" align="middle">
+          <Text
+            strong
+            style={{
+              color: isBalanced ? "#52c41a" : "#f5222d",
+              fontSize: 14,
+            }}
+          >
+            {isBalanced ? "✓ Balanced" : "✗ Not Balanced"}
+          </Text>
+          <Text
+            strong
+            style={{
+              color:
+                totals.closingDebit === totals.closingCredit
+                  ? "#52c41a"
+                  : "#f5222d",
+              fontSize: 14,
+            }}
+          >
+            Diff: ₹{" "}
+            {Math.abs(
+              (totals.closingDebit || 0) - (totals.closingCredit || 0),
+            ).toLocaleString("en-IN", {minimumFractionDigits: 2})}
+          </Text>
+        </Row>
+      </Space>
+    </div>
+  );
+
+  // Desktop footer (unchanged)
+  const desktopFooter = () => (
+    <div style={{padding: "12px 16px", background: "#fafafa"}}>
+      <Row justify="space-between" align="middle">
+        <Col>
+          <Text strong style={{fontSize: 14}}>
+            GRAND TOTAL
+          </Text>
+        </Col>
+        <Col>
+          <Space size="large" wrap>
+            <Text>
+              Opening Dr:{" "}
+              <Text strong style={{color: "#f5222d"}}>
+                ₹{" "}
+                {totals.openingDebit?.toLocaleString("en-IN", {
+                  minimumFractionDigits: 2,
+                })}
+              </Text>
+            </Text>
+            <Text>
+              Opening Cr:{" "}
+              <Text strong style={{color: "#52c41a"}}>
+                ₹{" "}
+                {totals.openingCredit?.toLocaleString("en-IN", {
+                  minimumFractionDigits: 2,
+                })}
+              </Text>
+            </Text>
+            <Divider type="vertical" />
+            <Text>
+              Period Dr:{" "}
+              <Text strong style={{color: "#f5222d"}}>
+                ₹{" "}
+                {totals.periodDebit?.toLocaleString("en-IN", {
+                  minimumFractionDigits: 2,
+                })}
+              </Text>
+            </Text>
+            <Text>
+              Period Cr:{" "}
+              <Text strong style={{color: "#52c41a"}}>
+                ₹{" "}
+                {totals.periodCredit?.toLocaleString("en-IN", {
+                  minimumFractionDigits: 2,
+                })}
+              </Text>
+            </Text>
+            <Divider type="vertical" />
+            <Text>
+              Closing Dr:{" "}
+              <Text strong style={{color: "#f5222d"}}>
+                ₹{" "}
                 {totals.closingDebit?.toLocaleString("en-IN", {
                   minimumFractionDigits: 2,
-                })}{" "}
-                | Total Credits: ₹{" "}
+                })}
+              </Text>
+            </Text>
+            <Text>
+              Closing Cr:{" "}
+              <Text strong style={{color: "#52c41a"}}>
+                ₹{" "}
                 {totals.closingCredit?.toLocaleString("en-IN", {
                   minimumFractionDigits: 2,
                 })}
               </Text>
-            </Space>
-          </Col>
-          <Col>
-            <Text
-              strong
-              style={{
-                color: isBalanced ? "#389e0d" : "#cf1322",
-                fontSize: 16,
-              }}
-            >
-              {isBalanced ? "✓" : "✗"} Trial Balance is{" "}
-              {isBalanced ? "Balanced" : "Not Balanced"}
             </Text>
-          </Col>
-        </Row>
-      </Card>
+          </Space>
+        </Col>
+      </Row>
+      <Divider style={{margin: "12px 0 8px 0"}} />
+      <Row justify="space-between" align="middle">
+        <Col>
+          <Text
+            strong
+            style={{
+              color: isBalanced ? "#52c41a" : "#f5222d",
+              fontSize: 14,
+            }}
+          >
+            {isBalanced ? "✓" : "✗"} {isBalanced ? "Balanced" : "Not Balanced"}
+          </Text>
+        </Col>
+        <Col>
+          <Text
+            strong
+            style={{
+              color:
+                totals.closingDebit === totals.closingCredit
+                  ? "#52c41a"
+                  : "#f5222d",
+              fontSize: 14,
+            }}
+          >
+            Difference: ₹{" "}
+            {Math.abs(
+              (totals.closingDebit || 0) - (totals.closingCredit || 0),
+            ).toLocaleString("en-IN", {minimumFractionDigits: 2})}
+          </Text>
+        </Col>
+      </Row>
+    </div>
+  );
 
+  return (
+    <>
       {/* Trial Balance Table */}
       <Card
         style={{
           borderRadius: "12px",
           boxShadow: "0 2px 8px rgba(0, 0, 0, 0.06)",
         }}
-        bodyStyle={{padding: 0}}
+        bodyStyle={{padding: isMobile ? "8px" : 0}}
       >
         <Table
-          columns={columns}
+          columns={isMobile ? mobileColumns : desktopColumns}
           dataSource={trialBalance}
           loading={loading}
           rowKey="accountId"
-          bordered
-          size="middle"
-          scroll={{x: 1200}}
+          bordered={!isMobile}
+          size={isMobile ? "small" : "middle"}
+          scroll={{x: isMobile ? "100%" : 1200}}
           pagination={false}
-          footer={() => (
-            <div style={{padding: "12px 16px", background: "#fafafa"}}>
-              <Row justify="space-between" align="middle">
-                <Col>
-                  <Text strong style={{fontSize: 14}}>
-                    GRAND TOTAL
-                  </Text>
-                </Col>
-                <Col>
-                  <Space size="large" wrap>
-                    <Text>
-                      Opening Dr:{" "}
-                      <Text strong style={{color: "#f5222d"}}>
-                        ₹{" "}
-                        {totals.openingDebit?.toLocaleString("en-IN", {
-                          minimumFractionDigits: 2,
-                        })}
-                      </Text>
-                    </Text>
-                    <Text>
-                      Opening Cr:{" "}
-                      <Text strong style={{color: "#52c41a"}}>
-                        ₹{" "}
-                        {totals.openingCredit?.toLocaleString("en-IN", {
-                          minimumFractionDigits: 2,
-                        })}
-                      </Text>
-                    </Text>
-                    <Divider type="vertical" />
-                    <Text>
-                      Period Dr:{" "}
-                      <Text strong style={{color: "#f5222d"}}>
-                        ₹{" "}
-                        {totals.periodDebit?.toLocaleString("en-IN", {
-                          minimumFractionDigits: 2,
-                        })}
-                      </Text>
-                    </Text>
-                    <Text>
-                      Period Cr:{" "}
-                      <Text strong style={{color: "#52c41a"}}>
-                        ₹{" "}
-                        {totals.periodCredit?.toLocaleString("en-IN", {
-                          minimumFractionDigits: 2,
-                        })}
-                      </Text>
-                    </Text>
-                    <Divider type="vertical" />
-                    <Text>
-                      Closing Dr:{" "}
-                      <Text strong style={{color: "#f5222d"}}>
-                        ₹{" "}
-                        {totals.closingDebit?.toLocaleString("en-IN", {
-                          minimumFractionDigits: 2,
-                        })}
-                      </Text>
-                    </Text>
-                    <Text>
-                      Closing Cr:{" "}
-                      <Text strong style={{color: "#52c41a"}}>
-                        ₹{" "}
-                        {totals.closingCredit?.toLocaleString("en-IN", {
-                          minimumFractionDigits: 2,
-                        })}
-                      </Text>
-                    </Text>
-                  </Space>
-                </Col>
-              </Row>
-              <Divider style={{margin: "12px 0 8px 0"}} />
-              <Row justify="center">
-                <Text
-                  strong
-                  style={{
-                    color:
-                      totals.closingDebit === totals.closingCredit
-                        ? "#52c41a"
-                        : "#f5222d",
-                    fontSize: 14,
-                  }}
-                >
-                  Difference: ₹{" "}
-                  {Math.abs(
-                    (totals.closingDebit || 0) - (totals.closingCredit || 0),
-                  ).toLocaleString("en-IN", {minimumFractionDigits: 2})}
-                </Text>
-              </Row>
-            </div>
-          )}
+          footer={isMobile ? mobileFooter : desktopFooter}
         />
       </Card>
     </>

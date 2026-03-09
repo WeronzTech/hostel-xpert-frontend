@@ -54,9 +54,6 @@ import AccountingDashboard from "./pages/accounts/AccountingDashboard.jsx";
 import GeneralLedger from "./pages/accounts/GeneralLedger.jsx";
 import AttendanceManagement from "./pages/Attendance/AttendanceManagement.jsx";
 import LeaveGatePassManagement from "./pages/leave/LeaveGatePassManagement.jsx";
-import TrialBalance from "./pages/accounts/TrialBalance.jsx";
-import ProfitAndLoss from "./pages/accounts/ProfitAndLoss.jsx";
-import BalanceSheet from "./pages/accounts/BalanceSheet.jsx";
 import FinancialReports from "./pages/accounts/FinancialReports.jsx";
 
 const Dashboard = lazy(() => import("./pages/home/Dashboard.jsx"));
@@ -82,18 +79,6 @@ const appRoutes = [
     path: "accounting/financial-reports/:entityType",
     element: <FinancialReports />,
   },
-  // {
-  //   path: "accounting/trialBalance/:entityType",
-  //   element: <TrialBalance />,
-  // },
-  // {
-  //   path: "accounting/profit-loss/:entityType",
-  //   element: <ProfitAndLoss />,
-  // },
-  // {
-  //   path: "accounting/balance-sheet/:entityType",
-  //   element: <BalanceSheet />,
-  // },
   {
     path: "accounts/transactions/deposits",
     element: <DepositDetailsPage />,

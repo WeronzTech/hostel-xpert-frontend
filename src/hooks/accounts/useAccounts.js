@@ -1189,6 +1189,102 @@ export const exportLedger = async (format, params) => {
   }
 };
 
+export const exportTrialBalance = async (format, params) => {
+  try {
+    const response = await apiClient.post(
+      `/accounting/export/trial-balance/${format}`,
+      params,
+    );
+
+    const {fileData, fileName, mimeType} = response.data.data;
+
+    // Convert base64 to blob
+    const byteCharacters = atob(fileData);
+    const byteNumbers = new Array(byteCharacters.length);
+
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], {type: mimeType});
+
+    // Create download link
+    const link = document.createElement("a");
+    link.href = window.URL.createObjectURL(blob);
+    link.download = fileName;
+    link.click();
+
+    window.URL.revokeObjectURL(link.href);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export const exportProfitAndLoss = async (format, params) => {
+  try {
+    const response = await apiClient.post(
+      `/accounting/export/profit-loss/${format}`,
+      params,
+    );
+
+    const {fileData, fileName, mimeType} = response.data.data;
+
+    // Convert base64 to blob
+    const byteCharacters = atob(fileData);
+    const byteNumbers = new Array(byteCharacters.length);
+
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], {type: mimeType});
+
+    // Create download link
+    const link = document.createElement("a");
+    link.href = window.URL.createObjectURL(blob);
+    link.download = fileName;
+    link.click();
+
+    window.URL.revokeObjectURL(link.href);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export const exportBalanceSheet = async (format, params) => {
+  try {
+    const response = await apiClient.post(
+      `/accounting/export/balance-sheet/${format}`,
+      params,
+    );
+
+    const {fileData, fileName, mimeType} = response.data.data;
+
+    // Convert base64 to blob
+    const byteCharacters = atob(fileData);
+    const byteNumbers = new Array(byteCharacters.length);
+
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], {type: mimeType});
+
+    // Create download link
+    const link = document.createElement("a");
+    link.href = window.URL.createObjectURL(blob);
+    link.download = fileName;
+    link.click();
+
+    window.URL.revokeObjectURL(link.href);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 export const getTrialBalance = async (filters = {}) => {
   try {
     const params = {};

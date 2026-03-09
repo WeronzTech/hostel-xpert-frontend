@@ -5,7 +5,6 @@ import {
   PlusCircleOutlined,
   FileAddOutlined,
   SettingOutlined,
-  TableOutlined,
   FileTextOutlined,
   DownOutlined,
   HomeOutlined,
@@ -75,11 +74,6 @@ const AccountingDashboard = () => {
     enabled: !!selectedTransactionId, // Only fetch when ID is available
   });
 
-  const handleListClick = (id) => {
-    setSelectedTransactionId(id);
-    setIsDetailModalOpen(true);
-  };
-
   const handleCloseModal = () => {
     setIsDetailModalOpen(false);
     setSelectedTransactionId(null);
@@ -89,12 +83,8 @@ const AccountingDashboard = () => {
     navigate(`/accounting/generalLedger/${entityType}`);
   };
 
-  const handleTrialBalanceClick = (entityType) => {
+  const handleFinancialReportsClick = (entityType) => {
     navigate(`/accounting/financial-reports/${entityType}`);
-  };
-
-  const handleProfitAndLossClick = (entityType) => {
-    navigate(`/accounting/balance-sheet/${entityType}`);
   };
 
   // Menu items for General Ledger dropdown
@@ -112,20 +102,6 @@ const AccountingDashboard = () => {
   };
 
   // Menu items for Trial Balance dropdown
-  const trialBalanceMenu = {
-    items: entityTypes.map((type) => ({
-      key: type,
-      label: (
-        <Space>
-          {type === "PROPERTY" ? <HomeOutlined /> : <ShopOutlined />}
-          {type.charAt(0) + type.slice(1).toLowerCase()}
-        </Space>
-      ),
-      onClick: () => handleTrialBalanceClick(type),
-    })),
-  };
-
-  // Menu items for Financial Reports dropdown
   const financialReportsMenu = {
     items: entityTypes.map((type) => ({
       key: type,
@@ -135,7 +111,7 @@ const AccountingDashboard = () => {
           {type.charAt(0) + type.slice(1).toLowerCase()}
         </Space>
       ),
-      onClick: () => handleProfitAndLossClick(type),
+      onClick: () => handleFinancialReportsClick(type),
     })),
   };
 
@@ -210,28 +186,6 @@ const AccountingDashboard = () => {
                 >
                   <Space>
                     General Ledger
-                    <DownOutlined />
-                  </Space>
-                </Button>
-              </Dropdown>
-
-              {/* Trial Balance Dropdown */}
-              <Dropdown
-                menu={trialBalanceMenu}
-                trigger={["hover"]}
-                placement="bottom"
-              >
-                <Button
-                  icon={<TableOutlined />}
-                  size="large"
-                  style={{
-                    color: "#059669",
-                    borderColor: "#059669",
-                  }}
-                  className="hover-effect-uniform w-full sm:w-auto"
-                >
-                  <Space>
-                    Trial Balance
                     <DownOutlined />
                   </Space>
                 </Button>
