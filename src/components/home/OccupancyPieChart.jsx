@@ -1,9 +1,9 @@
-import {Pie} from "react-chartjs-2";
-import {Chart as ChartJS, ArcElement, Tooltip, Legend} from "chart.js";
+import { Pie } from "react-chartjs-2";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-const OccupancyPieChart = ({occupied, total}) => {
+const OccupancyPieChart = ({ occupied, total }) => {
   const vacant = total - occupied;
   const occupancyRate = Math.round((occupied / total) * 100);
 
@@ -54,7 +54,7 @@ const OccupancyPieChart = ({occupied, total}) => {
                 Occupied
               </span>
               <span className="block text-xs text-gray-500">
-                {occupied} ({occupancyRate}%)
+                {occupied} ({occupancyRate || 0}%)
               </span>
             </div>
           </div>
@@ -63,7 +63,7 @@ const OccupancyPieChart = ({occupied, total}) => {
             <div>
               <span className="text-sm font-medium text-gray-700">Vacant</span>
               <span className="block text-xs text-gray-500">
-                {vacant} ({100 - occupancyRate}%)
+                {vacant} ({100 - (occupancyRate || 0)}%)
               </span>
             </div>
           </div>

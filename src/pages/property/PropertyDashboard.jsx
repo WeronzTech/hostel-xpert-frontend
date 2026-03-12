@@ -1,5 +1,5 @@
-import {useState, useEffect} from "react";
-import {useQuery} from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   FiSearch,
   FiHome,
@@ -7,8 +7,8 @@ import {
   FiAlertTriangle,
   FaRupeeSign,
 } from "../../icons/index.js";
-import {useNavigate} from "react-router-dom";
-import {getAllHeavensProperties} from "../../hooks/property/useProperty";
+import { useNavigate } from "react-router-dom";
+import { getAllHeavensProperties } from "../../hooks/property/useProperty";
 import LoadingSpinner from "../../ui/loadingSpinner/LoadingSpinner";
 import PageHeader from "../../components/common/PageHeader";
 import StatsGrid from "../../components/common/StatsGrid";
@@ -16,9 +16,9 @@ import {
   PropertyCard,
   EmptyState,
 } from "../../components/property/PropertyCard.jsx";
-import {Button, Result} from "antd";
-import {FaUserCheck} from "react-icons/fa";
-import {useSelector} from "react-redux";
+import { Button, Result } from "antd";
+import { FaUserCheck } from "react-icons/fa";
+import { useSelector } from "react-redux";
 
 const PropertyDashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -26,7 +26,7 @@ const PropertyDashboard = () => {
   const [currentPlaceholderIndex, setCurrentPlaceholderIndex] = useState(0);
   const [stats, setStats] = useState([]);
   const navigate = useNavigate();
-  const {selectedProperty} = useSelector((state) => state.properties);
+  const { selectedProperty } = useSelector((state) => state.properties);
 
   const placeholderTerms = [
     "State",
@@ -112,7 +112,7 @@ const PropertyDashboard = () => {
   } = useQuery({
     queryKey: ["properties", selectedProperty?.id],
     queryFn: () => {
-      return getAllHeavensProperties(selectedProperty.id);
+      return getAllHeavensProperties({ propertyId: selectedProperty.id });
     },
     enabled: true, // Always enabled
   });
@@ -180,7 +180,7 @@ const PropertyDashboard = () => {
 
       <StatsGrid
         stats={stats}
-        cols={{default: 1, sm: 2, md: 3, lg: 4, xl: 4}}
+        cols={{ default: 1, sm: 2, md: 3, lg: 4, xl: 4 }}
       />
 
       {/* Search Bar with Add Property Button */}

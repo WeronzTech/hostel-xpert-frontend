@@ -1,23 +1,24 @@
-import {useQuery} from "@tanstack/react-query";
-import {Row, Col, Spin, message} from "antd";
-import {FiAlertTriangle, FiArrowRight} from "../../icons/index.js";
-import {getTodayCheckouts} from "../../hooks/users/useUser.js";
-import {useMemo} from "react";
-import {useSelector} from "react-redux";
+import { useQuery } from "@tanstack/react-query";
+import { Row, Col, Spin, message } from "antd";
+import { FiAlertTriangle, FiArrowRight } from "../../icons/index.js";
+import { getTodayCheckouts } from "../../hooks/users/useUser.js";
+import { useMemo } from "react";
+import { useSelector } from "react-redux";
 import CheckoutCard from "../checkout/CheckoutCard.jsx";
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const TodaysCheckoutsSection = () => {
-  const {selectedProperty} = useSelector((state) => state.properties);
+  const { selectedProperty } = useSelector((state) => state.properties);
+  const { user } = useSelector((state) => state.auth);
   const propertyId = selectedProperty.id;
   const [messageApi, contextHolder] = message.useMessage();
 
   const navigate = useNavigate();
 
   // Fetch both types of checkouts in a single query
-  const {data, isLoading, isError, error} = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ["todayCheckouts", propertyId],
-    queryFn: () => getTodayCheckouts({propertyId}),
+    queryFn: () => getTodayCheckouts({ propertyId, clientId: user.id }),
     staleTime: 5 * 60 * 1000,
   });
 

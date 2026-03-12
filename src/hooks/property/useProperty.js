@@ -20,12 +20,16 @@ export const registerProperty = async (propertyData) => {
   }
 };
 
-export const getAllHeavensProperties = async (propertyId) => {
+export const getAllHeavensProperties = async (data) => {
   try {
+    const { propertyId, clientId } = data || {};
     console.log("Fetching heavens property:", propertyId); // Debug log
 
     const response = await apiClient.get("/property/heavens-properties", {
-      params: propertyId ? {propertyId} : {}, // ✅ pass query only if provided
+      params: {
+        clientId,
+        ...(propertyId && { propertyId }),
+      }, // ✅ pass query only if provided
     });
 
     console.debug("Fetched heavens property(get):", response.data);
@@ -92,7 +96,7 @@ export const getAllRooms = async (heavensRoomData) => {
 export const getAvailableRoomsByProperty = async (propertyId) => {
   try {
     const response = await apiClient.get("/property/room/availableRooms", {
-      params: {propertyId},
+      params: { propertyId },
     });
     console.log("Fetched available rooms:", response.data);
 
@@ -141,10 +145,10 @@ export const updateRooms = async (roomId, updatedData) => {
   }
 };
 
-export const deleteRooms = async ({roomId, adminName}) => {
+export const deleteRooms = async ({ roomId, adminName }) => {
   try {
     const response = await apiClient.delete(`/property/room/delete/${roomId}`, {
-      params: {adminName}, // Pass as query
+      params: { adminName }, // Pass as query
     });
     console.log("API Delete response data", response.data);
     return response.data; // or adapt based on API
@@ -261,12 +265,13 @@ export const getPropertyActivityLogs = async ({
   }
 };
 
-export const getDashboardStats = async (propertyId) => {
+export const getDashboardStats = async (propertyId, clientId) => {
   try {
     const response = await apiClient.get(`/property/dashboard/stats`, {
-      params: propertyId ? {propertyId} : {},
+      params: propertyId ? { propertyId, clientId } : {},
     });
 
+    console.log("response", response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching dashboard stats:", error);
@@ -398,9 +403,13 @@ export const deleteCarousel = async (carouseId) => {
   }
 };
 
-export const getAllCarousel = async () => {
+export const getAllCarousel = async (data) => {
   try {
-    const response = await apiClient.get("/property/carousel/get");
+    const response = await apiClient.get("/property/carousel/get", {
+      params: {
+        propertyId: data,
+      }
+    });
     console.debug("Carousel successfully fetched:", response.data);
     return response.data;
   } catch (error) {
@@ -419,7 +428,7 @@ export const getFloorsByPropertyId = async (propertyId) => {
   try {
     // Send propertyId as a query parameter
     const response = await apiClient.get(`/property/floor`, {
-      params: {propertyId},
+      params: { propertyId },
     });
 
     console.debug("Floors successfully fetched:", response.data);
@@ -450,7 +459,7 @@ export const getRoomsByFloorId = async (floorId) => {
 
   try {
     const response = await apiClient.get("/property/room/by-floor", {
-      params: {floorId},
+      params: { floorId },
     });
 
     console.debug("✅ Rooms by Floor fetched:", response.data);
@@ -582,9 +591,13 @@ export const createAssetCategory = async (data) => {
   }
 };
 
-export const getAssetCategory = async () => {
+export const getAssetCategory = async (data) => {
   try {
-    const response = await apiClient.get("property/asset/category");
+    const response = await apiClient.get("property/asset/category", {
+      params: {
+        propertyId: data,
+      },
+    });
 
     return response.data;
   } catch (error) {
@@ -659,7 +672,7 @@ export const getAllAssets = async (filters = {}) => {
     if (filters.categoryId) params.categoryId = filters.categoryId;
     if (filters.status) params.status = filters.status;
 
-    const response = await apiClient.get("/property/asset", {params});
+    const response = await apiClient.get("/property/asset", { params });
 
     console.debug("Assets fetched successfully:", response.data);
     return response.data;
@@ -679,9 +692,9 @@ export const getAllAssets = async (filters = {}) => {
 
 export const updateAssetStatus = async (data) => {
   try {
-    const {id, status, soldDetails} = data;
+    const { id, status, soldDetails } = data;
 
-    const payload = {status};
+    const payload = { status };
     if (status === "Sold" && soldDetails) {
       payload.soldDetails = soldDetails;
     }
@@ -757,4 +770,22 @@ export const getAssetLabelsPDF = async (filters = {}) => {
     console.error("Error fetching Asset Labels PDF:", error);
     throw error;
   }
+};
+
+export const payPropertyRent = async (data) => {
+  const response = await apiClient.post(`/property/pay-rent`, data);
+  return response.data;
+};
+
+export const getRentHistory = async (propertyId) => {
+  // Fetch expenses with category "Rent" or "Property Rent" for this property
+  const response = await apiClient.get(`/expense/all`, {
+    params: {
+      propertyId,
+      category: "Rent",
+      type: "Property Rent",
+    },
+  });
+  console.log("Rent History Response:", response.data); // Debug log
+  return response.data?.data || [];
 };

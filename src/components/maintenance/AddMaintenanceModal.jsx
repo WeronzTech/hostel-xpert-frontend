@@ -1,11 +1,20 @@
-import {useState} from "react";
-import {Modal, Form, Input, Select, Upload, Button, message, Image} from "antd";
-import {CameraOutlined, DeleteOutlined} from "@ant-design/icons";
-import {useMutation, useQueryClient} from "@tanstack/react-query";
-import {useSelector} from "react-redux";
-import {createMaintenance} from "../../hooks/property/useProperty";
+import { useState } from "react";
+import {
+  Modal,
+  Form,
+  Input,
+  Select,
+  Upload,
+  Button,
+  message,
+  Image,
+} from "antd";
+import { CameraOutlined, DeleteOutlined } from "@ant-design/icons";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useSelector } from "react-redux";
+import { createMaintenance } from "../../hooks/property/useProperty";
 
-const {TextArea} = Input;
+const { TextArea } = Input;
 
 const COMMON_ISSUES = [
   "Leaking Faucet",
@@ -21,24 +30,24 @@ const COMMON_ISSUES = [
   "Other",
 ];
 
-const AddMaintenanceModal = ({open, onClose}) => {
+const AddMaintenanceModal = ({ open, onClose }) => {
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
   const [fileList, setFileList] = useState([]);
   const [customIssue, setCustomIssue] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
 
-  const {user} = useSelector((state) => state.auth);
-  const {properties, selectedProperty} = useSelector(
-    (state) => state.properties
+  const { user } = useSelector((state) => state.auth);
+  const { properties, selectedProperty } = useSelector(
+    (state) => state.properties,
   );
 
   const propertyOptions = properties.map((prop) => ({
     label: prop.name,
-    value: prop.id,
+    value: prop._id || prop.id,
   }));
 
-  const {mutate, isPending} = useMutation({
+  const { mutate, isPending } = useMutation({
     mutationFn: (formData) => createMaintenance(formData),
     onSuccess: () => {
       message.success("Maintenance request created successfully!");
@@ -63,7 +72,7 @@ const AddMaintenanceModal = ({open, onClose}) => {
     },
   });
 
-  const handleFileChange = ({file}) => {
+  const handleFileChange = ({ file }) => {
     if (file) {
       const reader = new FileReader();
       reader.onload = (e) => setImagePreview(e.target.result);
@@ -80,12 +89,16 @@ const AddMaintenanceModal = ({open, onClose}) => {
   const handleIssueChange = (value) => {
     if (value === "Other") {
       setCustomIssue(true);
-      form.setFieldsValue({issue: ""});
+      form.setFieldsValue({ issue: "" });
     } else {
       setCustomIssue(false);
-      form.setFieldsValue({issue: value});
+      form.setFieldsValue({ issue: value });
     }
   };
+
+  // const handlePropertyChange = (value) => {
+  //   form.setFieldsValue({ propertyId: value });
+  // };
 
   const handleSubmit = async () => {
     try {
@@ -140,17 +153,39 @@ const AddMaintenanceModal = ({open, onClose}) => {
       width={600}
       destroyOnClose
     >
-      <Form form={form} layout="vertical">
+      <Form
+        form={form}
+        layout="vertical"
+        onValuesChange={(changedValues, allValues) => {
+          console.log("Field Changed:", changedValues);
+          console.log("All Current Values:", allValues);
+
+          // If you need to handle the 'Other' logic here instead of onChange:
+          if (changedValues.issue === "Other") {
+            setCustomIssue(true);
+          } else if (changedValues.issue && changedValues.issue !== "Other") {
+            setCustomIssue(false);
+          }
+        }}
+      >
         {!selectedProperty?.id && (
           <Form.Item
             name="propertyId"
             label="Property"
-            rules={[{required: true, message: "Please select a property"}]}
+            rules={[{ required: true, message: "Please select a property" }]}
           >
             <Select
               placeholder="Select property"
               options={propertyOptions}
               showSearch
+              onValuesChange={(changedValues) => {
+                if (changedValues.propertyId) {
+                  console.log(
+                    "Selected Property ID:",
+                    changedValues.propertyId,
+                  );
+                }
+              }}
               optionFilterProp="label"
             />
           </Form.Item>
@@ -160,7 +195,7 @@ const AddMaintenanceModal = ({open, onClose}) => {
           name="issue"
           label="Issue Type"
           rules={[
-            {required: true, message: "Please select or describe the issue"},
+            { required: true, message: "Please select or describe the issue" },
           ]}
         >
           {!customIssue ? (
@@ -181,7 +216,7 @@ const AddMaintenanceModal = ({open, onClose}) => {
         <Form.Item
           name="description"
           label="Description"
-          rules={[{required: true, message: "Please provide details"}]}
+          rules={[{ required: true, message: "Please provide details" }]}
         >
           <TextArea
             rows={4}
@@ -215,7 +250,7 @@ const AddMaintenanceModal = ({open, onClose}) => {
               capture="environment"
               showUploadList={false}
               beforeUpload={(file) => {
-                handleFileChange({file});
+                handleFileChange({ file });
                 return false; // Prevent auto upload
               }}
             >

@@ -62,7 +62,7 @@ export const markAttendance = async (attendanceData) => {
 
 export const getAllStaffForAttendance = async (filter = {}) => {
   try {
-    console.log("hererere");
+    console.log("hererere", filter);
     const res = await apiClient.get(`/staff/attendance/getAll`, {
       params: filter,
     });
@@ -76,7 +76,7 @@ export const getAllStaffForAttendance = async (filter = {}) => {
 
 export const getAllAttendance = async (params = {}) => {
   try {
-    const response = await apiClient.get("/attendance", {params});
+    const response = await apiClient.get("/attendance", { params });
     return response.data;
   } catch (error) {
     console.error("Get attendance overview failed:", error);
@@ -105,7 +105,7 @@ export const updateAttendance = async (updateData) => {
 export const getAttendanceSummary = async (params = {}) => {
   try {
     console.log(params);
-    const response = await apiClient.get("/attendance/summary", {params});
+    const response = await apiClient.get("/attendance/summary", { params });
     return response.data;
   } catch (error) {
     console.error("Get attendance overview failed:", error);
@@ -121,7 +121,7 @@ export const getAvailableAttendanceDates = async (employeeId) => {
   try {
     console.log("Fetching available dates for employee:", employeeId);
     const response = await apiClient.get(
-      `/attendance/availableDates/${employeeId}`
+      `/attendance/availableDates/${employeeId}`,
     );
     return response?.data?.data;
   } catch (error) {
