@@ -320,10 +320,10 @@
 // }
 
 // export default MessOrderPanel;
-import {useQuery} from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import StatsGrid from "../../components/common/StatsGrid";
-import {OrderDetailsTable} from "../../components/index.js";
-import {MdRestaurantMenu} from "../../icons/index.js";
+import { OrderDetailsTable } from "../../components/index.js";
+import { MdRestaurantMenu } from "../../icons/index.js";
 import {
   Button,
   Select,
@@ -335,16 +335,16 @@ import {
   Space,
   Tooltip,
 } from "antd";
-import {getMessOrderByPropertyId} from "../../hooks/inventory/useInventory.js";
-import {useSelector} from "react-redux";
+import { getMessOrderByPropertyId } from "../../hooks/inventory/useInventory.js";
+import { useSelector } from "react-redux";
 import ManualBookingModal from "../../modals/mess/ManualBookingModal.jsx";
-import {MdCheckCircle} from "react-icons/md";
-import {FiSearch} from "../../icons/index.js";
-import {FiLayers} from "react-icons/fi";
-import {useState, useMemo} from "react";
+import { MdCheckCircle } from "react-icons/md";
+import { FiSearch } from "../../icons/index.js";
+import { FiLayers } from "react-icons/fi";
+import { useState, useMemo } from "react";
 import usePersistentState from "../../hooks/usePersistentState.js";
 
-const {Option} = Select;
+const { Option } = Select;
 
 const MessSearchFilters = ({
   onSearch,
@@ -379,7 +379,7 @@ const MessSearchFilters = ({
               <Select
                 value={selectedMealType}
                 onChange={onMealTypeChange}
-                style={{width: "100%"}}
+                style={{ width: "100%" }}
                 size="middle"
               >
                 <Option value="all">All Meals</Option>
@@ -394,7 +394,7 @@ const MessSearchFilters = ({
               <Select
                 value={selectedStatus}
                 onChange={onStatusChange}
-                style={{width: "100%"}}
+                style={{ width: "100%" }}
                 size="middle"
               >
                 <Option value="all">All Status</Option>
@@ -411,7 +411,7 @@ const MessSearchFilters = ({
                   value={selectedDate}
                   allowClear
                   format="DD/MM/YYYY"
-                  style={{width: "100%"}}
+                  style={{ width: "100%" }}
                   size="middle"
                 />
               </Col>
@@ -433,7 +433,7 @@ const MessSearchFilters = ({
             <Col xs={12} sm={8} md={6} lg={4}>
               <Button
                 type="primary"
-                style={{width: "100%"}}
+                style={{ width: "100%" }}
                 onClick={onAddBooking}
               >
                 Add Booking
@@ -452,6 +452,7 @@ function MessOrderPanel() {
   const selectedProperty = useSelector(
     (state) => state.properties.selectedProperty,
   );
+  const { user } = useSelector((state) => state.auth);
 
   const [searchTerm, setSearchTerm] = usePersistentState(
     "mess-order-search",
@@ -488,7 +489,7 @@ function MessOrderPanel() {
     return apiFilter;
   };
 
-  const {data: rawResponse, isLoading: messOrderLoading} = useQuery({
+  const { data: rawResponse, isLoading: messOrderLoading } = useQuery({
     queryKey: ["mess-order-list", buildApiFilter()],
     queryFn: () => getMessOrderByPropertyId(buildApiFilter()),
     enabled: true,

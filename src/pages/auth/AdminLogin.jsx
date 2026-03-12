@@ -1,13 +1,13 @@
-import {useState} from "react";
-import {useLocation, useNavigate} from "react-router-dom";
-import {loginStart, loginSuccess} from "../../redux/authSlice";
-import {useDispatch} from "react-redux";
-import {validateLoginForm} from "../../utils/validator";
-import {tenantLogin} from "../../hooks/auth/useAuth";
-import {Card, Form, Input, Button, Alert, Typography, Space} from "antd";
-import {MailOutlined, LockOutlined} from "@ant-design/icons";
+import { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { loginStart, loginSuccess } from "../../redux/authSlice";
+import { useDispatch } from "react-redux";
+import { validateLoginForm } from "../../utils/validator";
+import { tenantLogin } from "../../hooks/auth/useAuth";
+import { Card, Form, Input, Button, Alert, Typography, Space } from "antd";
+import { MailOutlined, LockOutlined } from "@ant-design/icons";
 
-const {Title, Paragraph} = Typography;
+const { Title, Paragraph } = Typography;
 
 const AdminLogin = () => {
   const dispatch = useDispatch();
@@ -28,7 +28,7 @@ const AdminLogin = () => {
 
     // Clear field-specific error
     if (fieldErrors[fieldName]) {
-      setFieldErrors((prev) => ({...prev, [fieldName]: ""}));
+      setFieldErrors((prev) => ({ ...prev, [fieldName]: "" }));
     }
 
     // Clear general API error
@@ -81,7 +81,7 @@ const AdminLogin = () => {
         className="w-full max-w-md shadow-lg rounded-2xl overflow-hidden"
         bordered={false}
         styles={{
-          body: {padding: 0},
+          body: { padding: 0 },
         }}
       >
         {/* Header */}
@@ -92,10 +92,10 @@ const AdminLogin = () => {
             padding: "1.5rem",
           }}
         >
-          <Title level={3} style={{color: "white", margin: 0}}>
+          <Title level={3} style={{ color: "white", margin: 0 }}>
             Admin Portal
           </Title>
-          <Paragraph style={{color: "#e0e7ff", margin: "0.25rem 0 0 0"}}>
+          <Paragraph style={{ color: "#e0e7ff", margin: "0.25rem 0 0 0" }}>
             Sign in to your account
           </Paragraph>
         </div>
@@ -115,7 +115,7 @@ const AdminLogin = () => {
                 message={apiError}
                 type="error"
                 showIcon
-                style={{marginBottom: "16px", borderRadius: "8px"}}
+                style={{ marginBottom: "16px", borderRadius: "8px" }}
                 closable
                 onClose={() => setApiError("")}
               />
@@ -128,15 +128,15 @@ const AdminLogin = () => {
               validateStatus={fieldErrors.email ? "error" : ""}
               help={fieldErrors.email}
               rules={[
-                {required: true, message: "Please enter your email"},
-                {type: "email", message: "Please enter a valid email"},
+                { required: true, message: "Please enter your email" },
+                { type: "email", message: "Please enter a valid email" },
               ]}
-              style={{marginBottom: "16px"}}
+              style={{ marginBottom: "16px" }}
             >
               <Input
-                prefix={<MailOutlined style={{color: "#9ca3af"}} />}
+                prefix={<MailOutlined style={{ color: "#9ca3af" }} />}
                 placeholder="official@company.com"
-                style={{borderRadius: "8px"}}
+                style={{ borderRadius: "8px" }}
               />
             </Form.Item>
 
@@ -146,18 +146,20 @@ const AdminLogin = () => {
               name="password"
               validateStatus={fieldErrors.password ? "error" : ""}
               help={fieldErrors.password}
-              rules={[{required: true, message: "Please enter your password"}]}
-              style={{marginBottom: "8px"}}
+              rules={[
+                { required: true, message: "Please enter your password" },
+              ]}
+              style={{ marginBottom: "8px" }}
             >
               <Input.Password
-                prefix={<LockOutlined style={{color: "#9ca3af"}} />}
+                prefix={<LockOutlined style={{ color: "#9ca3af" }} />}
                 placeholder="Enter your password"
-                style={{borderRadius: "8px"}}
+                style={{ borderRadius: "8px" }}
               />
             </Form.Item>
 
             {/* Forgot Password Link */}
-            <div className="flex justify-end" style={{marginBottom: "14px"}}>
+            <div className="flex justify-end" style={{ marginBottom: "14px" }}>
               <Button
                 type="link"
                 onClick={() => navigate("/forgot-password")}
@@ -173,7 +175,7 @@ const AdminLogin = () => {
             </div>
 
             {/* Submit Button */}
-            <Form.Item style={{marginBottom: 0}}>
+            <Form.Item style={{ marginBottom: 0 }}>
               <Button
                 type="primary"
                 htmlType="submit"
@@ -204,7 +206,7 @@ const AdminLogin = () => {
             }}
           >
             <Space>
-              <span style={{color: "#6b7280", fontSize: "0.875rem"}}>
+              <span style={{ color: "#6b7280", fontSize: "0.875rem" }}>
                 New to platform?
               </span>
               <Button

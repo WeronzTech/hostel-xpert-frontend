@@ -15,10 +15,7 @@ import {
   Upload,
   Image,
 } from "antd";
-import {
-  UploadOutlined,
-  EyeOutlined,
-} from "@ant-design/icons";
+import { UploadOutlined, EyeOutlined } from "@ant-design/icons";
 import { useSelector } from "react-redux";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
@@ -47,13 +44,13 @@ const ASSET_STATUS_OPTIONS = [
 ];
 
 // Custom Hooks with TanStack Query v5
-const useAssetCategories = () => {
+const useAssetCategories = (value) => {
   return useQuery({
-    queryKey: ['assetCategories'],
+    queryKey: ["assetCategories", value],
     queryFn: async () => {
-      const response = await getAssetCategory();
+      const response = await getAssetCategory(value);
       let catsData = [];
-      
+
       if (response && response.success && response.data) {
         catsData = response.data;
       } else if (Array.isArray(response)) {
@@ -61,7 +58,7 @@ const useAssetCategories = () => {
       } else if (response && response.data) {
         catsData = response.data;
       }
-      
+
       return Array.isArray(catsData) ? catsData : [];
     },
   });
@@ -69,13 +66,13 @@ const useAssetCategories = () => {
 
 const useFloors = (propertyId) => {
   return useQuery({
-    queryKey: ['floors', propertyId],
+    queryKey: ["floors", propertyId],
     queryFn: async () => {
       if (!propertyId) return [];
-      
+
       const response = await getFloorsByPropertyId(propertyId);
       let floorsData = [];
-      
+
       if (response && response.success && response.data) {
         floorsData = response.data;
       } else if (Array.isArray(response)) {
@@ -83,7 +80,7 @@ const useFloors = (propertyId) => {
       } else if (response && response.data) {
         floorsData = response.data;
       }
-      
+
       return Array.isArray(floorsData) ? floorsData : [];
     },
     enabled: !!propertyId,
@@ -92,13 +89,13 @@ const useFloors = (propertyId) => {
 
 const useRooms = (floorId) => {
   return useQuery({
-    queryKey: ['rooms', floorId],
+    queryKey: ["rooms", floorId],
     queryFn: async () => {
       if (!floorId) return [];
-      
+
       const response = await getRoomsByFloorId(floorId);
       let roomsData = [];
-      
+
       if (response && response.success && response.data) {
         roomsData = response.data;
       } else if (Array.isArray(response)) {
@@ -106,7 +103,7 @@ const useRooms = (floorId) => {
       } else if (response && response.data) {
         roomsData = response.data;
       }
-      
+
       return Array.isArray(roomsData) ? roomsData : [];
     },
     enabled: !!floorId,
@@ -115,11 +112,11 @@ const useRooms = (floorId) => {
 
 const useUpdateAsset = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: updateAsset,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['assets'] });
+      queryClient.invalidateQueries({ queryKey: ["assets"] });
     },
   });
 };
@@ -130,7 +127,7 @@ const safeDayjs = (date) => {
   try {
     return dayjs(date);
   } catch (error) {
-    console.error('Invalid date:', date, error);
+    console.error("Invalid date:", date, error);
     return null;
   }
 };
@@ -142,6 +139,7 @@ const UpdateAsset = ({ isOpen, onClose, assetData }) => {
   const [invoiceFile, setInvoiceFile] = useState(null);
   const [selectedFloorId, setSelectedFloorId] = useState(null);
   const [isWarrantyChanged, setIsWarrantyChanged] = useState(false);
+  const [currentPropertyId, setCurrentPropertyId] = useState(null);
 
   // Get selected property from Redux with safe access
   const selectedProperty = useSelector((state) => {
@@ -154,43 +152,54 @@ const UpdateAsset = ({ isOpen, onClose, assetData }) => {
   });
 
   // TanStack Query hooks
-  const { data: categories = [], isLoading: loadingCats } = useAssetCategories();
-  const { data: floors = [], isLoading: loadingFloors } = useFloors(selectedProperty?.id);
-  const { data: rooms = [], isLoading: loadingRooms } = useRooms(selectedFloorId);
-  
+  const { data: categories = [], isLoading: loadingCats } =
+    useAssetCategories(currentPropertyId);
+  const { data: floors = [], isLoading: loadingFloors } =
+    useFloors(currentPropertyId);
+  const { data: rooms = [], isLoading: loadingRooms } =
+    useRooms(selectedFloorId);
+
   const updateAssetMutation = useUpdateAsset();
 
   // Initialize form with asset data when modal opens or assetData changes
   useEffect(() => {
     if (isOpen && assetData) {
       console.log("Asset Data for form initialization:", assetData);
-      
+
       // Extract floorId from asset data
       const floorId = assetData.floorId?._id || assetData.floorId;
-      
+      const propId = assetData.propertyId?._id || assetData.propertyId;
+
       const initialValues = {
         assetName: assetData.name,
-        description: assetData.description || '',
+        description: assetData.description || "",
         purchasedPrice: assetData.purchaseDetails?.price || 0,
-        purchasedDate: assetData.purchaseDetails?.purchaseDate ? 
-          safeDayjs(assetData.purchaseDetails.purchaseDate) : null,
-        shopName: assetData.purchaseDetails?.vendor || '',
-        warrantyProvider: assetData.warrantyDetails?.provider || '',
-        status: assetData.status || 'Active',
+        purchasedDate: assetData.purchaseDetails?.purchaseDate
+          ? safeDayjs(assetData.purchaseDetails.purchaseDate)
+          : null,
+        propertyId: propId,
+        shopName: assetData.purchaseDetails?.vendor || "",
+        warrantyProvider: assetData.warrantyDetails?.provider || "",
+        status: assetData.status || "Active",
         category: assetData.categoryId?._id || assetData.categoryId,
         floorId: floorId,
         roomId: assetData.roomId?._id || assetData.roomId,
-        warrantyTill: assetData.warrantyDetails?.expiryDate ? 
-          safeDayjs(assetData.warrantyDetails.expiryDate) : null,
-        warrantyNotes: assetData.warrantyDetails?.notes || '',
-        hasWarranty: !!(assetData.warrantyDetails?.provider || assetData.warrantyDetails?.expiryDate),
+        warrantyTill: assetData.warrantyDetails?.expiryDate
+          ? safeDayjs(assetData.warrantyDetails.expiryDate)
+          : null,
+        warrantyNotes: assetData.warrantyDetails?.notes || "",
+        hasWarranty: !!(
+          assetData.warrantyDetails?.provider ||
+          assetData.warrantyDetails?.expiryDate
+        ),
       };
 
       console.log("Initial form values:", initialValues);
-      
+
       setHasWarranty(initialValues.hasWarranty);
+      setCurrentPropertyId(propId);
       setSelectedFloorId(floorId);
-      
+
       // Set form values
       form.setFieldsValue(initialValues);
     }
@@ -223,20 +232,20 @@ const UpdateAsset = ({ isOpen, onClose, assetData }) => {
   const handleWarrantyToggle = (checked) => {
     setHasWarranty(checked);
     setIsWarrantyChanged(true);
-    
+
     // Clear warranty fields if turning off warranty
     if (!checked) {
       form.setFieldsValue({
-        warrantyProvider: '',
+        warrantyProvider: "",
         warrantyTill: null,
-        warrantyNotes: '',
+        warrantyNotes: "",
       });
     }
   };
 
   // Handle form submission
   const handleSave = async (values) => {
-    if (!selectedProperty?.id) {
+    if (!currentPropertyId) {
       message.error("Please select a property first");
       return;
     }
@@ -254,11 +263,12 @@ const UpdateAsset = ({ isOpen, onClose, assetData }) => {
       // Prepare the data in the exact structure backend expects
       const updateData = {
         id: assetData._id, // Asset ID at top level
-        payload: { // Asset data goes here
+        payload: {
+          // Asset data goes here
           name: String(values.assetName || ""),
           categoryId: String(values.category || ""),
           description: String(values.description || ""),
-          propertyId: String(selectedProperty.id || ""),
+          propertyId: values.propertyId,
           floorId: String(values.floorId || ""),
           purchaseDetails: {
             purchaseDate: values.purchasedDate
@@ -267,10 +277,10 @@ const UpdateAsset = ({ isOpen, onClose, assetData }) => {
             vendor: String(values.shopName || ""),
             price: Number(values.purchasedPrice || 0),
             // Keep existing invoiceUrl - it will be updated if new file is provided
-            invoiceUrl: assetData?.purchaseDetails?.invoiceUrl || ""
+            invoiceUrl: assetData?.purchaseDetails?.invoiceUrl || "",
           },
           status: values.status || "Active",
-        }
+        },
       };
 
       // Add roomId only if it exists (not required field)
@@ -303,7 +313,7 @@ const UpdateAsset = ({ isOpen, onClose, assetData }) => {
               buffer: invoiceBase64.buffer,
               originalname: invoiceFile.name,
               mimetype: invoiceFile.type,
-            }
+            },
           };
           console.log("Invoice file attached to updateData (TOP LEVEL)");
         } catch (error) {
@@ -336,6 +346,16 @@ const UpdateAsset = ({ isOpen, onClose, assetData }) => {
     }
   };
 
+  const onPropertyChange = (value) => {
+    setCurrentPropertyId(value);
+    form.setFieldsValue({
+      floorId: null,
+      roomId: null,
+      category: null,
+    });
+    setSelectedFloorId(null);
+  };
+
   // Handle modal cancellation
   const handleCancel = () => {
     form.resetFields();
@@ -343,6 +363,7 @@ const UpdateAsset = ({ isOpen, onClose, assetData }) => {
     setInvoiceFile(null);
     setSelectedFloorId(null);
     setIsWarrantyChanged(false);
+    setCurrentPropertyId(null);
     onClose();
   };
 
@@ -354,11 +375,20 @@ const UpdateAsset = ({ isOpen, onClose, assetData }) => {
     });
   };
 
+  const allProperties = useSelector(
+    (state) => state.properties.properties || [],
+  );
+  const properties = allProperties.filter((property) => property._id !== null);
+
+  const filterOption = (input, option) => {
+    return option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0;
+  };
+
   const saving = updateAssetMutation.isPending;
 
   return (
     <Modal
-      title={`Update Asset - ${assetData?.name || ''}`}
+      title={`Update Asset - ${assetData?.name || ""}`}
       open={isOpen}
       onCancel={handleCancel}
       footer={null}
@@ -366,7 +396,7 @@ const UpdateAsset = ({ isOpen, onClose, assetData }) => {
       destroyOnClose
     >
       {/* Display selected property information */}
-      {selectedProperty ? (
+      {/* {selectedProperty ? (
         <div
           style={{
             marginBottom: "16px",
@@ -378,9 +408,7 @@ const UpdateAsset = ({ isOpen, onClose, assetData }) => {
         >
           <strong>Selected Property:</strong> {selectedProperty.name}
           {selectedProperty.address && (
-            <div
-              style={{ fontSize: "12px", color: "#666", marginTop: "4px" }}
-            >
+            <div style={{ fontSize: "12px", color: "#666", marginTop: "4px" }}>
               {selectedProperty.address}
             </div>
           )}
@@ -402,7 +430,7 @@ const UpdateAsset = ({ isOpen, onClose, assetData }) => {
           <span>⚠️</span>
           <span>Select any property to update assets</span>
         </div>
-      )}
+      )} */}
 
       <Form
         form={form}
@@ -410,6 +438,34 @@ const UpdateAsset = ({ isOpen, onClose, assetData }) => {
         onFinish={handleSave}
         style={{ marginTop: "24px" }}
       >
+        <Row gutter={16}>
+          <Col xs={24} sm={24} md={24} lg={24}>
+            <Form.Item
+              name="propertyId"
+              label="Property"
+              rules={[
+                {
+                  required: true,
+                  message: "Please select at least one property",
+                },
+              ]}
+            >
+              <Select
+                placeholder="Select property"
+                showSearch
+                filterOption={filterOption}
+                optionFilterProp="children"
+                onChange={onPropertyChange}
+              >
+                {properties.map((property) => (
+                  <Option key={property._id} value={property._id}>
+                    {property.name}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+          </Col>
+        </Row>
         <Row gutter={16}>
           {/* Asset Name */}
           <Col span={24}>
@@ -467,10 +523,7 @@ const UpdateAsset = ({ isOpen, onClose, assetData }) => {
                 },
               ]}
             >
-              <DatePicker 
-                style={{ width: "100%" }}
-                format="YYYY-MM-DD"
-              />
+              <DatePicker style={{ width: "100%" }} format="YYYY-MM-DD" />
             </Form.Item>
           </Col>
 
@@ -505,14 +558,20 @@ const UpdateAsset = ({ isOpen, onClose, assetData }) => {
                   ✓ New file selected: {invoiceFile.name}
                 </div>
               )}
-              
+
               {/* Show current invoice if exists */}
               {assetData?.purchaseDetails?.invoiceUrl && (
                 <div style={{ marginTop: 8 }}>
                   <div style={{ marginBottom: 4, color: "#1890ff" }}>
                     📄 Current Invoice:
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}
+                  >
                     <Image
                       width={50}
                       height={50}
@@ -529,8 +588,8 @@ const UpdateAsset = ({ isOpen, onClose, assetData }) => {
                       fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
                       className="rounded border border-gray-200 cursor-pointer"
                     />
-                    <span style={{ fontSize: '12px', color: '#666' }}>
-                      {assetData.purchaseDetails.invoiceUrl.split('/').pop()}
+                    <span style={{ fontSize: "12px", color: "#666" }}>
+                      {assetData.purchaseDetails.invoiceUrl.split("/").pop()}
                     </span>
                   </div>
                 </div>
@@ -573,9 +632,7 @@ const UpdateAsset = ({ isOpen, onClose, assetData }) => {
             <Form.Item
               name="category"
               label="Category"
-              rules={[
-                { required: true, message: "Please select a category" },
-              ]}
+              rules={[{ required: true, message: "Please select a category" }]}
             >
               <Select placeholder="Choose a category" loading={loadingCats}>
                 {categories.map((cat) => (
@@ -618,10 +675,7 @@ const UpdateAsset = ({ isOpen, onClose, assetData }) => {
                     },
                   ]}
                 >
-                  <DatePicker 
-                    style={{ width: "100%" }}
-                    format="YYYY-MM-DD"
-                  />
+                  <DatePicker style={{ width: "100%" }} format="YYYY-MM-DD" />
                 </Form.Item>
               </Col>
 
@@ -646,13 +700,13 @@ const UpdateAsset = ({ isOpen, onClose, assetData }) => {
             >
               <Select
                 placeholder={
-                  selectedProperty?.id
+                  currentPropertyId
                     ? "Choose a floor"
                     : "Select any property first"
                 }
                 loading={loadingFloors}
                 onChange={onFloorChange}
-                disabled={!selectedProperty?.id || loadingFloors}
+                disabled={!currentPropertyId || loadingFloors}
               >
                 {floors.map((floor) => (
                   <Option
@@ -668,23 +722,19 @@ const UpdateAsset = ({ isOpen, onClose, assetData }) => {
 
           {/* Select Room - OPTIONAL */}
           <Col span={12}>
-            <Form.Item
-              name="roomId"
-              label="Select Room (Optional)"
-            >
+            <Form.Item name="roomId" label="Select Room (Optional)">
               <Select
                 placeholder={
-                  selectedFloorId ? "Choose a room (optional)" : "Select a floor first"
+                  selectedFloorId
+                    ? "Choose a room (optional)"
+                    : "Select a floor first"
                 }
                 loading={loadingRooms}
                 disabled={!selectedFloorId || loadingRooms}
                 allowClear
               >
                 {rooms.map((room) => (
-                  <Option
-                    key={room.id || room._id}
-                    value={room.id || room._id}
-                  >
+                  <Option key={room.id || room._id} value={room.id || room._id}>
                     {room.roomNo}
                   </Option>
                 ))}

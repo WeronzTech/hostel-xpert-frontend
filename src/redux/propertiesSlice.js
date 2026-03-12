@@ -1,5 +1,6 @@
-import {createSlice} from "@reduxjs/toolkit";
-import {encryptedStorage} from "../utils/encryptedStorage";
+import { createSlice } from "@reduxjs/toolkit";
+import { encryptedStorage } from "../utils/encryptedStorage";
+import { logout, showExpirationModal } from "./authSlice";
 
 const initialState = {
   properties: [],
@@ -18,14 +19,14 @@ const propertiesSlice = createSlice({
   reducers: {
     setProperties: (state, action) => {
       state.properties = [
-        {name: "All Properties", _id: null},
+        { name: "All Properties", _id: null },
         ...action.payload,
       ];
     },
     addProperty: (state, action) => {
       if (!state.properties.some((p) => p.name === action.payload.name)) {
         state.properties = [
-          {name: "All Properties", _id: null},
+          { name: "All Properties", _id: null },
           ...state.properties.filter((p) => p.name !== "All Properties"),
           action.payload,
         ];
@@ -51,6 +52,25 @@ const propertiesSlice = createSlice({
       encryptedStorage.setItem("selectedPropertyId", null);
       encryptedStorage.setItem("selectedKitchenId", null);
     },
+  },
+  extraReducers: (builder) => {
+    // When user explicitly logs out OR session expires
+    builder.addMatcher(
+      (action) =>
+        action.type === logout.type || action.type === showExpirationModal.type,
+      (state) => {
+        state.selectedProperty = {
+          name: "",
+          id: null,
+          kitchenId: null,
+        };
+        state.properties = [];
+        // Clear persistent storage
+        encryptedStorage.removeItem("selectedPropertyName");
+        encryptedStorage.removeItem("selectedPropertyId");
+        encryptedStorage.removeItem("selectedKitchenId");
+      },
+    );
   },
 });
 

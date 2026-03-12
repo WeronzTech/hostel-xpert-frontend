@@ -1,18 +1,21 @@
-import {useQuery} from "@tanstack/react-query";
-import {AddonDetailsTable, StatsGrid} from "../../components/index.js";
-import {IoFastFoodOutline} from "../../icons/index.js";
-import {Select, Input, Row, Col, DatePicker, Switch, Space} from "antd";
+import { useQuery } from "@tanstack/react-query";
+import { AddonDetailsTable, StatsGrid } from "../../components/index.js";
+import { IoFastFoodOutline } from "../../icons/index.js";
+import { Select, Input, Row, Col, DatePicker, Switch, Space } from "antd";
 import {
   getAddonOrderByPropertyId,
   useUpdateAddonBookingStatus,
 } from "../../hooks/inventory/useInventory.js";
-import {useSelector} from "react-redux";
-import {MdOutlinePendingActions, MdOutlineFreeBreakfast} from "react-icons/md";
-import {FiSearch, FiCalendar} from "../../icons/index.js";
+import { useSelector } from "react-redux";
+import {
+  MdOutlinePendingActions,
+  MdOutlineFreeBreakfast,
+} from "react-icons/md";
+import { FiSearch, FiCalendar } from "../../icons/index.js";
 import usePersistentState from "../../hooks/usePersistentState.js";
-import {PiCurrencyInrBold} from "react-icons/pi";
+import { PiCurrencyInrBold } from "react-icons/pi";
 
-const {Option} = Select;
+const { Option } = Select;
 
 // Search and Filters Component for Addon Orders
 const AddonSearchFilters = ({
@@ -50,7 +53,7 @@ const AddonSearchFilters = ({
               <Select
                 value={selectedStatus}
                 onChange={onStatusChange}
-                style={{width: "100%"}}
+                style={{ width: "100%" }}
                 size="middle"
                 placeholder="Status"
               >
@@ -65,7 +68,7 @@ const AddonSearchFilters = ({
               <Select
                 value={selectedPaymentStatus}
                 onChange={onPaymentStatusChange}
-                style={{width: "100%"}}
+                style={{ width: "100%" }}
                 size="middle"
                 placeholder="Payment Status"
               >
@@ -85,7 +88,7 @@ const AddonSearchFilters = ({
                   allowClear
                   format="DD/MM/YYYY"
                   suffixIcon={<FiCalendar className="text-lg" />}
-                  style={{width: "100%"}}
+                  style={{ width: "100%" }}
                   size="middle"
                 />
               </Col>
@@ -119,33 +122,34 @@ function AddonOrderPanel() {
   } = useUpdateAddonBookingStatus();
 
   const selectedProperty = useSelector(
-    (state) => state.properties.selectedProperty
+    (state) => state.properties.selectedProperty,
   );
+  const { user } = useSelector((state) => state.auth);
 
   // Use persistent state for all filter states
   const [searchTerm, setSearchTerm] = usePersistentState(
     "addon-order-search",
-    ""
+    "",
   );
   const [selectedMealType, setSelectedMealType] = usePersistentState(
     "addon-order-meal-type",
-    "all"
+    "all",
   );
   const [selectedStatus, setSelectedStatus] = usePersistentState(
     "addon-order-status",
-    "all"
+    "all",
   );
   const [selectedPaymentStatus, setSelectedPaymentStatus] = usePersistentState(
     "addon-order-payment-status",
-    "all"
+    "all",
   );
   const [selectedDate, setSelectedDate] = usePersistentState(
     "addon-order-date",
-    null
+    null,
   );
   const [todayOnly, setTodayOnly] = usePersistentState(
     "addon-order-today-only",
-    false
+    false,
   );
 
   // Helper function to format date for API
@@ -178,7 +182,7 @@ function AddonOrderPanel() {
     if (todayOnly) {
       const today = new Date();
       return `${String(today.getDate()).padStart(2, "0")}/${String(
-        today.getMonth() + 1
+        today.getMonth() + 1,
       ).padStart(2, "0")}/${today.getFullYear()}`;
     } else if (selectedDate) {
       // Handle different date formats
@@ -188,7 +192,7 @@ function AddonOrderPanel() {
         const date = new Date(selectedDate);
         if (!isNaN(date.getTime())) {
           return `${String(date.getDate()).padStart(2, "0")}/${String(
-            date.getMonth() + 1
+            date.getMonth() + 1,
           ).padStart(2, "0")}/${date.getFullYear()}`;
         }
       }
@@ -240,7 +244,7 @@ function AddonOrderPanel() {
   };
 
   // Fetch addon orders with filters
-  const {data: addonOrderData, isLoading: addonOrderLoading} = useQuery({
+  const { data: addonOrderData, isLoading: addonOrderLoading } = useQuery({
     queryKey: ["addon-order-list", buildApiFilter()],
     queryFn: () => getAddonOrderByPropertyId(buildApiFilter()),
     enabled: true,
@@ -248,11 +252,11 @@ function AddonOrderPanel() {
   });
 
   const handleStatusUpdate = async (bookingId, status) => {
-    console.log("Attempting to update status:", {bookingId, status});
+    console.log("Attempting to update status:", { bookingId, status });
 
     try {
       // This should trigger the mutation
-      await updateStatus({bookingId, status});
+      await updateStatus({ bookingId, status });
     } catch (error) {
       console.error("Error in handleStatusUpdate:", error);
       throw error;
@@ -268,11 +272,11 @@ function AddonOrderPanel() {
     const totalBookings = data.length;
 
     const pendingCount = data.filter(
-      (item) => item.status === "Pending"
+      (item) => item.status === "Pending",
     ).length;
 
     const deliveredCount = data.filter(
-      (item) => item.status === "Delivered"
+      (item) => item.status === "Delivered",
     ).length;
 
     const deliveredTotal = data

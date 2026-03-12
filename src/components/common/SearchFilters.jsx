@@ -1,10 +1,10 @@
-import {useState} from "react";
-import {Input, Select, DatePicker, Row, Col, Button} from "antd";
-import {IoFilter, FiSearch, FiCalendar} from "../../icons/index.js";
+import { useState } from "react";
+import { Input, Select, DatePicker, Row, Col, Button } from "antd";
+import { IoFilter, FiSearch, FiCalendar } from "../../icons/index.js";
 import RegistrationModal from "../users/RegistrationModal.jsx";
 import MonthlyRegistrationModal from "../users/MonthlyRegistrationModal.jsx";
 
-const {Option} = Select;
+const { Option } = Select;
 
 const SearchFilters = ({
   onSearch,
@@ -109,7 +109,7 @@ const SearchFilters = ({
                   value={selectedStatus}
                   onChange={onStatusChange}
                   suffixIcon={<IoFilter className="text-lg" />}
-                  style={{width: "100%"}}
+                  style={{ width: "100%" }}
                   size="middle"
                 >
                   {renderOptions()}
@@ -126,7 +126,7 @@ const SearchFilters = ({
                     allowClear
                     format="DD/MM/YYYY"
                     suffixIcon={<FiCalendar className="text-lg" />}
-                    style={{width: "100%"}}
+                    style={{ width: "100%" }}
                     size="middle"
                   />
                 </Col>
@@ -135,17 +135,21 @@ const SearchFilters = ({
               {/* Registration Button */}
 
               <Col xs={24} sm={12} md={8} lg={8}>
-                <Button
-                  type="primary"
-                  style={{
-                    width: "100%",
-                    backgroundColor: "#059669",
-                    borderColor: "#059669",
-                  }}
-                  onClick={handleRegisterClick}
-                >
-                  Register
-                </Button>
+                {rentType === "monthly" ? (
+                  <b></b>
+                ) : (
+                  <Button
+                    type="primary"
+                    style={{
+                      width: "100%",
+                      backgroundColor: "#059669",
+                      borderColor: "#059669",
+                    }}
+                    onClick={handleRegisterClick}
+                  >
+                    Register
+                  </Button>
+                )}
               </Col>
             </Row>
           </Col>

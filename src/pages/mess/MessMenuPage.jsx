@@ -1,23 +1,23 @@
-import {useState} from "react";
-import {useSelector} from "react-redux";
-import {useNavigate} from "react-router-dom";
+import { useState } from "react";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
-import {Card, Tag, Typography, Row, Col, Divider, Button} from "antd";
+import { Card, Tag, Typography, Row, Col, Divider, Button } from "antd";
 import {
   EditOutlined,
   DownloadOutlined,
   ClockCircleOutlined,
   PlusOutlined,
 } from "../../icons/index.js";
-import {useQuery} from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 import PageHeader from "../../components/common/PageHeader.jsx";
 import LoadingSpinner from "../../ui/loadingSpinner/LoadingSpinner.jsx";
 import ErrorState from "../../components/common/ErrorState.jsx";
-import {messApiService} from "../../hooks/mess/messApiService.js";
-import {ActionButton} from "../../components/index.js";
+import { messApiService } from "../../hooks/mess/messApiService.js";
+import { ActionButton } from "../../components/index.js";
 
-const {Title, Text} = Typography;
+const { Title, Text } = Typography;
 
 // Helper function to format time
 const formatTime = (time) => {
@@ -26,7 +26,7 @@ const formatTime = (time) => {
 };
 
 // Header displaying meal timing info
-const Header = ({title, bookingStartTime, bookingEndTime, onEditClicked}) => (
+const Header = ({ title, bookingStartTime, bookingEndTime, onEditClicked }) => (
   <div className="mb-4 flex justify-between items-center">
     <div>
       <Title level={3} className="m-0">
@@ -54,7 +54,7 @@ function MessMenuPage() {
   // const queryClient = useQueryClient();
 
   const selectedKitchenId = useSelector(
-    (state) => state.properties.selectedProperty.kitchenId
+    (state) => state.properties.selectedProperty.kitchenId,
   );
 
   // State to track selected day in the week
@@ -67,7 +67,7 @@ function MessMenuPage() {
       "Thursday",
       "Friday",
       "Saturday",
-    ][new Date().getDay()]
+    ][new Date().getDay()],
   );
 
   const currentDay = [
@@ -81,7 +81,7 @@ function MessMenuPage() {
   ][new Date().getDay()];
 
   // Fetch mess menu using tanstack-query
-  const {data, error, isLoading, isError, refetch} = useQuery({
+  const { data, error, isLoading, isError, refetch } = useQuery({
     queryKey: ["messMenu", selectedKitchenId],
     queryFn: () => messApiService.getMessMenu(selectedKitchenId),
     enabled: !!selectedKitchenId,
@@ -120,14 +120,36 @@ function MessMenuPage() {
 
   // Destructure menu data
   const menuData = data?.data?.[0];
+
+  if (isError || !menuData) {
+    return (
+      <div>
+        <PageHeader
+          title="Mess Menu"
+          subtitle="Manage the daily menu for the Mess and the meal timings"
+        />
+        <div className="mt-8">
+          <ErrorState
+            isEmpty
+            message="No Mess Menu Available"
+            description="You haven't added a weekly menu for this property yet."
+            actionText="Add Menu"
+            onAction={() => navigate("/mess/create/menu")}
+            icon={<PlusOutlined />}
+          />
+        </div>
+      </div>
+    );
+  }
+
   const activeMenu = menuData?.menu?.find(
-    (day) => day.dayOfWeek === selectedDay
+    (day) => day.dayOfWeek === selectedDay,
   );
 
   const handleEdit = () => {
     // console.log("clicked edit"); //debug log
     setTimeout(() => {
-      navigate("/mess/edit", {state: {menuData}});
+      navigate("/mess/edit", { state: { menuData } });
     }, 0); // 0 or 100ms to avoid render-block
   };
 
@@ -221,7 +243,7 @@ function MessMenuPage() {
             <Row gutter={[24, 24]}>
               {menuData?.mealTimes?.map((mealTime) => {
                 const mealData = activeMenu?.meals.find(
-                  (m) => m.mealType === mealTime?.mealType
+                  (m) => m.mealType === mealTime?.mealType,
                 );
                 const hasItems =
                   mealData?.itemIds && mealData?.itemIds?.length > 0;

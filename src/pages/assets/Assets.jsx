@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import {
   FiSearch,
   FiPlus,
@@ -12,7 +12,7 @@ import PageHeader from "../../components/common/PageHeader";
 import AddAsset from "../../modals/property/AddAsset";
 import UpdateAsset from "../../modals/property/UpdateAsset";
 import ConfirmModal from "../../modals/common/ConfirmModal";
-import {useQuery, useMutation, useQueryClient} from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getAllAssets,
   updateAssetStatus,
@@ -22,11 +22,11 @@ import {
   getRoomsByFloorId,
   getAssetCategory,
 } from "../../hooks/property/useProperty.js";
-import {Image, Select, Button, message, Modal} from "antd";
-import {EyeOutlined, DownloadOutlined} from "@ant-design/icons";
-import {useSelector} from "react-redux";
+import { Image, Select, Button, message, Modal } from "antd";
+import { EyeOutlined, DownloadOutlined } from "@ant-design/icons";
+import { useSelector } from "react-redux";
 
-const {Option} = Select;
+const { Option } = Select;
 
 const Assets = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -69,24 +69,35 @@ const Assets = () => {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["assets", selectedProperty?.id],
+    queryKey: [
+      "assets",
+      selectedProperty?.id,
+      categoryFilter,
+      statusFilter,
+      floorFilter,
+      roomFilter,
+    ],
     queryFn: () =>
-      getAllAssets(
-        selectedProperty?.id ? {propertyId: selectedProperty.id} : {},
-      ),
+      getAllAssets({
+        propertyId: selectedProperty?.id,
+        categoryId: categoryFilter,
+        status: statusFilter,
+        floorId: floorFilter,
+        roomId: roomFilter,
+      }),
   });
 
   // Fetch categories
-  const {data: categoriesData, isLoading: loadingCategories} = useQuery({
-    queryKey: ["assetCategories"],
+  const { data: categoriesData, isLoading: loadingCategories } = useQuery({
+    queryKey: ["assetCategories", selectedProperty?.id],
     queryFn: async () => {
-      const response = await getAssetCategory();
+      const response = await getAssetCategory(selectedProperty?.id);
       return response?.data || response || [];
     },
   });
 
   // Fetch floors for the selected property
-  const {data: floors = [], isLoading: loadingFloors} = useQuery({
+  const { data: floors = [], isLoading: loadingFloors } = useQuery({
     queryKey: ["floors", selectedProperty?.id],
     queryFn: async () => {
       if (!selectedProperty?.id) return [];
@@ -97,7 +108,7 @@ const Assets = () => {
   });
 
   // Fetch rooms for the selected floor (for room filter)
-  const {data: roomsForFilter = [], isLoading: loadingRoomsForFilter} =
+  const { data: roomsForFilter = [], isLoading: loadingRoomsForFilter } =
     useQuery({
       queryKey: ["roomsForFilter", selectedFloorForRoomFilter],
       queryFn: async () => {
@@ -109,7 +120,7 @@ const Assets = () => {
     });
 
   // Fetch rooms for assets table display (keep this for display logic)
-  const {data: rooms = [], isLoading: loadingRooms} = useQuery({
+  const { data: rooms = [], isLoading: loadingRooms } = useQuery({
     queryKey: ["rooms", selectedFloorId],
     queryFn: async () => {
       if (!selectedFloorId) return [];
@@ -168,7 +179,7 @@ const Assets = () => {
         console.log("PDF download successful, creating blob...");
 
         // Create blob from the response data
-        const blob = new Blob([response.data], {type: "application/pdf"});
+        const blob = new Blob([response.data], { type: "application/pdf" });
         const url = window.URL.createObjectURL(blob);
 
         // Create download link
@@ -184,7 +195,7 @@ const Assets = () => {
 
         message.success("Asset labels downloaded successfully!");
         setDownloadModalOpen(false);
-        setDownloadFilters({propertyId: "", floorId: "", roomId: ""});
+        setDownloadFilters({ propertyId: "", floorId: "", roomId: "" });
         setSelectedFloorId(null);
       } catch (error) {
         console.error("Error processing download:", error);
@@ -236,7 +247,7 @@ const Assets = () => {
 
   const handleStatusChange = (assetId, newStatus) => {
     setOpenDropdownId(null);
-    updateStatusMutation.mutate({assetId, newStatus});
+    updateStatusMutation.mutate({ assetId, newStatus });
   };
 
   // Handle edit asset
@@ -267,7 +278,7 @@ const Assets = () => {
   // Handle download labels
   const handleDownloadLabels = () => {
     // If a property is selected in Redux, use it as default filter
-    const filters = {...downloadFilters};
+    const filters = { ...downloadFilters };
 
     // Ensure we have at least one filter criteria
     if (!filters.propertyId && !filters.floorId && !filters.roomId) {
@@ -286,7 +297,7 @@ const Assets = () => {
   // Open download modal
   const handleOpenDownloadModal = () => {
     // Pre-populate with selected property if available
-    const initialFilters = {propertyId: "", floorId: "", roomId: ""};
+    const initialFilters = { propertyId: "", floorId: "", roomId: "" };
     if (selectedProperty?.id) {
       initialFilters.propertyId = selectedProperty.id;
     }
@@ -297,7 +308,7 @@ const Assets = () => {
   // Close download modal
   const handleCloseDownloadModal = () => {
     setDownloadModalOpen(false);
-    setDownloadFilters({propertyId: "", floorId: "", roomId: ""});
+    setDownloadFilters({ propertyId: "", floorId: "", roomId: "" });
     setSelectedFloorId(null);
   };
 
@@ -328,7 +339,7 @@ const Assets = () => {
   };
 
   // Get available floors for the selected property in download modal
-  const {data: downloadFloors = []} = useQuery({
+  const { data: downloadFloors = [] } = useQuery({
     queryKey: ["downloadFloors", downloadFilters.propertyId],
     queryFn: async () => {
       if (!downloadFilters.propertyId) return [];
@@ -339,7 +350,7 @@ const Assets = () => {
   });
 
   // Get available rooms for the selected floor in download modal
-  const {data: downloadRooms = []} = useQuery({
+  const { data: downloadRooms = [] } = useQuery({
     queryKey: ["downloadRooms", downloadFilters.floorId],
     queryFn: async () => {
       if (!downloadFilters.floorId) return [];
@@ -438,7 +449,7 @@ const Assets = () => {
 
   // Mutation for updating asset status
   const updateStatusMutation = useMutation({
-    mutationFn: ({assetId, newStatus}) =>
+    mutationFn: ({ assetId, newStatus }) =>
       updateAssetStatus({
         id: assetId,
         status: newStatus,
@@ -656,12 +667,12 @@ const Assets = () => {
 
   // Status options for filter
   const statusOptions = [
-    {value: "", label: "All Status"},
-    {value: "Active", label: "Active"},
-    {value: "In-Repair", label: "In Repair"},
-    {value: "Retired", label: "Retired"},
-    {value: "Sold", label: "Sold"},
-    {value: "In Inventory", label: "In Inventory"},
+    { value: "", label: "All Status" },
+    { value: "Active", label: "Active" },
+    { value: "In-Repair", label: "In Repair" },
+    { value: "Retired", label: "Retired" },
+    { value: "Sold", label: "Sold" },
+    { value: "In Inventory", label: "In Inventory" },
   ];
 
   if (error) {
@@ -858,7 +869,7 @@ const Assets = () => {
                       </option>
                     ))
                   : // Show all rooms (from uniqueRooms)
-                    uniqueRooms.map((room) => (
+                    uniqueRooms?.map((room) => (
                       <option key={room.id} value={room.id}>
                         {room.name}
                       </option>
@@ -1269,7 +1280,7 @@ const Assets = () => {
                 disabled={!downloadFilters.floorId}
                 loading={loadingRooms}
               >
-                {downloadRooms.map((room) => (
+                {downloadRooms?.map((room) => (
                   <Option key={room._id} value={room._id}>
                     {room.roomNo}
                   </Option>

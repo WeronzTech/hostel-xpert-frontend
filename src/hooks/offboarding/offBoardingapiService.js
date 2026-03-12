@@ -53,7 +53,7 @@ class OffboardingApiService {
     try {
       const response = await apiClient.put(
         `/user/${userId}/status-requests/${requestId}/respond`,
-        payload
+        payload,
       );
 
       return response.data;
@@ -93,7 +93,7 @@ class OffboardingApiService {
         params.propertyId = propertyId;
       }
 
-      const response = await apiClient.get("/user/offboarding", {params});
+      const response = await apiClient.get("/user/offBoarding", { params });
 
       // console.log(`Response from the API Service`, response); // debug log
       return response.data;

@@ -1,13 +1,17 @@
-import {Tabs} from "antd";
+import { Tabs } from "antd";
 import EmployeeDashboard from "../../components/employee/EmployeeDashboard";
 import RolePage from "../../components/employee/RolePage";
 import SocketEventPage from "./SocketEventPage";
 import AttendanceOverview from "../../components/employee/AttendanceOverview";
+import { useSelector } from "react-redux";
 // The new role page component
 
-const {TabPane} = Tabs;
+const { TabPane } = Tabs;
 
 const EmployeePage = () => {
+  const { user } = useSelector((state) => state.auth);
+  console.log("User", user);
+
   return (
     <div className="min-h-screen bg-gray-50 xl:px-12 lg:px-4 lg:pt-6 lg:pb-12 px-4 pt-4 pb-8">
       <Tabs defaultActiveKey="1" type="card" centered>
@@ -17,9 +21,11 @@ const EmployeePage = () => {
         <TabPane tab="Attendance Overview" key="2">
           <AttendanceOverview />
         </TabPane>
-        <TabPane tab="Roles & Permissions" key="3">
-          <RolePage />
-        </TabPane>
+        {user?.role?.name === "Admin" && (
+          <TabPane tab="Roles & Permissions" key="3">
+            <RolePage />
+          </TabPane>
+        )}
         {/* <TabPane tab="Events & Permissions" key="4">
           <SocketEventPage />
         </TabPane> */}

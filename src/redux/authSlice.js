@@ -55,7 +55,7 @@ const authSlice = createSlice({
       state.expirationReason = null;
       setLoginDataInEncryptedStorage(
         action.payload.token,
-        action.payload.client
+        action.payload.client,
       );
     },
     loginFailure: (state, action) => {
@@ -112,6 +112,7 @@ export const {
   loginFailure,
   logout,
   initializeAuth,
+  showExpirationModal,
   hideExpirationModal,
 } = authSlice.actions;
 
