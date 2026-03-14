@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import {
   FiX,
   FiUpload,
@@ -8,8 +8,8 @@ import {
   FiLoader,
   FiEye,
 } from "react-icons/fi";
-import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
-import {useSelector} from "react-redux";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useSelector } from "react-redux";
 import {
   addCarousel,
   updateCarousel,
@@ -17,20 +17,20 @@ import {
   getAllCarousel,
 } from "../../hooks/property/useProperty.js";
 import ConfirmationModal from "../../components/common/ConfirmationModal.jsx";
-import {Image, message} from "antd";
+import { Image, message } from "antd";
 
 // Query keys for caching
 const carouselKeys = {
   all: ["carousels"],
   lists: () => [...carouselKeys.all, "list"],
-  list: (filters) => [...carouselKeys.lists(), {filters}],
+  list: (filters) => [...carouselKeys.lists(), { filters }],
   details: () => [...carouselKeys.all, "detail"],
   detail: (id) => [...carouselKeys.details(), id],
 };
 
-const CarouselManagementModal = ({isOpen, onClose}) => {
-  const {user} = useSelector((state) => state.auth);
-  const {selectedProperty} = useSelector((state) => state.properties);
+const CarouselManagementModal = ({ isOpen, onClose }) => {
+  const { user } = useSelector((state) => state.auth);
+  const { selectedProperty } = useSelector((state) => state.properties);
   const queryClient = useQueryClient();
 
   // TanStack Query hooks
@@ -39,8 +39,8 @@ const CarouselManagementModal = ({isOpen, onClose}) => {
     isLoading,
     error,
   } = useQuery({
-    queryKey: carouselKeys.lists(),
-    queryFn: getAllCarousel,
+    queryKey: ["carousels", selectedProperty?.id],
+    queryFn: () => getAllCarousel(selectedProperty?.id),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     enabled: isOpen,
@@ -62,7 +62,7 @@ const CarouselManagementModal = ({isOpen, onClose}) => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({data, carouselId}) => updateCarousel(data, carouselId),
+    mutationFn: ({ data, carouselId }) => updateCarousel(data, carouselId),
     onSuccess: (data, variables) => {
       queryClient.setQueryData(carouselKeys.detail(variables.carouselId), data);
       queryClient.invalidateQueries({
@@ -80,7 +80,7 @@ const CarouselManagementModal = ({isOpen, onClose}) => {
   const deleteMutation = useMutation({
     mutationFn: deleteCarousel,
     onSuccess: (_, carouselId) => {
-      queryClient.removeQueries({queryKey: carouselKeys.detail(carouselId)});
+      queryClient.removeQueries({ queryKey: carouselKeys.detail(carouselId) });
       queryClient.invalidateQueries({
         queryKey: carouselKeys.lists(),
         exact: false,
@@ -110,7 +110,7 @@ const CarouselManagementModal = ({isOpen, onClose}) => {
   const isDeleting = deleteMutation.isPending;
 
   const handleInputChange = (e) => {
-    const {name, value} = e.target;
+    const { name, value } = e.target;
     setCarouselData((prev) => ({
       ...prev,
       [name]: value,

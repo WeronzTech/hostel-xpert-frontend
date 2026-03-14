@@ -1,8 +1,8 @@
-import {useState, useEffect} from "react";
-import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
-import {useSelector} from "react-redux";
-import {FiCheckCircle, FiClock, FiXCircle, FiCalendar} from "react-icons/fi";
-import {message, Tabs} from "antd";
+import { useState, useEffect } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useSelector } from "react-redux";
+import { FiCheckCircle, FiClock, FiXCircle, FiCalendar } from "react-icons/fi";
+import { message, Tabs } from "antd";
 
 import PageHeader from "../../components/common/PageHeader";
 import StatsGrid from "../../components/common/StatsGrid";
@@ -16,7 +16,7 @@ import {
 import AttendanceOverviewTab from "./AttendanceOverviewTab";
 import dayjs from "dayjs";
 
-const {TabPane} = Tabs;
+const { TabPane } = Tabs;
 
 const AttendanceOverview = () => {
   const [filter, setFilter] = useState({});
@@ -34,8 +34,9 @@ const AttendanceOverview = () => {
   const [messageApi, contextHolder] = message.useMessage();
 
   const selectedPropertyId = useSelector(
-    (state) => state.properties.selectedProperty?.id
+    (state) => state.properties.selectedProperty?.id,
   );
+  const { user } = useSelector((state) => state.auth);
 
   const [stats, setStats] = useState([
     {
@@ -65,10 +66,10 @@ const AttendanceOverview = () => {
   ]);
 
   useEffect(() => {
-    const newFilter = {manager: "true"};
+    const newFilter = { manager: "true" };
     if (selectedPropertyId) newFilter.propertyId = selectedPropertyId;
     setFilter(newFilter);
-  }, [selectedPropertyId]);
+  }, [selectedPropertyId, user]);
 
   // Build query parameters for attendance data - MATCH BACKEND EXPECTATIONS
   const buildAttendanceQueryParams = () => {
@@ -116,7 +117,7 @@ const AttendanceOverview = () => {
   });
 
   // Fetch staff data for marking attendance
-  const {data: staffData, isLoading: staffLoading} = useQuery({
+  const { data: staffData, isLoading: staffLoading } = useQuery({
     queryKey: ["staff-list-attendance", filter],
     queryFn: () => getAllStaffForAttendance(filter),
   });
@@ -126,8 +127,8 @@ const AttendanceOverview = () => {
     mutationFn: markAttendance,
     onSuccess: (data) => {
       // Invalidate both queries to refresh data
-      queryClient.invalidateQueries({queryKey: ["staff-list-attendance"]});
-      queryClient.invalidateQueries({queryKey: ["attendance-summary"]});
+      queryClient.invalidateQueries({ queryKey: ["staff-list-attendance"] });
+      queryClient.invalidateQueries({ queryKey: ["attendance-summary"] });
       messageApi.success({
         content: `${data.message}`,
         duration: 3,
@@ -146,9 +147,9 @@ const AttendanceOverview = () => {
     mutationFn: updateAttendance,
     onSuccess: (data) => {
       // Invalidate queries to refresh data
-      queryClient.invalidateQueries({queryKey: ["attendance-summary"]});
-      queryClient.invalidateQueries({queryKey: ["staff-list-attendance"]});
-      queryClient.invalidateQueries({queryKey: ["attendance-dates"]});
+      queryClient.invalidateQueries({ queryKey: ["attendance-summary"] });
+      queryClient.invalidateQueries({ queryKey: ["staff-list-attendance"] });
+      queryClient.invalidateQueries({ queryKey: ["attendance-dates"] });
 
       messageApi.success({
         content: `${data.message}`,
@@ -173,13 +174,13 @@ const AttendanceOverview = () => {
     if (attendanceData?.data) {
       const records = attendanceData.data;
       const presentCount = records.filter(
-        (r) => r.selectedDateStatus === "Present"
+        (r) => r.selectedDateStatus === "Present",
       ).length;
       const absentCount = records.filter(
-        (r) => r.selectedDateStatus === "Absent"
+        (r) => r.selectedDateStatus === "Absent",
       ).length;
       const leaveCount = records.filter(
-        (r) => r.selectedDateStatus === "Paid Leave"
+        (r) => r.selectedDateStatus === "Paid Leave",
       ).length;
       const totalRecords = records.length;
       const attendanceRate =

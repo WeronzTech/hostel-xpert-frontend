@@ -1,8 +1,8 @@
-import {useState, useEffect} from "react";
-import {useNavigate, useParams} from "react-router-dom";
-import {useDispatch, useSelector} from "react-redux";
-import {addProperty} from "../../redux/propertiesSlice";
-import {useNotification} from "../../ui/NotificationContext";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { addProperty } from "../../redux/propertiesSlice";
+import { useNotification } from "../../ui/NotificationContext";
 import {
   registerProperty,
   updateProperty,
@@ -15,10 +15,10 @@ import {
 } from "../../components/property/SectionsForAddProperty.jsx";
 import PageHeader from "../../components/common/PageHeader.jsx";
 
-const AddProperty = ({isEdit}) => {
-  const {id} = useParams();
-  const {user} = useSelector((state) => state.auth);
-  const {showNotification} = useNotification();
+const AddProperty = ({ isEdit }) => {
+  const { id } = useParams();
+  const { user } = useSelector((state) => state.auth);
+  const { showNotification } = useNotification();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
@@ -43,6 +43,11 @@ const AddProperty = ({isEdit}) => {
     razorpayCredentials: {
       keyId: "",
       keySecret: "",
+    },
+    rentDetails: {
+      isRentEnabled: false,
+      rentAmount: "",
+      dueDate: "",
     },
     preferredBy: "",
     propertyType: "",
@@ -70,6 +75,11 @@ const AddProperty = ({isEdit}) => {
               keyId: "",
               keySecret: "",
             },
+            rentDetails: data.rentDetails || {
+              isRentEnabled: false,
+              rentAmount: "",
+              dueDate: "",
+            },
           });
         } catch (error) {
           console.error("Error fetching property details:", error);
@@ -82,7 +92,7 @@ const AddProperty = ({isEdit}) => {
   }, [isEdit, id, showNotification]);
 
   const handleChange = (e) => {
-    const {name, value, type, checked} = e.target;
+    const { name, value, type, checked } = e.target;
 
     // Handle nested objects (like contacts, razorpayCredentials)
     if (name.includes(".")) {
@@ -104,7 +114,7 @@ const AddProperty = ({isEdit}) => {
   };
 
   const handleDepositChange = (e) => {
-    const {name, value} = e.target;
+    const { name, value } = e.target;
     setPropertyData((prev) => ({
       ...prev,
       deposit: {
@@ -115,7 +125,7 @@ const AddProperty = ({isEdit}) => {
   };
 
   const handleRazorpayChange = (e) => {
-    const {name, value} = e.target;
+    const { name, value } = e.target;
     setPropertyData((prev) => ({
       ...prev,
       razorpayCredentials: {
@@ -125,8 +135,19 @@ const AddProperty = ({isEdit}) => {
     }));
   };
 
+  const handleRentDetailsChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setPropertyData((prev) => ({
+      ...prev,
+      rentDetails: {
+        ...prev.rentDetails,
+        [name]: type === "checkbox" ? checked : value,
+      },
+    }));
+  };
+
   const handleSharingPriceChange = (e) => {
-    const {name, value} = e.target;
+    const { name, value } = e.target;
     setCurrentSharingPrice((prev) => ({
       ...prev,
       [name]: value,
@@ -142,12 +163,12 @@ const AddProperty = ({isEdit}) => {
           [currentSharingPrice.type]: Number(currentSharingPrice.price),
         },
       }));
-      setCurrentSharingPrice({type: "", price: ""});
+      setCurrentSharingPrice({ type: "", price: "" });
     }
   };
 
   const removeSharingPrice = (type) => {
-    const newSharingPrices = {...propertyData.sharingPrices};
+    const newSharingPrices = { ...propertyData.sharingPrices };
     delete newSharingPrices[type];
     setPropertyData((prev) => ({
       ...prev,
@@ -184,6 +205,15 @@ const AddProperty = ({isEdit}) => {
           keyId: propertyData.razorpayCredentials.keyId,
           keySecret: propertyData.razorpayCredentials.keySecret,
         },
+        rentDetails: {
+          isRentEnabled: propertyData.rentDetails.isRentEnabled,
+          rentAmount: propertyData.rentDetails.rentAmount
+            ? Number(propertyData.rentDetails.rentAmount)
+            : 0,
+          dueDate: propertyData.rentDetails.dueDate
+            ? Number(propertyData.rentDetails.dueDate)
+            : 0,
+        },
       };
 
       if (isEdit && id) {
@@ -192,7 +222,10 @@ const AddProperty = ({isEdit}) => {
       } else {
         await registerProperty(submitData);
         dispatch(
-          addProperty({name: propertyData.propertyName, _id: propertyData._id}),
+          addProperty({
+            name: propertyData.propertyName,
+            _id: propertyData._id,
+          }),
         );
         showNotification("Property registered successfully!", "success");
       }
@@ -240,6 +273,92 @@ const AddProperty = ({isEdit}) => {
             addSharingPrice={addSharingPrice}
             removeSharingPrice={removeSharingPrice}
           />
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 xl:col-span-2 lg:col-span-2 md:col-span-1">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Property Rent Settings
+            </h3>
+
+            {/* Toggle Button for Rent Enabled */}
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex flex-col">
+                <label className="text-sm font-medium text-gray-700">
+                  Enable Rent Tracking
+                </label>
+                <span className="text-xs text-gray-500">
+                  Automatically generate rent dues and track payments for this
+                  property.
+                </span>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={propertyData.rentDetails.isRentEnabled}
+                onClick={() =>
+                  handleRentDetailsChange({
+                    target: {
+                      name: "isRentEnabled",
+                      type: "checkbox",
+                      checked: !propertyData.rentDetails.isRentEnabled,
+                    },
+                  })
+                }
+                className={`${
+                  propertyData.rentDetails.isRentEnabled
+                    ? "bg-[#059669]"
+                    : "bg-gray-200"
+                } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#059669] focus:ring-offset-2`}
+              >
+                <span
+                  aria-hidden="true"
+                  className={`${
+                    propertyData.rentDetails.isRentEnabled
+                      ? "translate-x-5"
+                      : "translate-x-0"
+                  } pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`}
+                />
+              </button>
+            </div>
+
+            {/* Conditional Inputs */}
+            {propertyData.rentDetails.isRentEnabled && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-fadeIn">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Rent Amount (₹) <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    name="rentAmount"
+                    required={propertyData.rentDetails.isRentEnabled}
+                    value={propertyData.rentDetails.rentAmount}
+                    onChange={handleRentDetailsChange}
+                    className="w-full rounded-lg border-gray-300 border p-2 shadow-sm focus:border-[#059669] focus:ring-[#059669] sm:text-sm"
+                    placeholder="Enter monthly rent amount"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Due Date (Day of Month){" "}
+                    <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    name="dueDate"
+                    min="1"
+                    max="31"
+                    required={propertyData.rentDetails.isRentEnabled}
+                    value={propertyData.rentDetails.dueDate}
+                    onChange={handleRentDetailsChange}
+                    className="w-full rounded-lg border-gray-300 border p-2 shadow-sm focus:border-[#059669] focus:ring-[#059669] sm:text-sm"
+                    placeholder="e.g., 5"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    Enter the day of the month (1-31) when rent is due.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Actions */}

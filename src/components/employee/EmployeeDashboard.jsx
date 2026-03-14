@@ -1,8 +1,8 @@
-import {useState, useEffect} from "react";
-import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
-import {useSelector} from "react-redux";
-import {FiUserCheck, FiUsers, FiUserX, FiPlus} from "react-icons/fi";
-import {Input, Select, DatePicker, Space, Button, message} from "antd";
+import { useState, useEffect } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useSelector } from "react-redux";
+import { FiUserCheck, FiUsers, FiUserX, FiPlus } from "react-icons/fi";
+import { Input, Select, DatePicker, Space, Button, message } from "antd";
 
 import PageHeader from "../../components/common/PageHeader";
 import StatsGrid from "../../components/common/StatsGrid";
@@ -23,8 +23,8 @@ import EditStaffModal from "../../modals/employee/staff/EditStaffModal";
 import EditManagerModal from "../../modals/employee/staff/EditManagerModal";
 import DeleteEmployeeModal from "../../modals/employee/staff/DeleteEmployeeModal";
 
-const {Search} = Input;
-const {Option} = Select;
+const { Search } = Input;
+const { Option } = Select;
 
 const EmployeeDashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -32,7 +32,7 @@ const EmployeeDashboard = () => {
   const [selectedData, setSelectedData] = useState(null);
   const [joinDateFilter, setJoinDateFilter] = useState(null);
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
-  const [filter, setFilter] = useState({manager: "true"});
+  const [filter, setFilter] = useState({ manager: "true" });
   const [isAddStaffModalOpen, setIsAddStaffModalOpen] = useState(false);
   const [isAddManagerModalOpen, setIsAddManagerModalOpen] = useState(false);
   const [isEditStaffModalOpen, setIsEditStaffModalOpen] = useState(false);
@@ -43,6 +43,7 @@ const EmployeeDashboard = () => {
   const queryClient = useQueryClient();
   const [messageApi, contextHolder] = message.useMessage();
 
+  const { user } = useSelector((state) => state.auth);
   const selectedPropertyId = useSelector(
     (state) => state.properties.selectedProperty?.id,
   );
@@ -79,7 +80,7 @@ const EmployeeDashboard = () => {
   }, [searchTerm]);
 
   useEffect(() => {
-    const newFilter = {manager: "true"};
+    const newFilter = { manager: "true" };
 
     if (selectedPropertyId) newFilter.propertyId = selectedPropertyId;
     if (debouncedSearchTerm) newFilter.name = debouncedSearchTerm;
@@ -88,14 +89,20 @@ const EmployeeDashboard = () => {
       newFilter.joinDate = joinDateFilter.format("YYYY-MM-DD");
 
     setFilter(newFilter);
-  }, [debouncedSearchTerm, statusFilter, joinDateFilter, selectedPropertyId]);
+  }, [
+    debouncedSearchTerm,
+    statusFilter,
+    joinDateFilter,
+    selectedPropertyId,
+    user,
+  ]);
 
-  const {data: staffData, isLoading} = useQuery({
+  const { data: staffData, isLoading } = useQuery({
     queryKey: ["staff-list", filter],
     queryFn: () => getStaffAccordingToKitchenId(filter),
   });
 
-  const {data: kitchens} = useQuery({
+  const { data: kitchens } = useQuery({
     queryKey: ["kitchens"],
     queryFn: getKitchensForDropDown,
   });
@@ -104,7 +111,7 @@ const EmployeeDashboard = () => {
     mutationFn: (managerId) => changeManagerStatus(managerId),
     onSuccess: () => {
       messageApi.success("Manager status changed successfully!");
-      queryClient.invalidateQueries({queryKey: ["staff-list"]});
+      queryClient.invalidateQueries({ queryKey: ["staff-list"] });
     },
     onError: (error) => {
       messageApi.error(
@@ -117,7 +124,7 @@ const EmployeeDashboard = () => {
     mutationFn: (staffId) => changeStaffStatus(staffId),
     onSuccess: () => {
       messageApi.success("Staff status changed successfully!");
-      queryClient.invalidateQueries({queryKey: ["staff-list"]});
+      queryClient.invalidateQueries({ queryKey: ["staff-list"] });
     },
     onError: (error) => {
       messageApi.error(
@@ -130,7 +137,7 @@ const EmployeeDashboard = () => {
     mutationFn: (staffId) => deleteStaff(staffId),
     onSuccess: () => {
       messageApi.success("Staff deleted successfully!");
-      queryClient.invalidateQueries({queryKey: ["staff-list"]});
+      queryClient.invalidateQueries({ queryKey: ["staff-list"] });
     },
     onError: (error) => {
       messageApi.error(
@@ -143,7 +150,7 @@ const EmployeeDashboard = () => {
     mutationFn: (staffId) => deleteManager(staffId),
     onSuccess: () => {
       messageApi.success("Manager deleted successfully!");
-      queryClient.invalidateQueries({queryKey: ["staff-list"]});
+      queryClient.invalidateQueries({ queryKey: ["staff-list"] });
     },
     onError: (error) => {
       messageApi.error(
@@ -232,13 +239,13 @@ const EmployeeDashboard = () => {
               <Search
                 placeholder="Search by employee name..."
                 onChange={(e) => setSearchTerm(e.target.value)}
-                style={{width: 250}}
+                style={{ width: 250 }}
                 allowClear
               />
               <Select
                 placeholder="Filter by status"
                 onChange={(value) => setStatusFilter(value)}
-                style={{width: 200}}
+                style={{ width: 200 }}
                 allowClear
               >
                 <Option value="Active">Active</Option>
@@ -247,7 +254,7 @@ const EmployeeDashboard = () => {
               <DatePicker
                 placeholder="Filter by join date"
                 onChange={(date) => setJoinDateFilter(date)}
-                style={{width: 200}}
+                style={{ width: 200 }}
               />
             </Space>
 

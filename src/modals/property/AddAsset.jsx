@@ -52,13 +52,13 @@ const ASSET_STATUS_OPTIONS = [
 ];
 
 // Custom Hooks with TanStack Query v5
-const useAssetCategories = () => {
+const useAssetCategories = (value) => {
   return useQuery({
-    queryKey: ['assetCategories'],
+    queryKey: ["assetCategories", value],
     queryFn: async () => {
-      const response = await getAssetCategory();
+      const response = await getAssetCategory(value);
       let catsData = [];
-      
+
       if (response && response.success && response.data) {
         catsData = response.data;
       } else if (Array.isArray(response)) {
@@ -66,7 +66,7 @@ const useAssetCategories = () => {
       } else if (response && response.data) {
         catsData = response.data;
       }
-      
+
       return Array.isArray(catsData) ? catsData : [];
     },
   });
@@ -74,36 +74,36 @@ const useAssetCategories = () => {
 
 const useCreateAssetCategory = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: createAssetCategory,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['assetCategories'] });
+      queryClient.invalidateQueries({ queryKey: ["assetCategories"] });
     },
   });
 };
 
 const useUpdateAssetCategory = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: ({ id, data }) => updateAssetCategory(data, id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['assetCategories'] });
+      queryClient.invalidateQueries({ queryKey: ["assetCategories"] });
     },
   });
 };
 
 const useDeleteAssetCategory = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: (categoryId) => deleteAssetCategory(categoryId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['assetCategories'] });
+      queryClient.invalidateQueries({ queryKey: ["assetCategories"] });
     },
     onError: (error) => {
-      console.error('Delete category error:', error);
+      console.error("Delete category error:", error);
       // Error message will be handled in the handleDeleteCategory function
     },
   });
@@ -111,13 +111,13 @@ const useDeleteAssetCategory = () => {
 
 const useFloors = (propertyId) => {
   return useQuery({
-    queryKey: ['floors', propertyId],
+    queryKey: ["floors", propertyId],
     queryFn: async () => {
       if (!propertyId) return [];
-      
+
       const response = await getFloorsByPropertyId(propertyId);
       let floorsData = [];
-      
+
       if (response && response.success && response.data) {
         floorsData = response.data;
       } else if (Array.isArray(response)) {
@@ -125,7 +125,7 @@ const useFloors = (propertyId) => {
       } else if (response && response.data) {
         floorsData = response.data;
       }
-      
+
       return Array.isArray(floorsData) ? floorsData : [];
     },
     enabled: !!propertyId,
@@ -134,13 +134,13 @@ const useFloors = (propertyId) => {
 
 const useRooms = (floorId) => {
   return useQuery({
-    queryKey: ['rooms', floorId],
+    queryKey: ["rooms", floorId],
     queryFn: async () => {
       if (!floorId) return [];
-      
+
       const response = await getRoomsByFloorId(floorId);
       let roomsData = [];
-      
+
       if (response && response.success && response.data) {
         roomsData = response.data;
       } else if (Array.isArray(response)) {
@@ -148,7 +148,7 @@ const useRooms = (floorId) => {
       } else if (response && response.data) {
         roomsData = response.data;
       }
-      
+
       return Array.isArray(roomsData) ? roomsData : [];
     },
     enabled: !!floorId,
@@ -157,37 +157,38 @@ const useRooms = (floorId) => {
 
 const useCreateAsset = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: addAsset,
     onSuccess: () => {
       // Invalidate the assets query to trigger a refetch
-      queryClient.invalidateQueries({ queryKey: ['assets'] });
+      queryClient.invalidateQueries({ queryKey: ["assets"] });
     },
   });
 };
 
 const useCreateMultipleAssets = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: addMultipleAsset,
     onSuccess: () => {
       // Invalidate the assets query to trigger a refetch
-      queryClient.invalidateQueries({ queryKey: ['assets'] });
+      queryClient.invalidateQueries({ queryKey: ["assets"] });
     },
   });
 };
 
 // Category Modal Component
-const CategoryModal = ({ 
-  isOpen, 
-  onClose, 
+const CategoryModal = ({
+  isOpen,
+  onClose,
   editingCategory,
-  onCategoryAdded 
+  onCategoryAdded,
 }) => {
   const [form] = Form.useForm();
-  
+
+  const { selectedProperty } = useSelector((state) => state.properties);
   const createMutation = useCreateAssetCategory();
   const updateMutation = useUpdateAssetCategory();
 
@@ -196,19 +197,20 @@ const CategoryModal = ({
       if (editingCategory) {
         const response = await updateMutation.mutateAsync({
           id: editingCategory.id || editingCategory._id,
-          data: values
+          data: values,
         });
-        
+
         if (response?.success) {
-          message.success('Category updated successfully');
+          message.success("Category updated successfully");
           handleClose();
         } else {
-          throw new Error(response?.message || 'Failed to update category');
+          throw new Error(response?.message || "Failed to update category");
         }
       } else {
+        values.propertyId = selectedProperty?.id;
         const response = await createMutation.mutateAsync(values);
         if (response?.success) {
-          message.success('Category added successfully');
+          message.success("Category added successfully");
           if (onCategoryAdded && response.data) {
             const newCategory = response.data;
             const categoryId = newCategory.id || newCategory._id;
@@ -216,12 +218,12 @@ const CategoryModal = ({
           }
           handleClose();
         } else {
-          throw new Error(response?.message || 'Failed to add category');
+          throw new Error(response?.message || "Failed to add category");
         }
       }
     } catch (error) {
-      console.error('Failed to save category:', error);
-      message.error(error.message || 'Failed to save category');
+      console.error("Failed to save category:", error);
+      message.error(error.message || "Failed to save category");
     }
   };
 
@@ -234,7 +236,7 @@ const CategoryModal = ({
     if (isOpen && editingCategory) {
       form.setFieldsValue({
         name: editingCategory.name,
-        description: editingCategory.description || ''
+        description: editingCategory.description || "",
       });
     } else if (isOpen) {
       form.resetFields();
@@ -252,9 +254,9 @@ const CategoryModal = ({
         <Button key="cancel" onClick={handleClose}>
           Cancel
         </Button>,
-        <Button 
-          key="submit" 
-          type="primary" 
+        <Button
+          key="submit"
+          type="primary"
           loading={isLoading}
           onClick={() => form.submit()}
         >
@@ -264,30 +266,20 @@ const CategoryModal = ({
       width={400}
       centered
     >
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleSubmit}
-      >
+      <Form form={form} layout="vertical" onFinish={handleSubmit}>
         <Form.Item
           name="name"
           label="Category Name"
           rules={[
             { required: true, message: "Please enter category name" },
-            { min: 2, message: "Category name must be at least 2 characters" }
+            { min: 2, message: "Category name must be at least 2 characters" },
           ]}
         >
           <Input placeholder="Enter category name" />
         </Form.Item>
-        
-        <Form.Item
-          name="description"
-          label="Description (Optional)"
-        >
-          <TextArea 
-            rows={3} 
-            placeholder="Enter category description" 
-          />
+
+        <Form.Item name="description" label="Description (Optional)">
+          <TextArea rows={3} placeholder="Enter category description" />
         </Form.Item>
       </Form>
     </Modal>
@@ -296,7 +288,9 @@ const CategoryModal = ({
 
 // Status Tag Component (for displaying selected status)
 const StatusTag = ({ status }) => {
-  const statusConfig = ASSET_STATUS_OPTIONS.find(option => option.value === status);
+  const statusConfig = ASSET_STATUS_OPTIONS.find(
+    (option) => option.value === status,
+  );
   return (
     <Tag color={statusConfig?.color || "default"}>
       {statusConfig?.label || status}
@@ -313,7 +307,7 @@ const AddAsset = ({ isOpen, onClose }) => {
   const [editingCategory, setEditingCategory] = useState(null);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [warningModalVisible, setWarningModalVisible] = useState(false);
-  const [warningMessage, setWarningMessage] = useState('');
+  const [warningMessage, setWarningMessage] = useState("");
 
   // Get selected property from Redux with safe access
   const selectedProperty = useSelector((state) => {
@@ -326,11 +320,16 @@ const AddAsset = ({ isOpen, onClose }) => {
   });
 
   // TanStack Query hooks
-  const { data: categories = [], isLoading: loadingCats } = useAssetCategories();
-  const { data: floors = [], isLoading: loadingFloors } = useFloors(selectedProperty?.id);
+  const { data: categories = [], isLoading: loadingCats } = useAssetCategories(
+    selectedProperty?.id,
+  );
+  const { data: floors = [], isLoading: loadingFloors } = useFloors(
+    selectedProperty?.id,
+  );
   const [selectedFloorId, setSelectedFloorId] = useState(null);
-  const { data: rooms = [], isLoading: loadingRooms } = useRooms(selectedFloorId);
-  
+  const { data: rooms = [], isLoading: loadingRooms } =
+    useRooms(selectedFloorId);
+
   const createAssetMutation = useCreateAsset();
   const createMultipleAssetsMutation = useCreateMultipleAssets();
   const deleteCategoryMutation = useDeleteAssetCategory();
@@ -425,7 +424,7 @@ const AddAsset = ({ isOpen, onClose }) => {
             invoice: {
               buffer: invoiceBase64.buffer,
               originalname: invoiceFile.name,
-            }
+            },
           };
           console.log("File attached to finalData");
         } catch (error) {
@@ -440,7 +439,7 @@ const AddAsset = ({ isOpen, onClose }) => {
       if (isBulkMode) {
         // For bulk mode, add count to the finalData
         finalData.count = values.quantity || 1;
-        
+
         console.log("Bulk finalData to backend:", finalData);
         response = await createMultipleAssetsMutation.mutateAsync(finalData);
       } else {
@@ -454,12 +453,12 @@ const AddAsset = ({ isOpen, onClose }) => {
       if (response.success) {
         message.success(
           response.message ||
-            `Asset${isBulkMode ? "s" : ""} created successfully`
+            `Asset${isBulkMode ? "s" : ""} created successfully`,
         );
         handleCancel();
       } else {
         throw new Error(
-          response.message || `Failed to create asset${isBulkMode ? "s" : ""}`
+          response.message || `Failed to create asset${isBulkMode ? "s" : ""}`,
         );
       }
     } catch (error) {
@@ -533,13 +532,13 @@ const AddAsset = ({ isOpen, onClose }) => {
     const categoryId = category.id || category._id;
 
     try {
-      console.log('Deleting category with ID:', categoryId);
+      console.log("Deleting category with ID:", categoryId);
       const response = await deleteCategoryMutation.mutateAsync(categoryId);
-      console.log('Delete response:', response);
+      console.log("Delete response:", response);
 
       if (response && response.success) {
         message.success(response.message || "Category deleted successfully");
-        
+
         // If the deleted category was currently selected, clear the selection
         if (selectedCategoryId === categoryId) {
           form.setFieldsValue({
@@ -548,7 +547,10 @@ const AddAsset = ({ isOpen, onClose }) => {
         }
       } else {
         // Show error message only if it's about associated assets
-        if (response?.message?.includes('associated with') || response?.message?.includes('asset')) {
+        if (
+          response?.message?.includes("associated with") ||
+          response?.message?.includes("asset")
+        ) {
           showWarningModal(response.message);
         } else {
           throw new Error(response?.message || "Failed to delete category");
@@ -557,7 +559,10 @@ const AddAsset = ({ isOpen, onClose }) => {
     } catch (error) {
       console.error("Failed to delete category:", error);
       // Only show warning modal if it's about associated assets, otherwise show generic error
-      if (error.message?.includes('associated with') || error.message?.includes('asset')) {
+      if (
+        error.message?.includes("associated with") ||
+        error.message?.includes("asset")
+      ) {
         showWarningModal(error.message);
       } else {
         message.error("Failed to delete category");
@@ -565,7 +570,8 @@ const AddAsset = ({ isOpen, onClose }) => {
     }
   };
 
-  const saving = createAssetMutation.isPending || createMultipleAssetsMutation.isPending;
+  const saving =
+    createAssetMutation.isPending || createMultipleAssetsMutation.isPending;
 
   return (
     <>
@@ -779,14 +785,9 @@ const AddAsset = ({ isOpen, onClose }) => {
                   { required: true, message: "Please select asset status" },
                 ]}
               >
-                <Select 
-                  placeholder="Select asset status"
-                >
+                <Select placeholder="Select asset status">
                   {ASSET_STATUS_OPTIONS.map((status) => (
-                    <Option 
-                      key={status.value} 
-                      value={status.value}
-                    >
+                    <Option key={status.value} value={status.value}>
                       {status.label}
                     </Option>
                   ))}
@@ -834,7 +835,13 @@ const AddAsset = ({ isOpen, onClose }) => {
                         }}
                       >
                         <span>{cat.name}</span>
-                        <div style={{ display: "flex", gap: "4px", marginLeft: "8px" }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: "4px",
+                            marginLeft: "8px",
+                          }}
+                        >
                           <Button
                             type="text"
                             icon={<EditOutlined />}
@@ -843,8 +850,8 @@ const AddAsset = ({ isOpen, onClose }) => {
                               e.stopPropagation();
                               handleEditCategory(cat);
                             }}
-                            style={{ 
-                              color: '#1890ff'
+                            style={{
+                              color: "#1890ff",
                             }}
                           />
                           <Button
@@ -855,8 +862,8 @@ const AddAsset = ({ isOpen, onClose }) => {
                               e.stopPropagation();
                               handleDeleteCategory(cat);
                             }}
-                            style={{ 
-                              color: '#ff4d4f'
+                            style={{
+                              color: "#ff4d4f",
                             }}
                           />
                         </div>
@@ -945,14 +952,11 @@ const AddAsset = ({ isOpen, onClose }) => {
 
             {/* Select Room - NOT REQUIRED */}
             <Col span={12}>
-              <Form.Item
-                name="roomId"
-                label="Select Room (Optional)"
-              >
+              <Form.Item name="roomId" label="Select Room (Optional)">
                 <Select
                   placeholder={
-                    selectedFloorId 
-                      ? "Choose a room (optional)" 
+                    selectedFloorId
+                      ? "Choose a room (optional)"
                       : "Select a floor first"
                   }
                   loading={loadingRooms}
@@ -1008,28 +1012,33 @@ const AddAsset = ({ isOpen, onClose }) => {
       <Modal
         title={
           <div>
-            <ExclamationCircleOutlined style={{ color: '#faad14', marginRight: 8 }} />
+            <ExclamationCircleOutlined
+              style={{ color: "#faad14", marginRight: 8 }}
+            />
             Cannot Delete Category
           </div>
         }
         open={warningModalVisible}
         onCancel={() => setWarningModalVisible(false)}
         footer={[
-          <Button key="ok" type="primary" onClick={() => setWarningModalVisible(false)}>
+          <Button
+            key="ok"
+            type="primary"
+            onClick={() => setWarningModalVisible(false)}
+          >
             OK
           </Button>,
         ]}
         width={500}
       >
-        <div style={{ padding: '16px 0' }}>
-          <p style={{ marginBottom: 8, fontSize: '16px' }}>
+        <div style={{ padding: "16px 0" }}>
+          <p style={{ marginBottom: 8, fontSize: "16px" }}>
             <strong>This category cannot be deleted.</strong>
           </p>
-          <p style={{ color: '#666', lineHeight: 1.5 }}>
-            {warningMessage}
-          </p>
-          <p style={{ color: '#666', marginTop: 16, lineHeight: 1.5 }}>
-            To delete this category, you must first remove or reassign all assets associated with it.
+          <p style={{ color: "#666", lineHeight: 1.5 }}>{warningMessage}</p>
+          <p style={{ color: "#666", marginTop: 16, lineHeight: 1.5 }}>
+            To delete this category, you must first remove or reassign all
+            assets associated with it.
           </p>
         </div>
       </Modal>

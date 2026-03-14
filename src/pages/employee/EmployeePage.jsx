@@ -6,9 +6,10 @@ import RolePage from "../../components/employee/RolePage";
 import AttendanceOverview from "../../components/employee/AttendanceOverview";
 import PayrollPage from "../../components/employee/PayrollPage";
 
-const {TabPane} = Tabs;
+const { TabPane } = Tabs;
 
 const EmployeePage = () => {
+  const { user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
   const {type} = useParams();
   const [searchParams] = useSearchParams();
@@ -69,9 +70,11 @@ const EmployeePage = () => {
           <AttendanceOverview />
         </TabPane>
 
-        <TabPane tab="Roles & Permissions" key="4">
-          <RolePage />
-        </TabPane>
+       {user?.role?.name === "Admin" && (
+          <TabPane tab="Roles & Permissions" key="3">
+            <RolePage />
+          </TabPane>
+        )}
       </Tabs>
     </div>
   );

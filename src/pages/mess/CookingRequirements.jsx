@@ -1,5 +1,5 @@
-import {useState, useEffect} from "react";
-import {useQuery, useMutation, useQueryClient} from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Table,
   Typography,
@@ -29,14 +29,14 @@ import {
   CheckCircleOutlined,
   ExclamationCircleOutlined,
 } from "@ant-design/icons";
-import {messApiService} from "../../hooks/mess/messApiService";
+import { messApiService } from "../../hooks/mess/messApiService";
 import dayjs from "dayjs";
-import {PageHeader} from "../../components";
-import {getKitchensForDropDown} from "../../hooks/inventory/useInventory";
+import { PageHeader } from "../../components";
+import { getKitchensForDropDown } from "../../hooks/inventory/useInventory";
 import usePersistentState from "../../hooks/usePersistentState";
 
-const {Text} = Typography;
-const {Option} = Select;
+const { Text } = Typography;
+const { Option } = Select;
 
 // Helper functions
 const getTomorrowDate = () => {
@@ -108,7 +108,7 @@ const useInventoryItemsList = (selectedKitchenId, requirementId) => {
     queryFn: () =>
       messApiService.getInventoryItemsForRequirements(
         selectedKitchenId,
-        requirementId
+        requirementId,
       ),
     enabled: !!selectedKitchenId && !!requirementId,
     select: (data) =>
@@ -123,10 +123,10 @@ const useInventoryItemsList = (selectedKitchenId, requirementId) => {
 
 // Date filter options
 const dateFilterOptions = [
-  {label: "Yesterday", value: "yesterday"},
-  {label: "Today", value: "today"},
+  { label: "Yesterday", value: "yesterday" },
+  { label: "Today", value: "today" },
   // {label: "Tomorrow", value: "tomorrow"},
-  {label: "Custom Date", value: "custom"},
+  { label: "Custom Date", value: "custom" },
 ];
 
 // Main Component
@@ -139,7 +139,7 @@ const CookingRequirements = () => {
   // ✅ Use persistent state for kitchen selection
   const [selectedKitchenId, setSelectedKitchenId] = usePersistentState(
     "cooking-requirements-kitchen",
-    null
+    null,
   );
 
   const [requirementId, setRequirementId] = useState(null);
@@ -153,7 +153,7 @@ const CookingRequirements = () => {
   const queryClient = useQueryClient();
 
   // Fetch data
-  const {data: kitchens, isLoading: kitchensLoading} = useQuery({
+  const { data: kitchens, isLoading: kitchensLoading } = useQuery({
     queryKey: ["kitchens"],
     queryFn: getKitchensForDropDown,
   });
@@ -177,17 +177,17 @@ const CookingRequirements = () => {
     }
   }, [queryData]);
 
-  const {data: inventoryItems, isLoading: inventoryLoading} =
+  const { data: inventoryItems, isLoading: inventoryLoading } =
     useInventoryItemsList(selectedKitchenId, requirementId);
 
   // Mutations (same as before)
   const addItemMutation = useMutation({
-    mutationFn: ({requirementId, inventoryId, quantityRequired, unit}) =>
+    mutationFn: ({ requirementId, inventoryId, quantityRequired, unit }) =>
       messApiService.addItemToRequirement(
         requirementId,
         inventoryId,
         quantityRequired,
-        unit
+        unit,
       ),
     onSuccess: (data) => {
       messageApi.success(data.message);
@@ -199,7 +199,7 @@ const CookingRequirements = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({requirementId, items}) =>
+    mutationFn: ({ requirementId, items }) =>
       messApiService.updateDailyRequirements(requirementId, items),
     onSuccess: (data) => {
       messageApi.success(data.message);
@@ -212,7 +212,7 @@ const CookingRequirements = () => {
   });
 
   const removeItemMutation = useMutation({
-    mutationFn: ({requirementId, inventoryId}) =>
+    mutationFn: ({ requirementId, inventoryId }) =>
       messApiService.removeItemFromRequirement(requirementId, inventoryId),
     onSuccess: (data) => {
       messageApi.success(data.message);
@@ -306,14 +306,14 @@ const CookingRequirements = () => {
 
       if (record && requirementId) {
         const dailyRequirement = rawRequirements.find((dr) =>
-          dr.items.some((item) => item.inventoryId === record.inventoryId)
+          dr.items.some((item) => item.inventoryId === record.inventoryId),
         );
 
         if (dailyRequirement) {
           const updatedItems = dailyRequirement.items.map((item) =>
             item.inventoryId === record.inventoryId
-              ? {...item, quantityRequired: row.quantity}
-              : item
+              ? { ...item, quantityRequired: row.quantity }
+              : item,
           );
 
           updateMutation.mutate({
@@ -416,17 +416,17 @@ const CookingRequirements = () => {
         const editable = isEditing(record) && isPending;
         return editable ? (
           <Form form={form} component={false}>
-            <Form.Item name="quantity" style={{margin: 0}}>
+            <Form.Item name="quantity" style={{ margin: 0 }}>
               <InputNumber
                 min={0}
                 step={0.1}
-                style={{width: "100%"}}
+                style={{ width: "100%" }}
                 addonAfter={record.unit}
               />
             </Form.Item>
           </Form>
         ) : (
-          <Text strong style={{color: isApproved ? "#52c41a" : "#1890ff"}}>
+          <Text strong style={{ color: isApproved ? "#52c41a" : "#1890ff" }}>
             {quantity} {record.unit}
           </Text>
         );
@@ -458,7 +458,7 @@ const CookingRequirements = () => {
                 icon={<EditOutlined />}
                 size="small"
                 disabled
-                style={{cursor: "not-allowed", color: "#ccc"}}
+                style={{ cursor: "not-allowed", color: "#ccc" }}
                 title="Cannot edit approved requirements"
               />
               <Button
@@ -467,7 +467,7 @@ const CookingRequirements = () => {
                 icon={<DeleteOutlined />}
                 size="small"
                 disabled
-                style={{cursor: "not-allowed", color: "#ffa39e"}}
+                style={{ cursor: "not-allowed", color: "#ffa39e" }}
                 title="Cannot delete from approved requirements"
               />
             </Space>
@@ -574,7 +574,7 @@ const CookingRequirements = () => {
                 <Select
                   value={selectedKitchenId}
                   onChange={handleKitchenChange}
-                  style={{width: 200}}
+                  style={{ width: 200 }}
                   options={kitchenOptions}
                   placeholder="Select Kitchen"
                 />
@@ -585,7 +585,7 @@ const CookingRequirements = () => {
                 <Select
                   value={dateFilter}
                   onChange={handleDateFilterChange}
-                  style={{width: 120}}
+                  style={{ width: 120 }}
                   options={dateFilterOptions}
                 />
                 {dateFilter === "custom" && (
@@ -594,7 +594,7 @@ const CookingRequirements = () => {
                     onChange={handleCustomDateChange}
                     format="DD MMM YYYY"
                     placeholder="Select date"
-                    style={{width: 140}}
+                    style={{ width: 140 }}
                   />
                 )}
               </Space>
@@ -614,7 +614,7 @@ const CookingRequirements = () => {
                       </Button>
                       <Popconfirm
                         title={
-                          <div style={{textAlign: "left"}}>
+                          <div style={{ textAlign: "left" }}>
                             <div
                               style={{
                                 display: "flex",
@@ -624,38 +624,50 @@ const CookingRequirements = () => {
                               }}
                             >
                               <ExclamationCircleOutlined
-                                style={{color: "#faad14", fontSize: "16px"}}
+                                style={{ color: "#faad14", fontSize: "16px" }}
                               />
                               <Text
                                 strong
-                                style={{color: "#d46b08", fontSize: "16px"}}
+                                style={{ color: "#d46b08", fontSize: "16px" }}
                               >
                                 Final Confirmation Required
                               </Text>
                             </div>
-                            <div style={{marginLeft: "24px"}}>
+                            <div style={{ marginLeft: "24px" }}>
                               <Text
                                 type="warning"
-                                style={{display: "block", marginBottom: "4px"}}
+                                style={{
+                                  display: "block",
+                                  marginBottom: "4px",
+                                }}
                               >
                                 • <Text strong>Verify</Text> all required
                                 quantities
                               </Text>
                               <Text
                                 type="warning"
-                                style={{display: "block", marginBottom: "4px"}}
+                                style={{
+                                  display: "block",
+                                  marginBottom: "4px",
+                                }}
                               >
                                 • This will{" "}
                                 <Text strong>permanently reduce</Text> stock
                               </Text>
                               <Text
                                 type="warning"
-                                style={{display: "block", marginBottom: "4px"}}
+                                style={{
+                                  display: "block",
+                                  marginBottom: "4px",
+                                }}
                               >
                                 • This operation{" "}
                                 <Text strong>cannot be undone</Text>
                               </Text>
-                              <Text type="secondary" style={{fontSize: "12px"}}>
+                              <Text
+                                type="secondary"
+                                style={{ fontSize: "12px" }}
+                              >
                                 Are you sure you want to proceed?
                               </Text>
                             </div>
@@ -666,7 +678,7 @@ const CookingRequirements = () => {
                         cancelText="Cancel"
                         okType="danger"
                         icon={null}
-                        overlayStyle={{maxWidth: "400px"}}
+                        overlayStyle={{ maxWidth: "400px" }}
                         okButtonProps={{
                           danger: true,
                           type: "primary",
@@ -711,7 +723,7 @@ const CookingRequirements = () => {
         <Table
           columns={columns}
           dataSource={cookingData.slice().reverse()}
-          scroll={{x: "max-content"}}
+          scroll={{ x: "max-content" }}
           size="middle"
           loading={isFetching || updateMutation.isPending}
           pagination={false}
@@ -733,13 +745,13 @@ const CookingRequirements = () => {
               setSelectedItemUnit(null);
             }}
             confirmLoading={addItemMutation.isPending}
-            okButtonProps={{disabled: !requirementId || !selectedItemUnit}}
+            okButtonProps={{ disabled: !requirementId || !selectedItemUnit }}
           >
             <Form form={addItemForm} layout="vertical">
               <Form.Item
                 name="inventoryItem"
                 label="Select Item"
-                rules={[{required: true, message: "Please select an item"}]}
+                rules={[{ required: true, message: "Please select an item" }]}
               >
                 <Select
                   placeholder="Choose from inventory"
@@ -756,12 +768,12 @@ const CookingRequirements = () => {
                 label={`Quantity ${
                   selectedItemUnit ? `(${selectedItemUnit})` : ""
                 }`}
-                rules={[{required: true, message: "Please enter quantity"}]}
+                rules={[{ required: true, message: "Please enter quantity" }]}
               >
                 <InputNumber
                   min={0}
                   step={0.1}
-                  style={{width: "100%"}}
+                  style={{ width: "100%" }}
                   placeholder={`Enter quantity${
                     selectedItemUnit ? ` in ${selectedItemUnit}` : ""
                   }`}

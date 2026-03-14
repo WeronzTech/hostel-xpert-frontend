@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import {
   FiAlertCircle,
   FiCheckCircle,
@@ -6,15 +6,15 @@ import {
   FiPlus,
   GiAutoRepair,
 } from "../../icons/index.js";
-import {Tabs, message, Button} from "antd";
+import { Tabs, message, Button } from "antd";
 import PageHeader from "../../components/common/PageHeader";
-import {useSelector} from "react-redux";
-import {useQuery, useQueryClient} from "@tanstack/react-query";
-import {maintenanceApiService} from "../../hooks/maintenance/maintenanceApiService.js";
+import { useSelector } from "react-redux";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { maintenanceApiService } from "../../hooks/maintenance/maintenanceApiService.js";
 import ErrorState from "../../components/common/ErrorState.jsx";
 import MaintenanceTable from "../../components/maintenance/MaintenanceTable.jsx";
-import {MaintenanceDetailModal, StatsGrid} from "../../components/index.js";
-import {useSocket} from "../../context/SocketContext.jsx";
+import { MaintenanceDetailModal, StatsGrid } from "../../components/index.js";
+import { useSocket } from "../../context/SocketContext.jsx";
 import AddMaintenanceModal from "../../components/maintenance/AddMaintenanceModal.jsx";
 
 const MaintenanceDashboard = () => {
@@ -26,7 +26,7 @@ const MaintenanceDashboard = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
 
-  const {socket} = useSocket();
+  const { socket } = useSocket();
   const [messageApi, contextHolder] = message.useMessage();
   const queryClient = useQueryClient();
 
@@ -35,7 +35,7 @@ const MaintenanceDashboard = () => {
 
   // Currently selected Property ID from Redux
   const selectedPropertyId = useSelector(
-    (state) => state.properties.selectedProperty.id
+    (state) => state.properties.selectedProperty.id,
   );
 
   // Fetch Maintenance record using tanstack-query
@@ -89,24 +89,24 @@ const MaintenanceDashboard = () => {
     return response?.pagination?.total || 0;
   };
 
-  const {data: pendingCount = 0} = useQuery({
+  const { data: pendingCount = 0 } = useQuery({
     queryKey: ["maintenanceCount", selectedPropertyId, "Pending"],
     queryFn: () => fetchCountByStatus("Pending", selectedPropertyId),
   });
 
-  const {data: ongoingCount = 0} = useQuery({
+  const { data: ongoingCount = 0 } = useQuery({
     queryKey: ["maintenanceCount", selectedPropertyId, "Ongoing"],
     queryFn: () => fetchCountByStatus("Ongoing", selectedPropertyId),
   });
 
-  const {data: resolvedCount = 0} = useQuery({
+  const { data: resolvedCount = 0 } = useQuery({
     queryKey: ["maintenanceCount", selectedPropertyId, "Resolved"],
     queryFn: () => fetchCountByStatus("Resolved", selectedPropertyId),
   });
 
   const totalCount = pendingCount + ongoingCount + resolvedCount;
 
-  socket.on("new-maintenance", (data) => {
+  socket?.on("new-maintenance", (data) => {
     console.log("maintenance_data", data);
   });
 
@@ -194,7 +194,7 @@ const MaintenanceDashboard = () => {
           if (!oldData) {
             return {
               data: [newMaintenanceData],
-              pagination: {total: 1},
+              pagination: { total: 1 },
             };
           }
           // Prepend the new item to the existing list
@@ -207,13 +207,13 @@ const MaintenanceDashboard = () => {
               total: oldData.pagination.total + 1,
             },
           };
-        }
+        },
       );
 
       // Update the cache for the 'Pending' count
       queryClient.setQueryData(
         ["maintenanceCount", selectedPropertyId, "Pending"],
-        (oldCount) => (oldCount ? oldCount + 1 : 1)
+        (oldCount) => (oldCount ? oldCount + 1 : 1),
       );
     };
 

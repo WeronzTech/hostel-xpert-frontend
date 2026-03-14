@@ -1,13 +1,13 @@
-import {useNavigate} from "react-router-dom";
-import {useSelector} from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import StatCard from "../../components/home/StatCard";
 import TodaysCheckoutsSection from "../../components/home/TodaysCheckoutsSection";
 import OccupancyPieChart from "../../components/home/OccupancyPieChart";
 import FinanceBarChart from "../../components/home/FinanceBarChart";
 import NewOnboardingSection from "../../components/home/NewOnboardingSection";
 import PageHeader from "../../components/common/PageHeader";
-import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
-import {getDashboardStats} from "../../hooks/property/useProperty";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { getDashboardStats } from "../../hooks/property/useProperty";
 import {
   EyeOutlined,
   FiAlertCircle,
@@ -24,16 +24,16 @@ import {
 } from "../../icons/index.js";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import {getMonthlyIncomeExpenseSummary} from "../../hooks/accounts/useAccounts.js";
-import {useEffect, useState} from "react";
-import {Select, Popconfirm, Input, message, DatePicker} from "antd";
-import {completeReminder, snoozeReminder} from "../../hooks/users/useUser.js";
+import { getMonthlyIncomeExpenseSummary } from "../../hooks/accounts/useAccounts.js";
+import { useEffect, useState } from "react";
+import { Select, Popconfirm, Input, message, DatePicker } from "antd";
+import { completeReminder, snoozeReminder } from "../../hooks/users/useUser.js";
 
 dayjs.extend(relativeTime);
 
 const Dashboard = () => {
-  const {selectedProperty} = useSelector((state) => state.properties);
-  const {user} = useSelector((state) => state.auth);
+  const { selectedProperty } = useSelector((state) => state.properties);
+  const { user } = useSelector((state) => state.auth);
   const [availableYears, setAvailableYears] = useState([]);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [actionNote, setActionNote] = useState("");
@@ -46,6 +46,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [messageApi, contextHolder] = message.useMessage();
+  console.log("selectedProperty in Dashboard:", selectedProperty); // debug log
 
   const {
     data: dashboardData,
@@ -63,9 +64,18 @@ const Dashboard = () => {
     isLoading: summaryLoading,
     error: summaryError,
   } = useQuery({
-    queryKey: ["incomeExpense-summary", selectedProperty?.id, selectedYear],
+    queryKey: [
+      "incomeExpense-summary",
+      selectedProperty?.id,
+      user.id,
+      selectedYear,
+    ],
     queryFn: () =>
-      getMonthlyIncomeExpenseSummary(selectedProperty?.id, selectedYear),
+      getMonthlyIncomeExpenseSummary(
+        selectedProperty?.id,
+        user.id,
+        selectedYear,
+      ),
   });
 
   const markReminderDone = useMutation({
@@ -73,8 +83,8 @@ const Dashboard = () => {
       completeReminder(user.name, data.reminderId, data.actionNote),
     onSuccess: (data) => {
       // Invalidate both queries to refresh data
-      queryClient.invalidateQueries({queryKey: ["dashboardStats"]});
-      queryClient.invalidateQueries({queryKey: ["userNotes"]});
+      queryClient.invalidateQueries({ queryKey: ["dashboardStats"] });
+      queryClient.invalidateQueries({ queryKey: ["userNotes"] });
 
       messageApi.success({
         content: `${data.message}`,
@@ -95,8 +105,8 @@ const Dashboard = () => {
       snoozeReminder(user.name, data.reminderId, data.newDate, data.reason),
     onSuccess: (data) => {
       // Invalidate both queries to refresh data
-      queryClient.invalidateQueries({queryKey: ["dashboardStats"]});
-      queryClient.invalidateQueries({queryKey: ["userNotes"]});
+      queryClient.invalidateQueries({ queryKey: ["dashboardStats"] });
+      queryClient.invalidateQueries({ queryKey: ["userNotes"] });
 
       messageApi.success({
         content: `${data.message}`,
@@ -294,7 +304,7 @@ const Dashboard = () => {
                 <Select
                   value={selectedYear}
                   onChange={handleYearChange}
-                  style={{width: 120}}
+                  style={{ width: 120 }}
                   size="small"
                 >
                   {availableYears.map((year) => (

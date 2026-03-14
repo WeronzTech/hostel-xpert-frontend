@@ -27,7 +27,7 @@ export const getUnapprovedHeavensResidents = async (propertyId) => {
   try {
     console.log("fetched heavens residents:", propertyId); // Debug log
     const response = await apiClient.get("/user/pending-approvals", {
-      params: {propertyId},
+      params: { propertyId },
     });
     console.debug("fetched heavens residents(get):", response.data);
     return response.data;
@@ -160,7 +160,7 @@ export const rejectResident = async (id, adminName) => {
   try {
     console.log("Rejecting resident:", id);
     const response = await apiClient.delete(`/user/${id}/reject`, {
-      params: {updatedBy: adminName},
+      params: { updatedBy: adminName },
     });
     console.debug("Resident rejected successfully:", response.data);
     return response.data;
@@ -178,14 +178,14 @@ export const rejectResident = async (id, adminName) => {
   }
 };
 
-export const vacateResident = async ({id, adminName}) => {
+export const vacateResident = async ({ id, adminName }) => {
   try {
     console.debug("Vacating resident:", id);
     const response = await apiClient.put(
       `/user/${id}/vacate`,
       {},
       {
-        params: {adminName},
+        params: { adminName },
       },
     );
     console.debug("Resident vacated successfully:", response.data);
@@ -204,12 +204,16 @@ export const vacateResident = async ({id, adminName}) => {
   }
 };
 
-export const getTodayCheckouts = async ({type, propertyId} = {}) => {
+export const getTodayCheckouts = async ({
+  type,
+  propertyId,
+  clientId,
+} = {}) => {
   try {
-    console.debug("Fetching today checkouts:", {type, propertyId});
+    console.debug("Fetching today checkouts:", { type, propertyId, clientId });
 
     const response = await apiClient.get("/user/checkouts", {
-      params: {type, propertyId},
+      params: { type, propertyId, clientId },
       paramsSerializer: (params) =>
         Object.entries(params)
           .filter(([_, value]) => value !== undefined && value !== null)
@@ -254,12 +258,12 @@ export const extendUserDays = async (id, extendData) => {
   }
 };
 
-export const getUserStatusRequests = async (id, {type, status} = {}) => {
+export const getUserStatusRequests = async (id, { type, status } = {}) => {
   try {
-    console.debug("Fetching user status requests:", {id, type, status});
+    console.debug("Fetching user status requests:", { id, type, status });
 
     const response = await apiClient.get(`/user/${id}/status-requests`, {
-      params: {type, status},
+      params: { type, status },
       paramsSerializer: (params) =>
         Object.entries(params)
           .filter(([_, value]) => value !== undefined && value !== null)
@@ -286,10 +290,13 @@ export const getUserStatusRequests = async (id, {type, status} = {}) => {
 
 export const handleBlockStatus = async (
   id,
-  {action, extendDate, adminName} = {},
+  { action, extendDate, adminName } = {},
 ) => {
   try {
-    console.debug("Updating block status for user:", id, {action, extendDate});
+    console.debug("Updating block status for user:", id, {
+      action,
+      extendDate,
+    });
 
     const response = await apiClient.put(`/user/${id}/block-status`, {
       action,
@@ -429,7 +436,7 @@ export const getActiveReminders = async (propertyId) => {
   try {
     // console.log("Fetching active reminders", propertyId);
     const response = await apiClient.get("/reminder/active/reminders", {
-      params: propertyId ? {propertyId} : {},
+      params: propertyId ? { propertyId } : {},
     });
     console.debug("Active reminders fetched successfully:", response.data);
     return response.data;
@@ -701,7 +708,7 @@ export const updateReferralSettings = async (data) => {
 export const createGameItem = async (formData) => {
   try {
     const response = await apiClient.post("/gaming/items", formData, {
-      headers: {"Content-Type": "multipart/form-data"},
+      headers: { "Content-Type": "multipart/form-data" },
     });
     console.debug("Item created successfully:", response.data);
     return response.data;
@@ -813,7 +820,7 @@ export const getAllAttendanceByDate = async ({
   propertyId,
 }) => {
   try {
-    console.log({date, search, propertyId});
+    console.log({ date, search, propertyId });
     const response = await apiClient.get("/user/attendance/all", {
       params: {
         date,
@@ -872,7 +879,7 @@ export const markAttendance = async ({
   }
 };
 
-export const getUserAttendance = async ({userId, startDate, endDate}) => {
+export const getUserAttendance = async ({ userId, startDate, endDate }) => {
   try {
     const response = await apiClient.get(`/user/attendance/user/${userId}`, {
       params: {
@@ -902,10 +909,10 @@ export const getUserAttendance = async ({userId, startDate, endDate}) => {
   }
 };
 
-export const getRoomsByDate = async ({search, propertyId}) => {
+export const getRoomsByDate = async ({ search, propertyId }) => {
   try {
     const response = await apiClient.get("/user/attendance/rooms-by-date", {
-      params: {search, propertyId},
+      params: { search, propertyId },
       paramsSerializer: (params) => {
         return Object.entries(params)
           .filter(([_, value]) => value !== undefined && value !== "")
@@ -960,7 +967,11 @@ export const bulkMarkAttendance = async ({
   }
 };
 
-export const createLeaveCategory = async ({name, autoApprove, propertyId}) => {
+export const createLeaveCategory = async ({
+  name,
+  autoApprove,
+  propertyId,
+}) => {
   try {
     const response = await apiClient.post("/user/leave-category/create", {
       name,

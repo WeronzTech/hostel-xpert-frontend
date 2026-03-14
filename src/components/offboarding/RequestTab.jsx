@@ -1,4 +1,4 @@
-import {useState} from "react";
+import { useState } from "react";
 import {
   Collapse,
   Typography,
@@ -27,7 +27,7 @@ import {
   IoFilter,
 } from "../../icons/index.js";
 
-import {useQuery, useQueryClient} from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Search from "antd/es/transfer/search.js";
 
 import {
@@ -35,15 +35,15 @@ import {
   ErrorState,
   RequestResponseModal,
 } from "../../components/index.js";
-import {greenButton, redButton} from "../../data/common/color.js";
-import {offboardingApiService} from "../../hooks/offboarding/offBoardingapiService.js";
+import { greenButton, redButton } from "../../data/common/color.js";
+import { offboardingApiService } from "../../hooks/offboarding/offBoardingapiService.js";
 import LoadingSpinner from "../../ui/loadingSpinner/LoadingSpinner.jsx";
-import {useSelector} from "react-redux";
-import {useNavigate} from "react-router-dom";
-import {formatDate, formatLabel} from "../../utils/formatUtils.js";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { formatDate, formatLabel } from "../../utils/formatUtils.js";
 
-const {Title, Text} = Typography;
-const {useBreakpoint} = Grid;
+const { Title, Text } = Typography;
+const { useBreakpoint } = Grid;
 
 /**
  * Returns Requests types
@@ -51,18 +51,18 @@ const {useBreakpoint} = Grid;
 const getRequestTypeDetails = (type) => {
   switch (type) {
     case "checked_in":
-      return {icon: <LoginOutlined />, color: "blue", label: "Check In"};
+      return { icon: <LoginOutlined />, color: "blue", label: "Check In" };
     case "checked_out":
-      return {icon: <LogoutOutlined />, color: "red", label: "Check Out"};
+      return { icon: <LogoutOutlined />, color: "red", label: "Check Out" };
     case "on_leave":
-      return {icon: <ArrowRightOutlined />, color: "orange", label: "Leave"};
+      return { icon: <ArrowRightOutlined />, color: "orange", label: "Leave" };
     default:
-      return {icon: <UserOutlined />, color: "default", label: "Unknown"};
+      return { icon: <UserOutlined />, color: "default", label: "Unknown" };
   }
 };
 
 const RequestsTab = () => {
-  const {user} = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.auth);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [requestType, setRequestType] = useState("all");
@@ -81,7 +81,7 @@ const RequestsTab = () => {
 
   // Currently selected Property ID from Redux
   const selectedPropertyId = useSelector(
-    (state) => state.properties.selectedProperty.id
+    (state) => state.properties.selectedProperty.id,
   );
 
   // Function to handle open modal
@@ -93,7 +93,7 @@ const RequestsTab = () => {
   };
 
   // Function to handle modal submit
-  const handleModalSubmit = async ({status, comment}) => {
+  const handleModalSubmit = async ({ status, comment }) => {
     if (!selectedRequest) return;
 
     try {
@@ -104,7 +104,7 @@ const RequestsTab = () => {
           status,
           comment,
           adminName: user.name,
-        }
+        },
       );
       const successMessage =
         response?.data?.message ||
@@ -139,12 +139,12 @@ const RequestsTab = () => {
   const actualPropertyId = selectedPropertyId || undefined;
 
   // Fetch User Requests using Tanstack query
-  const {data, isLoading, isError, error, refetch} = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["pendingRequests", actualPropertyId, actualRequestType],
     queryFn: () =>
       offboardingApiService.getPendingRequest(
         actualPropertyId,
-        actualRequestType
+        actualRequestType,
       ),
   });
 
@@ -193,13 +193,13 @@ const RequestsTab = () => {
 
   // Apply search filter
   const filteredRequests = request.filter((req) =>
-    req.name.toLowerCase().includes(searchTerm.toLowerCase())
+    req.name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   // Paginate the filtered list
   const paginatedRequests = filteredRequests.slice(
     (currentPage - 1) * pageSize,
-    currentPage * pageSize
+    currentPage * pageSize,
   );
 
   // Loading State
@@ -247,14 +247,14 @@ const RequestsTab = () => {
           } else {
             // Calculate days passed in UTC
             const nowUTC = new Date(
-              Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())
+              Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()),
             );
             const requestUTC = new Date(
               Date.UTC(
                 requestDate.getFullYear(),
                 requestDate.getMonth(),
-                requestDate.getDate()
-              )
+                requestDate.getDate(),
+              ),
             );
 
             const diffTime = nowUTC.getTime() - requestUTC.getTime();
@@ -294,7 +294,7 @@ const RequestsTab = () => {
           simplifiedExtraInfo = "— <strong>Scheduled</strong> Checkout";
         } else {
           const daysSinceEffective = Math.abs(
-            Math.floor(diffTime / (1000 * 60 * 60 * 24))
+            Math.floor(diffTime / (1000 * 60 * 60 * 24)),
           );
           extraInfo = `— <strong>Scheduled</strong> Checkout (effective date passed ${daysSinceEffective} day${
             daysSinceEffective !== 1 ? "s" : ""
@@ -355,7 +355,7 @@ const RequestsTab = () => {
           <Avatar src={request.profileImage} icon={<UserOutlined />} />
           <div className="min-w-0 flex-1">
             <Text className="block truncate">
-              <Text strong style={{color: typeDetails.color}}>
+              <Text strong style={{ color: typeDetails.color }}>
                 {typeLabel}
               </Text>
               {" request from "}
@@ -363,7 +363,7 @@ const RequestsTab = () => {
             </Text>
             {displayExtraInfo && (
               <Text type="secondary" className="block truncate text-xs mt-1">
-                <span dangerouslySetInnerHTML={{__html: displayExtraInfo}} />
+                <span dangerouslySetInnerHTML={{ __html: displayExtraInfo }} />
               </Text>
             )}
           </div>
@@ -502,7 +502,7 @@ const RequestsTab = () => {
                       bordered
                       column={1}
                       size="small"
-                      styles={{label: {width: "200px"}}}
+                      styles={{ label: { width: "200px" } }}
                     >
                       <Descriptions.Item label="Requested Date">
                         {formatDate(req.request?.requestedAt)}

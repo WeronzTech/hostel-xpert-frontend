@@ -7,7 +7,7 @@ export const getAccountDashboardDataForIncomeSection = async (propertyId) => {
     // console.log("Fetching :", propertyId);
 
     const response = await apiClient.get("/feePayments/dashboard/income", {
-      params: propertyId ? {propertyId} : {},
+      params: propertyId ? { propertyId } : {},
     });
 
     console.debug("Fetched data:", response.data);
@@ -31,7 +31,7 @@ export const getAccountDashboardDataForExpenseSection = async (propertyId) => {
     // console.log("Fetching :", propertyId);
 
     const response = await apiClient.get("/feePayments/dashboard/expense", {
-      params: propertyId ? {propertyId} : {},
+      params: propertyId ? { propertyId } : {},
     });
 
     console.debug("Fetched data:", response.data);
@@ -55,7 +55,7 @@ export const getAccountDashboardDataForDepositSection = async (propertyId) => {
     // console.log("Fetching :", propertyId);
 
     const response = await apiClient.get("/feePayments/dashboard/deposit", {
-      params: propertyId ? {propertyId} : {},
+      params: propertyId ? { propertyId } : {},
     });
 
     console.debug("Fetched data:", response.data);
@@ -202,7 +202,7 @@ export const getExpenseAnalytics = async (propertyId, year) => {
     if (propertyId) params.propertyId = propertyId;
     if (year) params.year = year;
 
-    const response = await apiClient.get("/expense/analytics", {params});
+    const response = await apiClient.get("/expense/analytics", { params });
 
     console.debug("Fetched data:", response.data);
     return response.data.data;
@@ -303,12 +303,12 @@ export const getAllPettyCashes = async (filters = {}) => {
     if (typeof filters === "string") {
       params.propertyId = filters; // old usage: getAllPettyCashes("propertyId")
     } else if (typeof filters === "object" && filters !== null) {
-      const {propertyId, managerId} = filters;
+      const { propertyId, managerId } = filters;
       if (propertyId) params.propertyId = propertyId;
       if (managerId) params.managerId = managerId;
     }
 
-    const res = await apiClient.get(`/client/pettyCash`, {params});
+    const res = await apiClient.get(`/client/pettyCash`, { params });
     return res.data.data;
   } catch (err) {
     console.error(`Error getting petty cash:`, err);
@@ -321,7 +321,7 @@ export const getAllPettyCashes = async (filters = {}) => {
 export const getPettyCashPaymentsByManager = async (managerId) => {
   try {
     const res = await apiClient.get(`/expense/pettycash-manager`, {
-      params: {managerId},
+      params: { managerId },
     });
 
     return res.data; // contains { success, status, message, data }
@@ -361,7 +361,7 @@ export const getUsersByAgencyId = async (agencyId) => {
     console.log(agencyId);
 
     const res = await apiClient.get(`/user/byAgency`, {
-      params: {agent: agencyId},
+      params: { agent: agencyId },
     });
 
     return res.data || []; // Adjust based on your API response structure
@@ -396,7 +396,7 @@ export const addCommission = async (data) => {
 export const getAllCommissions = async (filters = {}) => {
   try {
     // Make GET request with query parameters
-    const response = await apiClient.get("/commission/", {params: filters});
+    const response = await apiClient.get("/commission/", { params: filters });
 
     console.debug("Commissions fetched successfully:", response.data);
     return response.data;
@@ -461,7 +461,7 @@ export const getAvailableCash = async (propertyId) => {
     const params = {};
     if (propertyId) params.propertyId = propertyId;
 
-    const res = await apiClient.get(`/feePayments/cashPayments`, {params});
+    const res = await apiClient.get(`/feePayments/cashPayments`, { params });
 
     return res.data?.netCash || 0;
   } catch (error) {
@@ -585,7 +585,7 @@ export const getPaymentAnalytics = async (propertyId, rentType, year) => {
     if (rentType) params.rentType = rentType;
     if (year) params.year = year;
 
-    const response = await apiClient.get("/feePayments/analytics", {params});
+    const response = await apiClient.get("/feePayments/analytics", { params });
 
     console.debug("Fetched data:", response.data);
     return response.data.data;
@@ -723,11 +723,16 @@ export const getLatestFeePaymentByUserId = async (userId) => {
 
 // Main Dashboard
 
-export const getMonthlyIncomeExpenseSummary = async (propertyId, year) => {
+export const getMonthlyIncomeExpenseSummary = async (
+  propertyId,
+  clientId,
+  year,
+) => {
   try {
     const params = {};
 
     if (propertyId) params.propertyId = propertyId;
+    if (clientId) params.clientId = clientId;
     if (year) params.year = year;
 
     const response = await apiClient.get("/feePayments/dashboard/summary", {
@@ -775,7 +780,7 @@ export const getStaffSalaryData = async (filters = {}) => {
  * @param {string|number} options.year - Year (e.g., 2025)
  * @returns {Promise<Object>} - GST report data
  */
-export const getGstReport = async ({format, month, year} = {}) => {
+export const getGstReport = async ({ format, month, year } = {}) => {
   try {
     // Build query params
     const params = {};
@@ -897,7 +902,7 @@ export const getJournalEntries = async (filters = {}) => {
     }
 
     console.log("📤 Sending GET /accounting with params:", params);
-    const res = await apiClient.get("/accounting/ledger-report", {params});
+    const res = await apiClient.get("/accounting/ledger-report", { params });
     return res.data || [];
   } catch (error) {
     console.error("❌ Error fetching journal entries:", error);
@@ -909,7 +914,7 @@ export const getJournalEntries = async (filters = {}) => {
 
 export const updateSalaryStatus = async (salaryId, data) => {
   try {
-    console.log("Updating salary status:", {salaryId, data});
+    console.log("Updating salary status:", { salaryId, data });
 
     const response = await apiClient.patch(
       `/staff-salary/${salaryId}/status`,
@@ -1164,7 +1169,7 @@ export const exportLedger = async (format, params) => {
       params,
     );
 
-    const {fileData, fileName, mimeType} = response.data.data;
+    const { fileData, fileName, mimeType } = response.data.data;
 
     // Convert base64 to blob
     const byteCharacters = atob(fileData);
@@ -1175,7 +1180,7 @@ export const exportLedger = async (format, params) => {
     }
 
     const byteArray = new Uint8Array(byteNumbers);
-    const blob = new Blob([byteArray], {type: mimeType});
+    const blob = new Blob([byteArray], { type: mimeType });
 
     // Create download link
     const link = document.createElement("a");
@@ -1196,7 +1201,7 @@ export const exportTrialBalance = async (format, params) => {
       params,
     );
 
-    const {fileData, fileName, mimeType} = response.data.data;
+    const { fileData, fileName, mimeType } = response.data.data;
 
     // Convert base64 to blob
     const byteCharacters = atob(fileData);
@@ -1207,7 +1212,7 @@ export const exportTrialBalance = async (format, params) => {
     }
 
     const byteArray = new Uint8Array(byteNumbers);
-    const blob = new Blob([byteArray], {type: mimeType});
+    const blob = new Blob([byteArray], { type: mimeType });
 
     // Create download link
     const link = document.createElement("a");
@@ -1228,7 +1233,7 @@ export const exportProfitAndLoss = async (format, params) => {
       params,
     );
 
-    const {fileData, fileName, mimeType} = response.data.data;
+    const { fileData, fileName, mimeType } = response.data.data;
 
     // Convert base64 to blob
     const byteCharacters = atob(fileData);
@@ -1239,7 +1244,7 @@ export const exportProfitAndLoss = async (format, params) => {
     }
 
     const byteArray = new Uint8Array(byteNumbers);
-    const blob = new Blob([byteArray], {type: mimeType});
+    const blob = new Blob([byteArray], { type: mimeType });
 
     // Create download link
     const link = document.createElement("a");
@@ -1260,7 +1265,7 @@ export const exportBalanceSheet = async (format, params) => {
       params,
     );
 
-    const {fileData, fileName, mimeType} = response.data.data;
+    const { fileData, fileName, mimeType } = response.data.data;
 
     // Convert base64 to blob
     const byteCharacters = atob(fileData);
@@ -1271,7 +1276,7 @@ export const exportBalanceSheet = async (format, params) => {
     }
 
     const byteArray = new Uint8Array(byteNumbers);
-    const blob = new Blob([byteArray], {type: mimeType});
+    const blob = new Blob([byteArray], { type: mimeType });
 
     // Create download link
     const link = document.createElement("a");
@@ -1312,7 +1317,7 @@ export const getTrialBalance = async (filters = {}) => {
     }
 
     console.log("📤 Sending GET /accounting with params:", params);
-    const res = await apiClient.get("/accounting/trial-balance", {params});
+    const res = await apiClient.get("/accounting/trial-balance", { params });
     return res.data || [];
   } catch (error) {
     console.error("❌ Error fetching trial balance:", error);
@@ -1349,7 +1354,7 @@ export const getProfitAndLoss = async (filters = {}) => {
     }
 
     console.log("📤 Sending GET /accounting with params:", params);
-    const res = await apiClient.get("/accounting/profit-loss", {params});
+    const res = await apiClient.get("/accounting/profit-loss", { params });
     return res.data || [];
   } catch (error) {
     console.error("❌ Error fetching profit and loss:", error);
@@ -1386,7 +1391,7 @@ export const getBalanceSheet = async (filters = {}) => {
     }
 
     console.log("📤 Sending GET /accounting with params:", params);
-    const res = await apiClient.get("/accounting/balance-sheet", {params});
+    const res = await apiClient.get("/accounting/balance-sheet", { params });
     return res.data || [];
   } catch (error) {
     console.error("❌ Error fetching balance sheet:", error);
