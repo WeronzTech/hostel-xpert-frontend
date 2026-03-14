@@ -59,6 +59,7 @@ const KITCHEN_ROUTES = [
   "/accounting/generalLedger/KITCHEN",
   "/accounting/trialBalance/KITCHEN",
   "/accounting/financial-reports/KITCHEN",
+  "/employees/KITCHEN",
 ];
 
 const Navbar = () => {

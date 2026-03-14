@@ -9,6 +9,7 @@ import {
   Col,
   InputNumber,
   message,
+  DatePicker,
 } from "antd";
 import {UploadOutlined} from "@ant-design/icons";
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
@@ -55,6 +56,7 @@ const EditManagerModal = ({kitchens, open, onClose, manager}) => {
         gender: manager.gender,
         role: manager.role?._id,
         salary: manager.salary,
+        // joinDate: manager.joinDate,
         address: manager.address,
         selectedmanagerType: manager.managerType || manager.employeeType,
         propertyId: manager.propertyId || [],
@@ -421,19 +423,19 @@ const EditManagerModal = ({kitchens, open, onClose, manager}) => {
             </Col>
           </Row>
 
-          {/* Row: Password and Salary */}
+          {/* Row: Password, Salary, and Join Date */}
           <Row gutter={[16, 16]}>
-            <Col xs={24} sm={24} md={12} lg={12}>
+            <Col xs={24} sm={24} md={8} lg={8}>
               <Form.Item
                 name="password"
-                label="New Password (Optional)"
-                help="Leave blank to keep current password"
+                label="Password"
+                rules={[{message: "Please enter password"}]}
               >
-                <Input.Password placeholder="Enter a new password to update" />
+                <Input.Password placeholder="Enter a secure password" />
               </Form.Item>
             </Col>
 
-            <Col xs={24} sm={24} md={12} lg={12}>
+            <Col xs={24} sm={24} md={8} lg={8}>
               <Form.Item
                 name="salary"
                 label="Salary"
@@ -442,6 +444,20 @@ const EditManagerModal = ({kitchens, open, onClose, manager}) => {
                 <InputNumber
                   style={{width: "100%"}}
                   placeholder="Enter monthly salary"
+                />
+              </Form.Item>
+            </Col>
+
+            <Col xs={24} sm={24} md={8} lg={8}>
+              <Form.Item
+                name="joinDate"
+                label="Join Date"
+                rules={[{required: true, message: "Please select join date"}]}
+              >
+                <DatePicker
+                  style={{width: "100%"}}
+                  placeholder="Select join date"
+                  format="YYYY-MM-DD"
                 />
               </Form.Item>
             </Col>

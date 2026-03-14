@@ -11,8 +11,6 @@ import {
   Grid,
 } from "antd";
 import {
-  CheckCircleOutlined,
-  CloseCircleOutlined,
   BankOutlined,
   ShoppingOutlined,
   DollarOutlined,
