@@ -6,7 +6,6 @@ import {
   Input,
   Badge,
   Empty,
-  Card,
   Drawer,
   Flex,
   Tag,

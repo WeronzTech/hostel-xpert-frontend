@@ -9,6 +9,7 @@ import {
   Col,
   InputNumber,
   message,
+  DatePicker,
 } from "antd";
 import {UploadOutlined} from "@ant-design/icons";
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
@@ -344,9 +345,9 @@ const AddManagerModal = ({kitchens, open, onClose}) => {
             </Col>
           </Row>
 
-          {/* Row: Password and Salary */}
+          {/* Row: Password, Salary, and Join Date */}
           <Row gutter={[16, 16]}>
-            <Col xs={24} sm={24} md={12} lg={12}>
+            <Col xs={24} sm={24} md={8} lg={8}>
               <Form.Item
                 name="password"
                 label="Password"
@@ -356,7 +357,7 @@ const AddManagerModal = ({kitchens, open, onClose}) => {
               </Form.Item>
             </Col>
 
-            <Col xs={24} sm={24} md={12} lg={12}>
+            <Col xs={24} sm={24} md={8} lg={8}>
               <Form.Item
                 name="salary"
                 label="Salary"
@@ -365,6 +366,20 @@ const AddManagerModal = ({kitchens, open, onClose}) => {
                 <InputNumber
                   style={{width: "100%"}}
                   placeholder="Enter monthly salary"
+                />
+              </Form.Item>
+            </Col>
+
+            <Col xs={24} sm={24} md={8} lg={8}>
+              <Form.Item
+                name="joinDate"
+                label="Join Date"
+                rules={[{required: true, message: "Please select join date"}]}
+              >
+                <DatePicker
+                  style={{width: "100%"}}
+                  placeholder="Select join date"
+                  format="YYYY-MM-DD"
                 />
               </Form.Item>
             </Col>

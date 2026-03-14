@@ -89,7 +89,7 @@ const StaffTable = ({staffList, loading, onEdit, onDelete, onStatusChange}) => {
         return isSystemUser ? (
           <Tag color="blue">System User</Tag>
         ) : (
-          <Tag color="default">Normal Staff</Tag>
+          <Tag color="green">Normal Staff</Tag>
         );
       },
     },

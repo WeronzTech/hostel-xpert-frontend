@@ -1395,3 +1395,169 @@ export const getBalanceSheet = async (filters = {}) => {
     );
   }
 };
+
+export const getPayrolls = async (filters = {}) => {
+  try {
+    const params = {};
+
+    // Search by employee name
+    if (filters.search) {
+      params.search = filters.search;
+    }
+    if (filters.type) {
+      params.type = filters.type;
+    }
+    // Month filter
+    if (filters.month !== undefined && filters.month !== null) {
+      params.month = filters.month;
+    }
+    // Year filter
+    if (filters.year) {
+      params.year = filters.year;
+    }
+
+    // Status filter
+    if (filters.status && filters.status !== "all") {
+      params.status = filters.status;
+    }
+
+    // Property filter (priority 1)
+    if (filters.propertyId && filters.propertyId !== "all") {
+      params.propertyId = filters.propertyId;
+    }
+
+    // Kitchen filter (priority 2)
+    else if (filters.kitchenId && filters.kitchenId !== "all") {
+      params.kitchenId = filters.kitchenId;
+    }
+
+    // Client filter (fallback)
+    else if (filters.clientId) {
+      params.clientId = filters.clientId;
+    }
+
+    console.log("📤 Sending GET /payroll with params:", params);
+
+    const res = await apiClient.get("/payroll/getAllPayroll", {params});
+
+    return res.data || [];
+  } catch (error) {
+    console.error("❌ Error fetching payrolls:", error);
+
+    throw new Error(
+      error.response?.data?.message || "Failed to fetch payrolls",
+    );
+  }
+};
+
+export const processPayment = async (paymentData) => {
+  console.log(paymentData);
+  try {
+    const res = await apiClient.post(`/payroll/make-payment`, paymentData);
+    return res.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || "Payment failed");
+  }
+};
+
+export const updatePayrollLeave = async (data) => {
+  console.log(data);
+  try {
+    const res = await apiClient.put(
+      `/payroll/update-leave/${data?.payrollId}`,
+      data,
+    );
+    return res.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || "Leave updation failed");
+  }
+};
+
+export const processAdvancePayment = async (data) => {
+  try {
+    console.log(data);
+    const res = await apiClient.post(`/payroll/make-advance-payment`, data);
+    return res.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || "Advance payment failed");
+  }
+};
+
+export const generateMissingPayroll = async () => {
+  try {
+    const res = await apiClient.post("/payroll/generate-missing");
+    return res.data;
+  } catch (error) {
+    throw new Error(
+      error.response?.data?.message || "Failed to create payroll",
+    );
+  }
+};
+
+export const getEmployeeTransactionHistory = async (
+  employeeId,
+  filters = {},
+) => {
+  try {
+    const params = {};
+
+    // Month filter
+    if (filters.month !== undefined && filters.month !== null) {
+      params.month = filters.month;
+    }
+    // Year filter
+    if (filters.year) {
+      params.year = filters.year;
+    }
+
+    console.log("📤 Fetching transactions for employee:", employeeId, params);
+
+    const res = await apiClient.get(`/payroll/transactions/${employeeId}`, {
+      params,
+    });
+
+    // Return the full response which should contain data.transactions and data.summary
+    return res?.data?.data;
+  } catch (error) {
+    console.error("❌ Error fetching transactions:", error);
+    throw new Error(
+      error.response?.data?.message || "Failed to fetch transactions",
+    );
+  }
+};
+
+export const getEmployeeAdvanceForMonth = async (employeeId, filters = {}) => {
+  try {
+    const params = {};
+
+    // Month filter
+    if (filters.month !== undefined && filters.month !== null) {
+      params.month = filters.month;
+    }
+    // Year filter
+    if (filters.year) {
+      params.year = filters.year;
+    }
+
+    console.log(
+      "📤 Fetching Advance transactions for employee:",
+      employeeId,
+      params,
+    );
+
+    const res = await apiClient.get(
+      `/payroll/advance-transactions/${employeeId}`,
+      {
+        params,
+      },
+    );
+
+    // Return the full response which should contain data.transactions and data.summary
+    return res?.data?.data;
+  } catch (error) {
+    console.error("❌ Error fetching Advance transactions:", error);
+    throw new Error(
+      error.response?.data?.message || "Failed to fetch Advance transactions",
+    );
+  }
+};
