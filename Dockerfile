@@ -15,6 +15,15 @@ RUN npm install
 # Copy the rest of the application source code
 COPY . .
 
+ARG VITE_API_BASE_URL
+ARG VITE_API_SOCKET_BASE_URL
+ARG VITE_APP_LOCALSTORAGE_KEY
+
+# --- NEW SECTION: Set Environment Variables for Vite ---
+# This makes the ARGs available to the 'npm run build' process
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+ENV VITE_API_SOCKET_BASE_URL=$VITE_API_SOCKET_BASE_URL
+ENV VITE_APP_LOCALSTORAGE_KEY=$VITE_APP_LOCALSTORAGE_KEY
 # Build the application for production.
 # Vite will place the optimized static files in the /app/dist directory.
 RUN npm run build
