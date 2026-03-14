@@ -1,18 +1,18 @@
-import {useState} from "react";
-import {Tabs, Card} from "antd";
-import {CalendarOutlined, UnlockOutlined} from "@ant-design/icons";
-import {useQueryClient} from "@tanstack/react-query";
-import {useSelector} from "react-redux";
-import {PageHeader} from "../../components";
+import { useState } from "react";
+import { Tabs, Card } from "antd";
+import { CalendarOutlined, UnlockOutlined } from "@ant-design/icons";
+import { useQueryClient } from "@tanstack/react-query";
+import { useSelector } from "react-redux";
+import { PageHeader } from "../../components";
 import LeaveManagement from "../../components/leave/LeaveManagement";
 import GatePassManagement from "../../components/gatePass/GatePassManagement";
 
-const {TabPane} = Tabs;
+const { TabPane } = Tabs;
 const PRIMARY_COLOR = "#059669";
 
 const LeaveGatePassManagement = () => {
   const queryClient = useQueryClient();
-  const {selectedProperty} = useSelector((state) => state.properties);
+  const { selectedProperty } = useSelector((state) => state.properties);
   const [activeTab, setActiveTab] = useState("leave");
 
   return (
@@ -26,12 +26,12 @@ const LeaveGatePassManagement = () => {
         <Tabs
           activeKey={activeTab}
           onChange={setActiveTab}
-          tabBarStyle={{marginBottom: 24}}
+          tabBarStyle={{ marginBottom: 24 }}
         >
           <TabPane
             tab={
               <span>
-                <CalendarOutlined style={{color: PRIMARY_COLOR}} />
+                <CalendarOutlined style={{ color: PRIMARY_COLOR }} />
                 Leave Requests
               </span>
             }
@@ -45,7 +45,7 @@ const LeaveGatePassManagement = () => {
           <TabPane
             tab={
               <span>
-                <UnlockOutlined style={{color: PRIMARY_COLOR}} />
+                <UnlockOutlined style={{ color: PRIMARY_COLOR }} />
                 Gate Pass Requests
               </span>
             }

@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, { useState } from "react";
 import {
   Table,
   Button,
@@ -26,20 +26,24 @@ import {
   SearchOutlined,
   FilterOutlined,
   ExclamationCircleOutlined,
+  LogoutOutlined,
+  LoginOutlined,
+  PlusOutlined,
 } from "@ant-design/icons";
-import {useQuery, useMutation} from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import {
   getAllGatePassRequests,
   respondToGatePass,
 } from "../../hooks/users/useUser";
 import MobileGatePassDrawer from "./MobileGatePassDrawer";
+import GatePassTimeModal from "./GatePassTimeModal";
 
-const {Option} = Select;
-const {Text} = Typography;
+const { Option } = Select;
+const { Text } = Typography;
 const PRIMARY_COLOR = "#059669";
 
-const GatePassManagement = ({selectedProperty, queryClient}) => {
+const GatePassManagement = ({ selectedProperty, queryClient }) => {
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedDate, setSelectedDate] = useState(dayjs());
@@ -48,6 +52,7 @@ const GatePassManagement = ({selectedProperty, queryClient}) => {
   const [mobileDrawerVisible, setMobileDrawerVisible] = useState(false);
   const [adminComment, setAdminComment] = useState("");
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [timingModalVisible, setTimingModalVisible] = useState(false);
 
   // Handle resize for mobile detection
   React.useEffect(() => {
@@ -140,6 +145,12 @@ const GatePassManagement = ({selectedProperty, queryClient}) => {
         icon: <CheckCircleOutlined />,
         text: "Completed",
       },
+      "went-out": { color: "blue", icon: <LogoutOutlined />, text: "Went Out" },
+      "came-back": {
+        color: "purple",
+        icon: <LoginOutlined />,
+        text: "Came Back",
+      },
     };
     const statusKey = status?.toLowerCase() || "pending";
     return (
@@ -188,10 +199,10 @@ const GatePassManagement = ({selectedProperty, queryClient}) => {
                   }}
                 />
               ) : (
-                <UserOutlined style={{color: PRIMARY_COLOR}} />
+                <UserOutlined style={{ color: PRIMARY_COLOR }} />
               )}
             </div>
-            <div style={{fontWeight: 500, whiteSpace: "nowrap"}}>
+            <div style={{ fontWeight: 500, whiteSpace: "nowrap" }}>
               {record.user?.name}
             </div>
           </Space>
@@ -226,7 +237,7 @@ const GatePassManagement = ({selectedProperty, queryClient}) => {
       key: "date",
       render: (_, record) => (
         <Tooltip title={dayjs(record.date).format("DD MMM YYYY")}>
-          <span style={{whiteSpace: "nowrap"}}>
+          <span style={{ whiteSpace: "nowrap" }}>
             {dayjs(record.date).format("DD MMM YYYY")}
           </span>
         </Tooltip>
@@ -275,9 +286,30 @@ const GatePassManagement = ({selectedProperty, queryClient}) => {
   }
 
   return (
-    <div style={{maxWidth: "100%", overflowX: "hidden"}}>
+    <div style={{ maxWidth: "100%", overflowX: "hidden" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginBottom: 16,
+        }}
+      >
+        <Typography.Title level={4}>Gate Pass Logs</Typography.Title>
+        <Button
+          icon={<PlusOutlined />}
+          onClick={() => setTimingModalVisible(true)}
+          disabled={!selectedProperty}
+          style={{
+            backgroundColor: PRIMARY_COLOR,
+            borderColor: PRIMARY_COLOR,
+            color: "#fff",
+          }}
+        >
+          Configure Timings
+        </Button>
+      </div>
       {/* Filters */}
-      <Row gutter={[16, 16]} style={{marginBottom: 24}}>
+      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         <Col xs={24} md={8}>
           <Input
             placeholder="Search student or vehicle..."
@@ -293,7 +325,7 @@ const GatePassManagement = ({selectedProperty, queryClient}) => {
               <Select
                 value={statusFilter}
                 onChange={setStatusFilter}
-                style={{width: "100%"}}
+                style={{ width: "100%" }}
                 placeholder="Status"
                 suffixIcon={<FilterOutlined />}
               >
@@ -301,6 +333,8 @@ const GatePassManagement = ({selectedProperty, queryClient}) => {
                 <Option value="Pending">Pending</Option>
                 <Option value="Approved">Approved</Option>
                 <Option value="Rejected">Rejected</Option>
+                <Option value="Went-Out">Went Out</Option>
+                <Option value="Came-Back">Came Back</Option>
               </Select>
             </Col>
             <Col xs={12} md={8}>
@@ -308,7 +342,7 @@ const GatePassManagement = ({selectedProperty, queryClient}) => {
                 value={selectedDate}
                 onChange={setSelectedDate}
                 format="YYYY-MM-DD"
-                style={{width: "100%"}}
+                style={{ width: "100%" }}
                 placeholder="Select Date"
               />
             </Col>
@@ -319,12 +353,12 @@ const GatePassManagement = ({selectedProperty, queryClient}) => {
       {/* Pending Requests Section */}
       {pendingRequests.length > 0 && (
         <>
-          <div style={{marginBottom: 16}}>
+          <div style={{ marginBottom: 16 }}>
             <Space align="center">
               <ExclamationCircleOutlined
-                style={{color: "#faad14", fontSize: 20}}
+                style={{ color: "#faad14", fontSize: 20 }}
               />
-              <Text strong style={{fontSize: 16, color: "#faad14"}}>
+              <Text strong style={{ fontSize: 16, color: "#faad14" }}>
                 Pending Requests ({pendingRequests.length})
               </Text>
             </Space>
@@ -338,9 +372,9 @@ const GatePassManagement = ({selectedProperty, queryClient}) => {
               backgroundColor: "#fffbe6",
               overflowX: "auto",
             }}
-            bodyStyle={{padding: isMobile ? 8 : 12}}
+            bodyStyle={{ padding: isMobile ? 8 : 12 }}
           >
-            <div style={{minWidth: isMobile ? "100%" : 900}}>
+            <div style={{ minWidth: isMobile ? "100%" : 900 }}>
               <Table
                 columns={columns}
                 dataSource={pendingRequests}
@@ -348,7 +382,7 @@ const GatePassManagement = ({selectedProperty, queryClient}) => {
                 rowKey="_id"
                 pagination={false}
                 size="small"
-                scroll={{x: isMobile ? 900 : undefined}}
+                scroll={{ x: isMobile ? 900 : undefined }}
                 onRow={(record) => ({
                   onClick: () => {
                     if (isMobile) {
@@ -356,14 +390,14 @@ const GatePassManagement = ({selectedProperty, queryClient}) => {
                       setMobileDrawerVisible(true);
                     }
                   },
-                  style: {cursor: isMobile ? "pointer" : "default"},
+                  style: { cursor: isMobile ? "pointer" : "default" },
                 })}
               />
             </div>
           </Card>
 
           {otherRequests.length > 0 && (
-            <Divider style={{margin: "16px 0"}}>
+            <Divider style={{ margin: "16px 0" }}>
               <Tag color="blue">
                 Processed Requests ({otherRequests.length})
               </Tag>
@@ -374,8 +408,8 @@ const GatePassManagement = ({selectedProperty, queryClient}) => {
 
       {/* Other Requests Section */}
       {otherRequests.length > 0 && (
-        <div style={{overflowX: "auto"}}>
-          <div style={{minWidth: isMobile ? 900 : "100%"}}>
+        <div style={{ overflowX: "auto" }}>
+          <div style={{ minWidth: isMobile ? 900 : "100%" }}>
             <Table
               columns={columns}
               dataSource={otherRequests}
@@ -383,7 +417,7 @@ const GatePassManagement = ({selectedProperty, queryClient}) => {
               rowKey="_id"
               pagination={false}
               size="small"
-              scroll={{x: isMobile ? 900 : undefined}}
+              scroll={{ x: isMobile ? 900 : undefined }}
               onRow={(record) => ({
                 onClick: () => {
                   if (isMobile) {
@@ -391,7 +425,7 @@ const GatePassManagement = ({selectedProperty, queryClient}) => {
                     setMobileDrawerVisible(true);
                   }
                 },
-                style: {cursor: isMobile ? "pointer" : "default"},
+                style: { cursor: isMobile ? "pointer" : "default" },
               })}
             />
           </div>
@@ -408,8 +442,8 @@ const GatePassManagement = ({selectedProperty, queryClient}) => {
             borderRadius: "8px",
           }}
         >
-          <UserOutlined style={{fontSize: 48, color: "#d9d9d9"}} />
-          <p style={{marginTop: 16, color: "#999"}}>
+          <UserOutlined style={{ fontSize: 48, color: "#d9d9d9" }} />
+          <p style={{ marginTop: 16, color: "#999" }}>
             No gate pass requests found
           </p>
         </div>
@@ -429,23 +463,38 @@ const GatePassManagement = ({selectedProperty, queryClient}) => {
           <Button key="cancel" onClick={() => setResponseModalVisible(false)}>
             Cancel
           </Button>,
-          <Button
-            key="approve"
-            type="primary"
-            style={{backgroundColor: "#52c41a", borderColor: "#52c41a"}}
-            onClick={() => handleRespond("Approved")}
-            loading={respondMutation.isLoading}
-          >
-            Approve
-          </Button>,
-          <Button
-            key="reject"
-            danger
-            onClick={() => handleRespond("Rejected")}
-            loading={respondMutation.isLoading}
-          >
-            Reject
-          </Button>,
+          selectedGatePass?.status === "Pending" && (
+            <Space key="pending-actions">
+              <Button danger onClick={() => handleRespond("Rejected")}>
+                Reject
+              </Button>
+              <Button type="primary" onClick={() => handleRespond("Approved")}>
+                Approve
+              </Button>
+            </Space>
+          ),
+
+          selectedGatePass?.status === "Approved" && (
+            <Button
+              key="out"
+              type="primary"
+              icon={<LogoutOutlined />}
+              onClick={() => handleRespond("Went-Out")}
+            >
+              Mark Went-Out
+            </Button>
+          ),
+
+          selectedGatePass?.status === "Went-Out" && (
+            <Button
+              key="back"
+              type="primary"
+              icon={<LoginOutlined />}
+              onClick={() => handleRespond("Came-Back")}
+            >
+              Mark Came-Back
+            </Button>
+          ),
         ]}
       >
         {selectedGatePass && (
@@ -473,14 +522,19 @@ const GatePassManagement = ({selectedProperty, queryClient}) => {
               )}
             </Descriptions>
 
-            <div style={{marginTop: 16}}>
+            <div style={{ marginTop: 16, textAlign: "center" }}>
+              <Text type="secondary">Current Status: </Text>
+              {getStatusTag(selectedGatePass?.status)}
+            </div>
+
+            <div style={{ marginTop: 16 }}>
               <Text strong>Admin Comment (Optional):</Text>
               <Input.TextArea
                 rows={3}
                 value={adminComment}
                 onChange={(e) => setAdminComment(e.target.value)}
                 placeholder="Add your comments here..."
-                style={{marginTop: 8}}
+                style={{ marginTop: 8 }}
               />
             </div>
           </div>
@@ -500,6 +554,11 @@ const GatePassManagement = ({selectedProperty, queryClient}) => {
         adminComment={adminComment}
         setAdminComment={setAdminComment}
         isResponding={respondMutation.isLoading}
+      />
+      <GatePassTimeModal
+        visible={timingModalVisible}
+        onClose={() => setTimingModalVisible(false)}
+        propertyId={selectedProperty?.id}
       />
     </div>
   );

@@ -12,6 +12,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { notificationService } from "../../hooks/notifications/useNotification.js";
 import LoadingSpinner from "../../ui/loadingSpinner/LoadingSpinner.jsx";
 import { Button, Checkbox, Dropdown, message } from "antd";
+import { useSelector } from "react-redux";
 
 function PushNotificationPage() {
   const queryClient = useQueryClient();
@@ -20,6 +21,7 @@ function PushNotificationPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isSendModalOpen, setIsSendModalOpen] = useState(false);
+  const { selectedProperty } = useSelector((state) => state.properties);
 
   // State for filters
   const [filters, setFilters] = useState({
@@ -27,6 +29,7 @@ function PushNotificationPage() {
     workerOnly: false,
     dailyRentOnly: false,
     messOnly: false,
+    propertyId: selectedProperty?.id,
   });
 
   // Fetch all push notifications using tanstack query
@@ -34,7 +37,7 @@ function PushNotificationPage() {
     queryKey: ["pushNotifications", filters],
     queryFn: () => {
       const activeFilters = Object.fromEntries(
-        Object.entries(filters).filter(([_, value]) => value) // keep only true
+        Object.entries(filters).filter(([_, value]) => value), // keep only true
       );
       return notificationService.getPushNotifications(activeFilters);
     },
@@ -105,6 +108,7 @@ function PushNotificationPage() {
     fd.append("studentOnly", values.users.includes("studentOnly"));
     fd.append("workerOnly", values.users.includes("workerOnly"));
     fd.append("dailyRentOnly", values.users.includes("dailyRentOnly"));
+    fd.append("propertyId", values.propertyId);
 
     if (values.image) {
       fd.append("pushNotifications", values.image); // This name MUST match multer's `upload.single("image")`
@@ -151,9 +155,7 @@ function PushNotificationPage() {
         borderRadius: 4,
       }}
     >
-      <div className="mb-3 text-md font-semibold">
-        User Types
-      </div>
+      <div className="mb-3 text-md font-semibold">User Types</div>
       {/* First row */}
       <div
         style={{
@@ -216,6 +218,7 @@ function PushNotificationPage() {
             workerOnly: false,
             dailyRentOnly: false,
             messOnly: false,
+            propertyId: selectedProperty?.id,
           })
         }
       >

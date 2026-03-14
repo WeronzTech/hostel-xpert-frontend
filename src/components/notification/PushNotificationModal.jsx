@@ -10,6 +10,7 @@ import {
   Grid,
 } from "antd";
 import { UploadOutlined } from "../../icons/index.js";
+import { useSelector } from "react-redux";
 
 const { TextArea } = Input;
 const { useBreakpoint } = Grid;
@@ -60,6 +61,15 @@ const PushNotificationModal = ({ open, onClose, onSubmit, loading }) => {
     setPreview({ visible: false, image: "" });
     onClose();
   };
+
+  const filterOption = (input, option) => {
+    return option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0;
+  };
+
+  const allProperties = useSelector(
+    (state) => state.properties.properties || [],
+  );
+  const properties = allProperties.filter((property) => property._id !== null);
 
   const handleUploadChange = ({ fileList }) => {
     setFileList(fileList.slice(-1));
@@ -135,6 +145,36 @@ const PushNotificationModal = ({ open, onClose, onSubmit, loading }) => {
               options={userGroups}
             />
           </Form.Item>
+
+          {/* <Row gutter={[16, 16]}>
+            <Col xs={24} sm={24} md={24} lg={24}> */}
+          <Form.Item
+            name="propertyId"
+            label="Properties"
+            rules={[
+              {
+                required: true,
+                message: "Please select at least one property",
+              },
+            ]}
+          >
+            <Select
+              mode="multiple"
+              placeholder="Select properties"
+              allowClear
+              showSearch
+              filterOption={filterOption}
+              optionFilterProp="children"
+            >
+              {properties.map((property) => (
+                <Option key={property._id} value={property._id}>
+                  {property.name}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+          {/* </Col>
+          </Row> */}
 
           <Form.Item
             name="image"

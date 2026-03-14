@@ -1223,3 +1223,70 @@ export const updateRentAndDates = async ({
     };
   }
 };
+
+export const getAllGatePassTimings = async ({
+  propertyId,
+  clientId,
+  isActive,
+}) => {
+  try {
+    const response = await apiClient.get("/user/gate-pass-time", {
+      params: { propertyId, clientId, isActive },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Fetch gate pass timings failed:", error);
+    throw {
+      message: error.response?.data?.message || "Failed to fetch timing rules",
+      status: error.response?.status,
+    };
+  }
+};
+
+/**
+ * Create a new gate pass timing rule
+ */
+export const createGatePassTiming = async (timingData) => {
+  try {
+    const response = await apiClient.post("/user/gate-pass-time", timingData);
+    return response.data;
+  } catch (error) {
+    throw {
+      message: error.response?.data?.message || "Failed to create timing rule",
+      status: error.response?.status,
+    };
+  }
+};
+
+/**
+ * Update an existing gate pass timing rule (Edit Feature)
+ */
+export const updateGatePassTiming = async ({ id, ...updateData }) => {
+  try {
+    const response = await apiClient.put(
+      `/user/gate-pass-time/${id}`,
+      updateData,
+    );
+    return response.data;
+  } catch (error) {
+    throw {
+      message: error.response?.data?.message || "Failed to update timing rule",
+      status: error.response?.status,
+    };
+  }
+};
+
+/**
+ * Delete a gate pass timing rule (Delete Feature)
+ */
+export const deleteGatePassTiming = async (id) => {
+  try {
+    const response = await apiClient.delete(`/user/gate-pass-time/${id}`);
+    return response.data;
+  } catch (error) {
+    throw {
+      message: error.response?.data?.message || "Failed to delete timing rule",
+      status: error.response?.status,
+    };
+  }
+};

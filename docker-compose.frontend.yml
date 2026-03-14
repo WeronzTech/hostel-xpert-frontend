@@ -5,12 +5,12 @@ services:
   frontend:
     # Use the image built by the CI/CD pipeline, tagged with your Docker Hub username
     image: akhilbeliever001222/hostel-xpert-fe:latest
-    container_name: frontend_panel # A unique name for this container
+    container_name: hostel-xpert-frontend_panel # A unique name for this container
     restart: unless-stopped
     ports:
       # Map the container's internal port 80 to an unused port on the host machine (e.g., 8082).
       # Your main server NGINX will proxy traffic to this port.
-      - "8083:80"
+      - "8086:80"
     networks:
       # Connect this container to the same network as your backend services
       - hostel-xpert-ms-js-net
