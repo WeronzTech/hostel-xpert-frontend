@@ -5,11 +5,12 @@ import EmployeeDashboard from "../../components/employee/EmployeeDashboard";
 import RolePage from "../../components/employee/RolePage";
 import AttendanceOverview from "../../components/employee/AttendanceOverview";
 import PayrollPage from "../../components/employee/PayrollPage";
+import {useSelector} from "react-redux";
 
-const { TabPane } = Tabs;
+const {TabPane} = Tabs;
 
 const EmployeePage = () => {
-  const { user } = useSelector((state) => state.auth);
+  const {user} = useSelector((state) => state.auth);
   const navigate = useNavigate();
   const {type} = useParams();
   const [searchParams] = useSearchParams();
@@ -70,7 +71,7 @@ const EmployeePage = () => {
           <AttendanceOverview />
         </TabPane>
 
-       {user?.role?.name === "Admin" && (
+        {user?.role?.name === "Admin" && (
           <TabPane tab="Roles & Permissions" key="3">
             <RolePage />
           </TabPane>
