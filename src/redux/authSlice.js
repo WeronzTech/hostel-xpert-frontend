@@ -71,6 +71,16 @@ const authSlice = createSlice({
       state.expirationReason = action?.payload?.reason || null;
       setLoginDataInEncryptedStorage(null);
     },
+    setCredentials: (state, action) => {
+      if (action.payload.user) {
+        state.user = action.payload.user;
+      }
+      if (action.payload.token) {
+        state.token = action.payload.token;
+      }
+      // Update encrypted storage with the fresh data so it persists on reload
+      setLoginDataInEncryptedStorage(state.token, state.user);
+    },
     initializeAuth: (state) => {
       const token = encryptedStorage.getItem("token");
       const user = encryptedStorage.getItem("user");
@@ -112,6 +122,7 @@ export const {
   loginFailure,
   logout,
   initializeAuth,
+  setCredentials,
   showExpirationModal,
   hideExpirationModal,
 } = authSlice.actions;

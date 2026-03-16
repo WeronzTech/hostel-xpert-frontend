@@ -1,4 +1,4 @@
-import { Table, Tag, Tooltip,Image } from "antd";
+import { Table, Tag, Tooltip, Image } from "antd";
 import dayjs from "dayjs";
 import { useQuery } from "@tanstack/react-query";
 import { getResidentById } from "../../hooks/users/useUser.js";
@@ -15,7 +15,7 @@ const userGroups = [
 const getUserTypeLabel = (values) => {
   if (!Array.isArray(values)) return [];
   return values.map(
-    (val) => userGroups.find((g) => g.value === val)?.label || val
+    (val) => userGroups.find((g) => g.value === val)?.label || val,
   );
 };
 
@@ -45,7 +45,9 @@ const ResidentCell = ({ residentId }) => {
 
   return (
     <div className="flex flex-col gap-1 items-center">
-      <Tooltip title={`${resident?.name || "Unknown"} (${resident?.email || "N/A"})`}>
+      <Tooltip
+        title={`${resident?.name || "Unknown"} (${resident?.email || "N/A"})`}
+      >
         <Tag color="blue" className="mb-1">
           {resident?.name || resident?.email || `User ${residentId}`}{" "}
           {resident?.userType ? `(${formatUserType(resident.userType)})` : ""}
@@ -106,9 +108,9 @@ const NotificationLogsTable = ({ data }) => {
               height={56}
               style={{ objectFit: "cover", borderRadius: 8 }}
               preview={{ mask: "Click to preview" }}
-              onError={(e) => {
-                e.target.src = "/placeholder-image.png";
-              }}
+              // onError={(e) => {
+              //   e.target.src = "/placeholder-image.png";
+              // }}
             />
           </div>
         ) : (

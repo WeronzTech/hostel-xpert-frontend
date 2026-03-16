@@ -5,7 +5,11 @@ import { message, Spin } from "antd";
 
 function NotificationLogsPage({ userId }) {
   // Fetch notification logs using TanStack Query
-  const { data: logs = [], isLoading, error } = useQuery({
+  const {
+    data: logs = [],
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["notificationLogs", userId],
     queryFn: async () => {
       // Call API from notificationService
@@ -20,7 +24,7 @@ function NotificationLogsPage({ userId }) {
         sentAt: log.createdAt,
       }));
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    // staleTime: 5 * 60 * 1000, // 5 minutes
     onError: (err) => {
       message.error(err?.message || "Failed to fetch notification logs");
     },

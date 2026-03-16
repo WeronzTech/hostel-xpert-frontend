@@ -1,5 +1,5 @@
-import {useState} from "react";
-import {useQuery} from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Modal,
   Form,
@@ -11,22 +11,22 @@ import {
   Spin,
   Grid,
 } from "antd";
-import {UploadOutlined} from "../../icons/index.js";
-import {getUsers} from "../../hooks/users/useUser.js";
+import { UploadOutlined } from "../../icons/index.js";
+import { getUsers } from "../../hooks/users/useUser.js";
 
-const {TextArea} = Input;
-const {useBreakpoint} = Grid;
+const { TextArea } = Input;
+const { useBreakpoint } = Grid;
 
 const userGroups = [
-  {label: "Mess Only", value: "mess"},
-  {label: "Monthly", value: "monthly"},
-  {label: "Daily Rent", value: "daily"},
+  { label: "Mess Only", value: "mess" },
+  { label: "Monthly", value: "monthly" },
+  { label: "Daily Rent", value: "daily" },
 ];
 
-const AlertNotficationModal = ({open, onClose, onSubmit}) => {
+const AlertNotficationModal = ({ open, onClose, onSubmit }) => {
   const [form] = Form.useForm();
   const [fileList, setFileList] = useState([]);
-  const [preview, setPreview] = useState({visible: false, image: ""});
+  const [preview, setPreview] = useState({ visible: false, image: "" });
   const [rentType, setRentType] = useState(null);
 
   const screens = useBreakpoint();
@@ -43,12 +43,10 @@ const AlertNotficationModal = ({open, onClose, onSubmit}) => {
     queryKey: ["users", rentType],
     queryFn: async () => {
       if (!rentType) return [];
-      const response = await getUsers({rentType, all: true});
+      const response = await getUsers({ rentType, all: true });
       return response?.data || [];
     },
     enabled: !!rentType, // Only fetch when rentType is selected
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    retry: 2,
   });
 
   // 🟢 Show error message if users fetch fails
@@ -59,8 +57,9 @@ const AlertNotficationModal = ({open, onClose, onSubmit}) => {
 
   // 🟢 Handle Rent Type Change (used only to filter users)
   const handleUserGroupChange = (value) => {
+    console.log("value", value);
     setRentType(value);
-    form.setFieldsValue({users: []});
+    form.setFieldsValue({ users: [] });
   };
 
   // 🟢 Submit form data
@@ -76,10 +75,10 @@ const AlertNotficationModal = ({open, onClose, onSubmit}) => {
       const image = fileList.length > 0 ? fileList[0] : null;
 
       // ✅ Do not send userGroup — only send userId & image
-      onSubmit({...values, image, userGroup: undefined});
+      onSubmit({ ...values, image, userGroup: undefined });
       form.resetFields();
       setFileList([]);
-      setPreview({visible: false, image: ""});
+      setPreview({ visible: false, image: "" });
       setRentType(null);
     } catch {
       message.error("Please fill all required fields");
@@ -90,13 +89,13 @@ const AlertNotficationModal = ({open, onClose, onSubmit}) => {
   const handleCancel = () => {
     form.resetFields();
     setFileList([]);
-    setPreview({visible: false, image: ""});
+    setPreview({ visible: false, image: "" });
     setRentType(null);
     onClose();
   };
 
   // 🟢 Upload Handlers
-  const handleUploadChange = ({fileList}) => setFileList(fileList.slice(-1));
+  const handleUploadChange = ({ fileList }) => setFileList(fileList.slice(-1));
 
   const handlePreview = async (file) => {
     if (!file.url && !file.preview) {
@@ -106,7 +105,7 @@ const AlertNotficationModal = ({open, onClose, onSubmit}) => {
         reader.readAsDataURL(file.originFileObj);
       });
     }
-    setPreview({visible: true, image: file.url || file.preview});
+    setPreview({ visible: true, image: file.url || file.preview });
   };
 
   return (
@@ -119,19 +118,19 @@ const AlertNotficationModal = ({open, onClose, onSubmit}) => {
         okText="Send"
         cancelText="Cancel"
         width={modalWidth}
-        styles={{body: {maxHeight: "70vh", overflowY: "auto", padding: 12}}}
+        styles={{ body: { maxHeight: "70vh", overflowY: "auto", padding: 12 } }}
       >
         <Form
           layout="vertical"
           form={form}
           name="alertNotificationForm"
-          initialValues={{users: []}}
+          initialValues={{ users: [] }}
         >
           {/* Title */}
           <Form.Item
             name="title"
             label="Title"
-            rules={[{required: true, message: "Title is required"}]}
+            rules={[{ required: true, message: "Title is required" }]}
           >
             <Input placeholder="Enter notification title" />
           </Form.Item>
@@ -140,7 +139,7 @@ const AlertNotficationModal = ({open, onClose, onSubmit}) => {
           <Form.Item
             name="description"
             label="Description"
-            rules={[{required: true, message: "Description is required"}]}
+            rules={[{ required: true, message: "Description is required" }]}
           >
             <TextArea placeholder="Enter notification description" rows={4} />
           </Form.Item>
@@ -149,7 +148,7 @@ const AlertNotficationModal = ({open, onClose, onSubmit}) => {
           <Form.Item
             name="userGroup"
             label="Select Rent Type"
-            rules={[{required: true, message: "Please select a rent type"}]}
+            rules={[{ required: true, message: "Please select a rent type" }]}
           >
             <Select
               placeholder="Select rent type"
@@ -162,7 +161,7 @@ const AlertNotficationModal = ({open, onClose, onSubmit}) => {
           <Form.Item
             name="users"
             label="Select User"
-            rules={[{required: true, message: "Please select a user"}]}
+            rules={[{ required: true, message: "Please select a user" }]}
           >
             <Select
               placeholder={
@@ -197,7 +196,7 @@ const AlertNotficationModal = ({open, onClose, onSubmit}) => {
               beforeUpload={() => false}
               accept="image/*"
               onPreview={handlePreview}
-              showUploadList={{showPreviewIcon: true}}
+              showUploadList={{ showPreviewIcon: true }}
               listType="picture"
               maxCount={1}
             >
@@ -212,13 +211,13 @@ const AlertNotficationModal = ({open, onClose, onSubmit}) => {
         open={preview.visible}
         title="Preview Image"
         footer={null}
-        onCancel={() => setPreview({visible: false, image: ""})}
+        onCancel={() => setPreview({ visible: false, image: "" })}
         centered
         width={previewWidth}
       >
         <img
           alt="Preview"
-          style={{width: "100%", borderRadius: 4}}
+          style={{ width: "100%", borderRadius: 4 }}
           src={preview.image}
         />
       </Modal>

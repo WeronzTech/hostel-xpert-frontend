@@ -89,6 +89,7 @@ const Navbar = () => {
   const [messDropdownOpen, setMessDropdownOpen] = useState(false);
   const [accountsDropdownOpen, setAccountsDropdownOpen] = useState(false);
   const [moreDropdownOpen, setMoreDropdownOpen] = useState(false);
+  const [timeOffDropdownOpen, setTimeOffDropdownOpen] = useState(false);
 
   const dispatch = useDispatch();
 
@@ -209,6 +210,16 @@ const Navbar = () => {
     { path: "/monthlyRent", label: "Monthly Rent", permission: "/monthlyRent" },
     { path: "/dailyRent", label: "Daily Rent", permission: "/dailyRent" },
     { path: "/food-only", label: "Mess Only", permission: "/food-only" },
+    { path: "/employees", label: "Employees", permission: "/employees" },
+  ];
+
+  const timeOffRoutes = [
+    {
+      path: "/attendance",
+      label: "Attendance",
+      canView: hasPermission("/attendance"),
+    },
+    { path: "/leave", label: "Leave", canView: hasPermission("/leave") },
   ];
 
   const canViewAccounts = hasPermission("/accounts");
@@ -237,6 +248,7 @@ const Navbar = () => {
   const allowedUserRoutes = userRoutes.filter((route) =>
     hasPermission(route.permission),
   );
+  const allowedTimeOffRoutes = timeOffRoutes.filter((route) => route.canView);
 
   useEffect(() => {
     const fetchProperties = async () => {
@@ -634,7 +646,7 @@ const Navbar = () => {
           )}
         </>
       )}
-      {hasPermission("/attendance") && (
+      {/* {hasPermission("/attendance") && (
         <Link to="/attendance">
           <Button
             type="text"
@@ -669,6 +681,88 @@ const Navbar = () => {
             <span>Employees</span>
           </Button>
         </Link>
+      )} */}
+
+      {allowedTimeOffRoutes.length > 0 && (
+        <>
+          {allowedTimeOffRoutes.length > 1 ? (
+            <Dropdown
+              overlay={
+                <Menu>
+                  {allowedTimeOffRoutes.map((route) => {
+                    const isRouteActive = isActive(route.path);
+                    return (
+                      <Menu.Item
+                        key={route.path}
+                        style={{
+                          backgroundColor: isRouteActive
+                            ? "#f0f0f0"
+                            : "transparent",
+                        }}
+                      >
+                        <Link
+                          to={route.path}
+                          style={{
+                            color: isRouteActive ? "#059669" : "inherit",
+                            display: "block",
+                            padding: "5px 12px",
+                            fontWeight: isRouteActive ? "600" : "600",
+                          }}
+                        >
+                          {route.label}
+                        </Link>
+                      </Menu.Item>
+                    );
+                  })}
+                </Menu>
+              }
+              trigger={["hover"]}
+              placement="bottom"
+              onOpenChange={(open) => setTimeOffDropdownOpen(open)}
+            >
+              <Button
+                type="text"
+                className={`nav-link dropdown-container ${
+                  allowedTimeOffRoutes.some((route) => isActive(route.path))
+                    ? "active"
+                    : ""
+                }`}
+                style={getButtonStyle(
+                  allowedTimeOffRoutes.some((route) => isActive(route.path)),
+                )}
+              >
+                <HiOutlineCalendarDays size={20} />
+                <Space size={4}>
+                  <span>Attendance & Leave</span>
+                  {timeOffDropdownOpen ? (
+                    <FiChevronUp size={16} />
+                  ) : (
+                    <FiChevronDown size={16} />
+                  )}
+                </Space>
+              </Button>
+            </Dropdown>
+          ) : (
+            <Link to={allowedTimeOffRoutes[0].path}>
+              <Button
+                type="text"
+                className={`nav-link ${
+                  isActive(allowedTimeOffRoutes[0].path) ? "active" : ""
+                }`}
+                icon={
+                  allowedTimeOffRoutes[0].path === "/attendance" ? (
+                    <HiOutlineCalendarDays size={20} />
+                  ) : (
+                    <HiOutlineDocumentText size={20} />
+                  )
+                }
+                style={getButtonStyle(isActive(allowedTimeOffRoutes[0].path))}
+              >
+                <span>{allowedTimeOffRoutes[0].label}</span>
+              </Button>
+            </Link>
+          )}
+        </>
       )}
       {allowedKitchenRoutes.length > 0 && (
         <>
@@ -1176,7 +1270,7 @@ const Navbar = () => {
         </div>
       )}
 
-      {hasPermission("/attendance") && (
+      {/* {hasPermission("/attendance") && (
         <Link to="/attendance" onClick={() => setMobileMenuOpen(false)}>
           <Button
             type="text"
@@ -1213,6 +1307,101 @@ const Navbar = () => {
             <span>Employees</span>
           </Button>
         </Link>
+      )} */}
+      {allowedTimeOffRoutes.length > 0 && (
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          {allowedTimeOffRoutes.length > 1 ? (
+            <>
+              <Button
+                type="text"
+                onClick={() => setTimeOffDropdownOpen(!timeOffDropdownOpen)}
+                className={`mobile-nav-link ${
+                  allowedTimeOffRoutes.some((route) => isActive(route.path))
+                    ? "active"
+                    : ""
+                }`}
+                style={{
+                  color: "white",
+                  width: "100%",
+                  textAlign: "left",
+                  justifyContent: "space-between",
+                  padding: "1rem",
+                  height: "auto",
+                  display: "flex",
+                  alignItems: "center",
+                  backgroundColor: allowedTimeOffRoutes.some((route) =>
+                    isActive(route.path),
+                  )
+                    ? "rgba(255, 255, 255, 0.15)"
+                    : "transparent",
+                  borderRadius: "6px",
+                  fontWeight: allowedTimeOffRoutes.some((route) =>
+                    isActive(route.path),
+                  )
+                    ? "600"
+                    : "500",
+                }}
+              >
+                <Space size={12}>
+                  <HiOutlineCalendarDays size={20} />
+                  <span>Attendance & Leave</span>
+                </Space>
+                {timeOffDropdownOpen ? <FiChevronUp /> : <FiChevronDown />}
+              </Button>
+              {timeOffDropdownOpen && (
+                <div
+                  style={{
+                    paddingLeft: "1rem",
+                    marginLeft: "2rem",
+                    borderLeft: "1px solid rgba(255,255,255,0.2)",
+                  }}
+                >
+                  {allowedTimeOffRoutes.map((route) => (
+                    <Link
+                      key={route.path}
+                      to={route.path}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <Button
+                        type="text"
+                        className={`mobile-dropdown-link ${
+                          isActive(route.path) ? "active" : ""
+                        }`}
+                        style={getMobileSublinkStyle(isActive(route.path))}
+                      >
+                        • {route.label}
+                      </Button>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </>
+          ) : (
+            <Link
+              to={allowedTimeOffRoutes[0].path}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <Button
+                type="text"
+                className={`mobile-nav-link ${
+                  isActive(allowedTimeOffRoutes[0].path) ? "active" : ""
+                }`}
+                icon={
+                  allowedTimeOffRoutes[0].path === "/attendance" ? (
+                    <HiOutlineCalendarDays size={20} />
+                  ) : (
+                    <HiOutlineDocumentText size={20} />
+                  )
+                }
+                style={getMobileButtonStyle(
+                  isActive(allowedTimeOffRoutes[0].path),
+                )}
+              >
+                <span>{allowedTimeOffRoutes[0].label}</span>
+              </Button>
+            </Link>
+          )}
+        </div>
       )}
 
       {allowedKitchenRoutes.length > 0 && (
@@ -1717,34 +1906,39 @@ const Navbar = () => {
 
           {/* Desktop Icons */}
           <Space size="middle" style={{ display: isMobile ? "none" : "flex" }}>
-            <Space size={4}>
-              <Button
-                type="text"
-                icon={<FiUser size={20} style={{ color: "white" }} />}
-                className="icon-button"
-                style={{ color: "white", padding: "0.5rem", height: "auto" }}
-              />
-              <div style={{ textAlign: "right" }}>
-                <Space size={8}>
-                  <Text style={{ color: "white", fontWeight: 500 }}>
-                    {user?.name}
-                  </Text>
-                  <Badge
-                    count={user?.role?.name}
-                    style={{
-                      backgroundColor: "rgba(255, 255, 255, 0.2)",
-                      color: "white",
-                      fontSize: "10px",
-                      padding: "0 8px",
-                      height: "20px",
-                      lineHeight: "20px",
-                      borderRadius: "999px",
-                      textTransform: "uppercase",
-                    }}
-                  />
-                </Space>
-              </div>
-            </Space>
+            <Link
+              to="/profile"
+              // onClick={() => setMobileMenuOpen(false)}
+            >
+              <Space size={4}>
+                <Button
+                  type="text"
+                  icon={<FiUser size={20} style={{ color: "white" }} />}
+                  className="icon-button"
+                  style={{ color: "white", padding: "0.5rem", height: "auto" }}
+                />
+                <div style={{ textAlign: "right" }}>
+                  <Space size={8}>
+                    <Text style={{ color: "white", fontWeight: 500 }}>
+                      {user?.name}
+                    </Text>
+                    <Badge
+                      count={user?.role?.name}
+                      style={{
+                        backgroundColor: "rgba(255, 255, 255, 0.2)",
+                        color: "white",
+                        fontSize: "10px",
+                        padding: "0 8px",
+                        height: "20px",
+                        lineHeight: "20px",
+                        borderRadius: "999px",
+                        textTransform: "uppercase",
+                      }}
+                    />
+                  </Space>
+                </div>
+              </Space>
+            </Link>
 
             {settingsItems.length > 0 && (
               <Dropdown
