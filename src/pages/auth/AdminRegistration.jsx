@@ -50,6 +50,7 @@ const AdminRegistration = () => {
       country: "",
       // zipCode: "",
     },
+    activeModules: ["properties", "users", "timeOff", "kitchen", "accounts"],
   };
 
   const handleSubmit = async (values) => {
@@ -184,6 +185,25 @@ const AdminRegistration = () => {
                   placeholder="Enter company/organization name"
                   style={{borderRadius: "8px"}}
                 />
+              </Form.Item>
+
+              <Form.Item
+                label="Active Modules"
+                name="activeModules"
+                rules={[{required: true, message: "Please select at least one module"}]}
+                style={{marginBottom: "16px"}}
+              >
+                <Select
+                  mode="multiple"
+                  placeholder="Select modules for this client"
+                  style={{borderRadius: "8px"}}
+                >
+                  <Option value="properties">Property Management</Option>
+                  <Option value="users">User Management</Option>
+                  <Option value="timeOff">Attendance & Leave</Option>
+                  <Option value="kitchen">Mess & Kitchen</Option>
+                  <Option value="accounts">Accounts & Finance</Option>
+                </Select>
               </Form.Item>
             </div>
 

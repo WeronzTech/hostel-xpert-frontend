@@ -11,9 +11,35 @@ const ROUTE_PERMISSION_MAP = {
   "/resident": ["/monthlyRent", "/dailyRent", "/food-only"],
 };
 
+/**
+ * Route → Module map
+ * Maps root routes to the corresponding client subscription module
+ */
+const ROUTE_MODULE_MAP = {
+  "/property": "properties",
+  "/floor": "properties",
+  "/rooms": "properties",
+  "/monthlyRent": "users",
+  "/dailyRent": "users",
+  "/food-only": "users",
+  "/resident": "users",
+  "/employees": "users",
+  "/attendance": "timeOff",
+  "/leave": "timeOff",
+  "/mess": "kitchen",
+  "/kitchen": "kitchen",
+  "/stock-usage": "kitchen",
+  "/inventory": "kitchen",
+  "/menu": "kitchen",
+  "/accounts": "accounts",
+  "/accounting": "accounts",
+};
+
 function ProtectedRouteWithPermission({children}) {
   const location = useLocation();
-  const roleId = useSelector((state) => state?.auth?.user?.role?.id);
+  const user = useSelector((state) => state?.auth?.user);
+  const roleId = user?.role?.id;
+  const activeModules = user?.activeModules || [];
 
   const {data: role, isLoading} = useQuery({
     queryKey: ["get-role", roleId],
@@ -25,6 +51,19 @@ function ProtectedRouteWithPermission({children}) {
 
   const permissions = role?.permissions || [];
   const pathname = location.pathname;
+
+  // 🧱 Client Module Check
+  let isModuleDeactivated = false;
+  for (const [routePrefix, moduleName] of Object.entries(ROUTE_MODULE_MAP)) {
+    if (pathname.startsWith(routePrefix) && !activeModules.includes(moduleName)) {
+      isModuleDeactivated = true;
+      break;
+    }
+  }
+
+  if (isModuleDeactivated) {
+    return <Navigate to="/unauthorized" replace />;
+  }
 
   // 🔓 Super Admin
   if (permissions.includes("ALL_PRIVILEGES")) {

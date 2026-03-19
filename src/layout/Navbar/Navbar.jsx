@@ -115,6 +115,12 @@ const Navbar = () => {
 
   const permissions = role?.permissions;
 
+  const activeModules = user?.activeModules || [];
+
+  const isModuleActive = (moduleName) => {
+    return activeModules.includes(moduleName);
+  };
+
   const hasPermission = (requiredPermission) => {
     if (permissions?.includes("ALL_PRIVILEGES")) {
       return true;
@@ -185,22 +191,22 @@ const Navbar = () => {
   };
 
   const notificationItems = [
-    hasPermission("/notification/push-notification") && {
+    hasPermission("/notification/push-notification") && isModuleActive("users") && {
       key: "1",
       label: "Push Notification",
     },
-    hasPermission("/notification/alert-notification") && {
+    hasPermission("/notification/alert-notification") && isModuleActive("users") && {
       key: "2",
       label: "Alert Notification",
     },
-    hasPermission("/notification/notification-logs") && {
+    hasPermission("/notification/notification-logs") && isModuleActive("users") && {
       key: "3",
       label: "Notification Logs",
     },
   ].filter(Boolean);
 
   const settingsItems = [
-    hasPermission("CAROUSEL_MANAGE") && {
+    hasPermission("CAROUSEL_MANAGE") && isModuleActive("properties") && {
       key: "1",
       label: "Carousel Management",
     },
@@ -222,14 +228,14 @@ const Navbar = () => {
     { path: "/leave", label: "Leave", canView: hasPermission("/leave") },
   ];
 
-  const canViewAccounts = hasPermission("/accounts");
-  const canViewAccounting = hasPermission("/accounting");
-  const canViewProperties = hasPermission("/property");
-  const canViewRooms = hasPermission("/rooms");
-  const canViewFloors = hasPermission("/floor");
-  const canViewOrderDetails = hasPermission("/mess");
-  const canViewKitchens = hasPermission("/kitchen");
-  const canViewDailyUsage = hasPermission("/stock-usage");
+  const canViewAccounts = hasPermission("/accounts") && isModuleActive("accounts");
+  const canViewAccounting = hasPermission("/accounting") && isModuleActive("accounts");
+  const canViewProperties = hasPermission("/property") && isModuleActive("properties");
+  const canViewRooms = hasPermission("/rooms") && isModuleActive("properties");
+  const canViewFloors = hasPermission("/floor") && isModuleActive("properties");
+  const canViewOrderDetails = hasPermission("/mess") && isModuleActive("kitchen");
+  const canViewKitchens = hasPermission("/kitchen") && isModuleActive("kitchen");
+  const canViewDailyUsage = hasPermission("/stock-usage") && isModuleActive("kitchen");
 
   const propertyRoutes = [
     { path: "/property", label: "Properties", canView: canViewProperties },
@@ -245,10 +251,10 @@ const Navbar = () => {
 
   const allowedKitchenRoutes = kitchenRoutes.filter((route) => route.canView);
   const allowedPropertyRoutes = propertyRoutes.filter((route) => route.canView);
-  const allowedUserRoutes = userRoutes.filter((route) =>
+  const allowedUserRoutes = isModuleActive("users") ? userRoutes.filter((route) =>
     hasPermission(route.permission),
-  );
-  const allowedTimeOffRoutes = timeOffRoutes.filter((route) => route.canView);
+  ) : [];
+  const allowedTimeOffRoutes = isModuleActive("timeOff") ? timeOffRoutes.filter((route) => route.canView) : [];
 
   useEffect(() => {
     const fetchProperties = async () => {
@@ -839,7 +845,7 @@ const Navbar = () => {
           )}
         </>
       )}
-      {hasPermission("/maintenance") && (
+      {hasPermission("/maintenance") && isModuleActive("properties") && (
         <Link to="/maintenance">
           <Badge
             count={maintenanceCount}
@@ -951,7 +957,7 @@ const Navbar = () => {
           )}
         </>
       )}
-      {hasPermission("/offboarding") && (
+      {hasPermission("/offboarding") && isModuleActive("users") && (
         <Link to="/offboarding">
           <Badge
             count={requestCount}
@@ -969,7 +975,7 @@ const Navbar = () => {
           </Badge>
         </Link>
       )}
-      {hasPermission("/activity-logs") && (
+      {hasPermission("/activity-logs") && isModuleActive("users") && (
         <Dropdown
           overlay={
             <Menu>
@@ -1494,7 +1500,7 @@ const Navbar = () => {
         </div>
       )}
 
-      {hasPermission("/maintenance") && (
+      {hasPermission("/maintenance") && isModuleActive("properties") && (
         <Link to="/maintenance" onClick={() => setMobileMenuOpen(false)}>
           <div style={{ position: "relative", width: "100%" }}>
             <Button
@@ -1625,7 +1631,7 @@ const Navbar = () => {
         </div>
       )}
 
-      {hasPermission("/offboarding") && (
+      {hasPermission("/offboarding") && isModuleActive("users") && (
         <Link to="/offboarding" onClick={() => setMobileMenuOpen(false)}>
           <div style={{ position: "relative", width: "100%" }}>
             <Button
@@ -1658,7 +1664,7 @@ const Navbar = () => {
         </Link>
       )}
 
-      {hasPermission("/activity-logs") && (
+      {hasPermission("/activity-logs") && isModuleActive("users") && (
         <div style={{ display: "flex", flexDirection: "column" }}>
           <Button
             type="text"

@@ -1,4 +1,5 @@
 import { Modal, Form, Input, Select, message } from "antd";
+import { useSelector } from "react-redux";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { addRoles, getAllRoles } from "../../../hooks/employee/useEmployee";
 
@@ -117,6 +118,39 @@ const AddRoleModal = ({ open, onClose }) => {
   const queryClient = useQueryClient();
   const [messageApi, contextHolder] = message.useMessage();
 
+  const user = useSelector((state) => state?.auth?.user);
+  const activeModules = user?.activeModules || [];
+
+  const getModuleForPermission = (permValue) => {
+    const p = permValue.toUpperCase();
+    if (
+      p.includes("KITCHEN") || p.includes("INVENTORY") || p.includes("MENU") || 
+      p.includes("ADDON") || p.includes("GAMING") || p.includes("RECIPE") || 
+      p.includes("BOOKING") || p === "/MESS" || p === "/FOOD-ONLY" || 
+      p.includes("/MESS/") || p.includes("/ADDONS/")
+    ) return "kitchen";
+
+    if (
+      p.includes("ACCOUNT") || p.includes("DEPOSIT") || p.includes("EXPENSE") || 
+      p.includes("SALARY") || p.includes("VOUCHER") || p.includes("COMMISSION") || 
+      p.includes("FEE_PAYMENT") || p.includes("AGENCY") || p.includes("PETTY_CASH")
+    ) return "accounts";
+
+    if (
+      p.includes("PROPERTY") || p.includes("ROOM") || p.includes("MAINTENANCE") || 
+      p === "/PROPERTY" || p === "/ROOMS" || p.includes("/PROPERTY/") || p.includes("CAROUSEL")
+    ) return "properties";
+
+    if (p.includes("ATTENDANCE") || p.includes("LEAVE") || p === "/ATTENDANCE" || p === "/LEAVE") return "timeOff";
+    
+    return "users";
+  };
+
+  const filteredRoutePermissions = routePermissions.filter(perm => {
+    if (perm.value === "ALL_PRIVILEGES") return true;
+    return activeModules.includes(getModuleForPermission(perm.value));
+  });
+
   const { data: rolesData, isLoading: rolesLoading } = useQuery({
     queryKey: ["roles"],
     queryFn: () => getAllRoles(),
@@ -178,7 +212,7 @@ const AddRoleModal = ({ open, onClose }) => {
               allowClear
               style={{ width: "100%" }}
               placeholder="Select permissions for this role"
-              options={routePermissions}
+              options={filteredRoutePermissions}
             />
           </Form.Item>
           <Form.Item name="reportTo" label="Reports To (Optional)">
