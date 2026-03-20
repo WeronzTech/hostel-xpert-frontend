@@ -3,6 +3,11 @@ import {Card, Button, Tooltip} from "antd";
 import {FiPocket, FiChevronLeft, FiChevronRight, FiPlus} from "react-icons/fi";
 import PettyCashModal from "../../modals/accounts/PettyCashModal";
 import PettyCashUsageModal from "../../modals/accounts/PettyCashUsageModal";
+import PettyCashTransactionsModal from "../../modals/accounts/PettyCashTransactionsModal";
+import {getRoleById} from "../../hooks/employee/useEmployee";
+import {useSelector} from "react-redux";
+import {useQuery} from "@tanstack/react-query";
+import {useNavigate} from "react-router-dom";
 
 const PettyCashCard = ({
   inHandAmount,
@@ -18,6 +23,24 @@ const PettyCashCard = ({
 }) => {
   const [isPettyCashModalVisible, setIsPettyCashModalVisible] = useState(false);
   const [isUsageModalVisible, setIsUsageModalVisible] = useState(false);
+  const [isTransactionsModalVisible, setIsTransactionsModalVisible] =
+    useState(false);
+  const roleId = useSelector((state) => state?.auth?.user?.role?.id);
+
+  const navigate = useNavigate();
+
+  const {data: role} = useQuery({
+    queryKey: ["get-role", roleId],
+    queryFn: () => getRoleById(roleId),
+  });
+
+  const permissions = role?.permissions ?? [];
+
+  const hasPermission = (requiredPermission) => {
+    if (!permissions.length) return false;
+    if (permissions.includes("ALL_PRIVILEGES")) return true;
+    return permissions.includes(requiredPermission);
+  };
 
   // Calculate total amount
   const totalAmount = (inHandAmount || 0) + (inAccountAmount || 0);
@@ -86,6 +109,7 @@ const PettyCashCard = ({
               marginLeft: "20px",
             }}
             onClick={() => setIsPettyCashModalVisible(true)}
+            disabled={!hasPermission("PETTY_CASH_MANAGE")}
           >
             <FiPlus /> Setup Petty Cash
           </Button>
@@ -273,6 +297,7 @@ const PettyCashCard = ({
               fontWeight: 500,
             }}
             onClick={() => setIsPettyCashModalVisible(true)}
+            disabled={!hasPermission("PETTY_CASH_MANAGE")}
           >
             Add Funds
           </Button>
@@ -283,9 +308,22 @@ const PettyCashCard = ({
               color: "white",
               border: "none",
             }}
-            onClick={() => setIsUsageModalVisible(true)}
+            // onClick={() => setIsUsageModalVisible(true)}
+            onClick={() => navigate("/accounts/transactions/expenses")}
           >
             View Usage
+          </Button>
+          <Button
+            style={{
+              flex: 1,
+              backgroundColor: "white",
+              color: "#059669",
+              border: "none",
+              fontWeight: 500,
+            }}
+            onClick={() => setIsTransactionsModalVisible(true)} // Update this line
+          >
+            Txns
           </Button>
         </div>
 
@@ -332,37 +370,48 @@ const PettyCashCard = ({
         managerName={managerName}
         managerId={managerId}
       />
+      <PettyCashTransactionsModal
+        visible={isTransactionsModalVisible}
+        onCancel={() => setIsTransactionsModalVisible(false)}
+        managerId={managerId}
+        managerName={managerName}
+      />
     </>
   );
 };
 
 const PettyCashCarousel = ({pettyCashData, loading}) => {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [autoPlay, setAutoPlay] = useState(true);
+  const roleId = useSelector((state) => state?.auth?.user?.role?.id);
+
+  const {data: role} = useQuery({
+    queryKey: ["get-role", roleId],
+    queryFn: () => getRoleById(roleId),
+  });
+
+  const permissions = role?.permissions ?? [];
+
+  const hasPermission = (requiredPermission) => {
+    if (!permissions.length) return false;
+    if (permissions.includes("ALL_PRIVILEGES")) return true;
+    return permissions.includes(requiredPermission);
+  };
 
   const isEmpty = !pettyCashData || pettyCashData.length === 0;
-
   const data = isEmpty ? [] : pettyCashData;
 
-  useEffect(() => {
-    let interval;
-    if (autoPlay && data.length > 1) {
-      interval = setInterval(() => {
-        setCurrentSlide((prev) => (prev + 1) % data.length);
-      }, 5000);
-    }
-    return () => clearInterval(interval);
-  }, [autoPlay, data.length]);
-
   const nextSlide = () => {
-    setCurrentSlide((currentSlide + 1) % data.length);
+    if (data.length > 1) {
+      setCurrentSlide((prev) => (prev + 1) % data.length);
+    }
   };
 
   const prevSlide = () => {
-    setCurrentSlide((currentSlide - 1 + data.length) % data.length);
+    if (data.length > 1) {
+      setCurrentSlide((prev) => (prev - 1 + data.length) % data.length);
+    }
   };
 
-  // Show loading state if needed
   if (loading) {
     return (
       <Card
@@ -370,7 +419,7 @@ const PettyCashCarousel = ({pettyCashData, loading}) => {
           borderRadius: "8px",
           boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1)",
           height: "100%",
-          background: " #059669",
+          background: "#059669",
           color: "white",
           position: "relative",
           overflow: "hidden",
@@ -382,12 +431,8 @@ const PettyCashCarousel = ({pettyCashData, loading}) => {
   }
 
   return (
-    <div
-      style={{position: "relative"}}
-      onMouseEnter={() => setAutoPlay(false)}
-      onMouseLeave={() => setAutoPlay(true)}
-    >
-      {isEmpty ? (
+    <div style={{position: "relative"}}>
+      {!hasPermission("PETTYCASH_VIEW") || isEmpty ? (
         <PettyCashCard isEmpty={true} />
       ) : (
         <PettyCashCard
@@ -395,7 +440,7 @@ const PettyCashCarousel = ({pettyCashData, loading}) => {
           inAccountAmount={data[currentSlide]?.inAccountAmount}
           managerName={data[currentSlide]?.managerName}
           managerId={data[currentSlide]?.managerId}
-          showNavigation={data.length > 0}
+          showNavigation={data.length > 1}
           onNext={nextSlide}
           onPrev={prevSlide}
           currentIndex={currentSlide}
@@ -405,5 +450,4 @@ const PettyCashCarousel = ({pettyCashData, loading}) => {
     </div>
   );
 };
-
 export default PettyCashCarousel;

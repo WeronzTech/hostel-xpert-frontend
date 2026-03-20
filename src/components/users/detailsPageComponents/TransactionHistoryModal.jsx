@@ -378,7 +378,6 @@ const TransactionHistoryModal = ({userId, visible, onClose}) => {
               <div className="flex gap-2 bg-white p-2 rounded border border-gray-100">
                 <FaRupeeSign className="text-gray-400 mt-0.5 flex-shrink-0" />
                 <p className="text-sm text-gray-700">
-                  Just{" "}
                   <span className="font-semibold">
                     ₹{" "}
                     {(

@@ -1,5 +1,16 @@
-// import {useState} from "react";
-// import {Table, Button, Dropdown, Modal, Image, Tag, Tooltip} from "antd";
+// import {useState, useEffect, useMemo, useRef, useCallback} from "react";
+// import {
+//   Table,
+//   Button,
+//   Dropdown,
+//   Modal,
+//   Image,
+//   Tag,
+//   Tooltip,
+//   Spin,
+//   message,
+//   Popconfirm,
+// } from "antd";
 // import {
 //   FiMoreVertical,
 //   FiEdit,
@@ -7,23 +18,90 @@
 //   FiFileText,
 //   FiExternalLink,
 //   FiUpload,
+//   FiCheckCircle,
+//   FiClock,
 // } from "react-icons/fi";
+// import {useMutation, useQueryClient} from "@tanstack/react-query";
 // import AddExpenseFromVoucher from "../../modals/accounts/AddExpenseFromVoucher";
+// import {updateSalaryStatus} from "../../hooks/accounts/useAccounts";
 
 // const ExpenseTable = ({
 //   data,
 //   type,
 //   loading,
 //   pagination,
-//   onTableChange,
-//   onEdit,
+//   total,
+//   onPaginationChange,
+//   // onEdit,
 //   onDelete,
+//   onStatusChange,
 // }) => {
+//   const [allExpenses, setAllExpenses] = useState([]);
+//   const [loadingMore, setLoadingMore] = useState(false);
+//   const [hasMore, setHasMore] = useState(true);
 //   const [previewImage, setPreviewImage] = useState("");
 //   const [isModalVisible, setIsModalVisible] = useState(false);
 //   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
 //   const [selectedExpenseType, setSelectedExpenseType] = useState("");
 //   const [voucherId, setVoucherId] = useState(null);
+//   const [updatingStatus, setUpdatingStatus] = useState({});
+//   const tableContainerRef = useRef(null);
+//   const queryClient = useQueryClient();
+
+//   // Safe defaults for pagination
+//   const safePagination = pagination || {page: 1, limit: 10};
+//   const safeTotal = total || 0;
+
+//   // Reset and update expenses when data or pagination changes
+//   useEffect(() => {
+//     if (safePagination.page === 1) {
+//       setAllExpenses(data || []);
+//     } else {
+//       setAllExpenses((prev) => [...prev, ...(data || [])]);
+//     }
+//   }, [data, safePagination.page]);
+
+//   // Calculate hasMore based on current state
+//   useEffect(() => {
+//     const totalLoaded = allExpenses.length;
+//     setHasMore(totalLoaded < safeTotal);
+//   }, [allExpenses.length, safeTotal]);
+
+//   // Handle window scroll event for infinite scroll
+//   const handleScroll = useCallback(() => {
+//     if (loadingMore || !hasMore || loading) return;
+
+//     const scrollTop = window.scrollY || document.documentElement.scrollTop;
+//     const windowHeight = window.innerHeight;
+//     const documentHeight = document.documentElement.scrollHeight;
+
+//     // Load more when 80% scrolled
+//     if (scrollTop + windowHeight >= documentHeight * 0.8) {
+//       loadMoreData();
+//     }
+//   }, [loadingMore, hasMore, loading]);
+
+//   const loadMoreData = () => {
+//     if (!hasMore) return;
+
+//     setLoadingMore(true);
+//     const nextPage = safePagination.page + 1;
+
+//     if (onPaginationChange) {
+//       onPaginationChange({
+//         page: nextPage,
+//         limit: safePagination.limit,
+//       });
+//     }
+
+//     setTimeout(() => setLoadingMore(false), 500);
+//   };
+
+//   // Add scroll event listener to window
+//   useEffect(() => {
+//     window.addEventListener("scroll", handleScroll);
+//     return () => window.removeEventListener("scroll", handleScroll);
+//   }, [handleScroll]);
 
 //   const handleImagePreview = (imageUrl) => {
 //     if (imageUrl) {
@@ -48,6 +126,137 @@
 //     setSelectedExpenseType("");
 //   };
 
+//   // Optimistically update local state
+//   const updateLocalExpenseStatus = (recordId, newStatus) => {
+//     setAllExpenses((prev) =>
+//       prev.map((expense) =>
+//         expense._id === recordId
+//           ? {
+//               ...expense,
+//               status: newStatus,
+//               ...(newStatus === "paid" && {
+//                 paidAmount: expense.salary,
+//                 paymentDate: new Date().toISOString(),
+//               }),
+//             }
+//           : expense
+//       )
+//     );
+//   };
+
+//   // TanStack Query v5 mutation for status change with optimistic updates
+//   const statusUpdateMutation = useMutation({
+//     mutationFn: ({recordId, updateData}) =>
+//       updateSalaryStatus(recordId, updateData),
+//     onMutate: async (variables) => {
+//       const {recordId, newStatus, record} = variables;
+
+//       // Cancel any outgoing refetches to avoid overwriting our optimistic update
+//       await queryClient.cancelQueries({queryKey: ["salaries"]});
+
+//       // Snapshot the previous value
+//       const previousExpenses = queryClient.getQueryData(["salaries"]);
+
+//       // Optimistically update the local state immediately
+//       updateLocalExpenseStatus(recordId, newStatus);
+//       setUpdatingStatus((prev) => ({...prev, [recordId]: true}));
+
+//       // Return context with the snapshotted value
+//       return {previousExpenses};
+//     },
+//     onSuccess: (result, variables, context) => {
+//       const {record, newStatus} = variables;
+//       message.success(`Salary status updated to ${newStatus} successfully`);
+
+//       if (onStatusChange) {
+//         onStatusChange(record, newStatus, result);
+//       }
+//     },
+//     onError: (error, variables, context) => {
+//       const {recordId, previousStatus} = variables;
+
+//       // Rollback to the previous state if the mutation failed
+//       if (context?.previousExpenses) {
+//         queryClient.setQueryData(["salaries"], context.previousExpenses);
+//       }
+
+//       // Also rollback local state
+//       setAllExpenses((prev) =>
+//         prev.map((expense) =>
+//           expense._id === recordId
+//             ? {...expense, status: previousStatus}
+//             : expense
+//         )
+//       );
+
+//       console.error("Failed to update salary status:", error);
+//       message.error(error.message || "Failed to update salary status");
+//     },
+//     onSettled: (data, error, variables, context) => {
+//       const {recordId} = variables;
+
+//       // Remove loading state
+//       setUpdatingStatus((prev) => ({...prev, [recordId]: false}));
+
+//       // Always refetch after error or success to ensure we're in sync with server
+//       queryClient.invalidateQueries({queryKey: ["salaries"]});
+//     },
+//   });
+
+//   // Handle status change using the mutation
+//   const handleStatusChange = async (record, newStatus) => {
+//     const previousStatus = record.status || "pending";
+
+//     const updateData = {
+//       status: newStatus,
+//       ...(newStatus === "paid" && {
+//         paidAmount: record.salary,
+//         paymentMethod: record.paymentMethod || "Cash",
+//         paymentDate: new Date().toISOString(),
+//       }),
+//     };
+
+//     statusUpdateMutation.mutate({
+//       recordId: record._id,
+//       updateData,
+//       newStatus,
+//       record,
+//       previousStatus, // Store previous status for rollback
+//     });
+//   };
+
+//   const getStatusDropdownItems = (record) => {
+//     const currentStatus = record.status || "pending";
+//     const isUpdating = updatingStatus[record._id];
+
+//     return [
+//       {
+//         key: "paid",
+//         label: (
+//           <div className="flex items-center gap-2">
+//             <FiCheckCircle className="text-green-600" />
+//             <span>Mark as Paid</span>
+//             {isUpdating && currentStatus === "pending" && <Spin size="small" />}
+//           </div>
+//         ),
+//         disabled: currentStatus === "paid" || isUpdating,
+//         onClick: () => handleStatusChange(record, "paid"),
+//       },
+//       {
+//         key: "pending",
+//         label: (
+//           <div className="flex items-center gap-2">
+//             <FiClock className="text-orange-600" />
+//             <span>Mark as Pending</span>
+//             {isUpdating && currentStatus === "paid" && <Spin size="small" />}
+//           </div>
+//         ),
+//         disabled: currentStatus === "pending" || isUpdating,
+//         onClick: () => handleStatusChange(record, "pending"),
+//       },
+//     ];
+//   };
+
 //   const getColumns = () => {
 //     const baseColumns = {
 //       expenses: [
@@ -57,9 +266,7 @@
 //           align: "center",
 //           fixed: "left",
 //           width: 60,
-//           render: (text, record, index) => {
-//             return (pagination.current - 1) * pagination.pageSize + index + 1;
-//           },
+//           render: (text, record, index) => index + 1,
 //         },
 //         {
 //           title: "Title",
@@ -117,7 +324,8 @@
 //           key: "date",
 //           align: "center",
 //           width: 110,
-//           render: (date) => new Date(date).toLocaleDateString("en-IN"),
+//           render: (date) =>
+//             date ? new Date(date).toLocaleDateString("en-IN") : "N/A",
 //         },
 //         {
 //           title: "Transaction ID",
@@ -190,9 +398,7 @@
 //           align: "center",
 //           fixed: "left",
 //           width: 60,
-//           render: (text, record, index) => {
-//             return (pagination.current - 1) * pagination.pageSize + index + 1;
-//           },
+//           render: (text, record, index) => index + 1,
 //         },
 //         {
 //           title: "Name",
@@ -247,7 +453,7 @@
 //             date ? new Date(date).toLocaleDateString("en-IN") : "N/A",
 //         },
 //         {
-//           title: "Transation ID",
+//           title: "Transaction ID",
 //           dataIndex: "transactionId",
 //           key: "transactionId",
 //           width: 120,
@@ -298,9 +504,7 @@
 //           align: "center",
 //           fixed: "left",
 //           width: 60,
-//           render: (text, record, index) => {
-//             return (pagination.current - 1) * pagination.pageSize + index + 1;
-//           },
+//           render: (text, record, index) => index + 1,
 //         },
 //         {
 //           title: "Recipient Name",
@@ -434,9 +638,7 @@
 //           align: "center",
 //           fixed: "left",
 //           width: 60,
-//           render: (text, record, index) => {
-//             return (pagination.current - 1) * pagination.pageSize + index + 1;
-//           },
+//           render: (text, record, index) => index + 1,
 //         },
 //         {
 //           title: "Agent Name",
@@ -523,9 +725,7 @@
 //           align: "center",
 //           fixed: "left",
 //           width: 60,
-//           render: (text, record, index) => {
-//             return (pagination.current - 1) * pagination.pageSize + index + 1;
-//           },
+//           render: (text, record, index) => index + 1,
 //         },
 //         {
 //           title: "Staff Name",
@@ -551,7 +751,6 @@
 //             return <Tag color={config.color}>{method}</Tag>;
 //           },
 //         },
-
 //         {
 //           title: "Salary Amount",
 //           dataIndex: "salary",
@@ -610,14 +809,54 @@
 //           width: 130,
 //           render: (method) => {
 //             const methodConfig = {
-//               "Cash": {color: "green"},
-//               "UPI": {color: "blue"},
+//               Cash: {color: "green"},
+//               UPI: {color: "blue"},
 //               "Bank Transfer": {color: "purple"},
-//               // Card: {color: "orange"},
 //               "Petty Cash": {color: "red"},
 //             };
 //             const config = methodConfig[method] || {color: "default"};
 //             return <Tag color={config.color}>{method}</Tag>;
+//           },
+//         },
+//         {
+//           title: "Payment Status",
+//           dataIndex: "status",
+//           key: "status",
+//           align: "center",
+//           width: 130,
+//           render: (status, record) => {
+//             const isUpdating = updatingStatus[record._id];
+//             const statusConfig = {
+//               paid: {color: "green"},
+//               pending: {color: "orange"},
+//             };
+
+//             const safeStatus = status || "pending";
+//             const config = statusConfig[safeStatus] || {
+//               color: "default",
+//               icon: null,
+//             };
+
+//             return (
+//               <Dropdown
+//                 menu={{items: getStatusDropdownItems(record)}}
+//                 trigger={["click"]}
+//                 disabled={isUpdating}
+//                 placement="bottomRight"
+//               >
+//                 <Button type="text" className="p-0 h-auto" loading={isUpdating}>
+//                   <Tag
+//                     color={config.color}
+//                     className="cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-1"
+//                     style={{margin: 0}}
+//                   >
+//                     {config.icon}
+//                     {safeStatus.charAt(0).toUpperCase() + safeStatus.slice(1)}
+//                     {isUpdating && <Spin size="small" className="ml-1" />}
+//                   </Tag>
+//                 </Button>
+//               </Dropdown>
+//             );
 //           },
 //         },
 //         {
@@ -639,69 +878,87 @@
 //       ],
 //     };
 
-//     // Add action column to all types
+//     // Add action column to all types except salary (since we have status dropdown)
+//     // const actionColumn = {
+//     //   title: "Actions",
+//     //   key: "actions",
+//     //   width: 80,
+//     //   align: "center",
+//     //   render: (_, record) => (
+//     //     <Dropdown
+//     //       menu={{
+//     //         items: [
+//     //           {
+//     //             key: "edit",
+//     //             label: "Edit",
+//     //             icon: <FiEdit />,
+//     //             onClick: () => onEdit?.(record),
+//     //           },
+//     //           {
+//     //             key: "delete",
+//     //             label: "Delete",
+//     //             icon: <FiTrash2 />,
+//     //             danger: true,
+//     //             onClick: () => onDelete?.(record),
+//     //           },
+//     //         ],
+//     //       }}
+//     //       trigger={["hover"]}
+//     //       placement="bottomRight"
+//     //     >
+//     //       <Button type="text" icon={<FiMoreVertical />} />
+//     //     </Dropdown>
+//     //   ),
+//     // };
 //     const actionColumn = {
 //       title: "Actions",
 //       key: "actions",
 //       width: 80,
 //       align: "center",
 //       render: (_, record) => (
-//         <Dropdown
-//           menu={{
-//             items: [
-//               {
-//                 key: "edit",
-//                 label: "Edit",
-//                 icon: <FiEdit />,
-//                 onClick: () => onEdit?.(record),
-//               },
-//               {
-//                 key: "delete",
-//                 label: "Delete",
-//                 icon: <FiTrash2 />,
-//                 danger: true,
-//                 onClick: () => onDelete?.(record),
-//               },
-//             ],
-//           }}
-//           trigger={["hover"]}
-//           placement="bottomRight"
+//         <Popconfirm
+//           title="Delete expense"
+//           description="Are you sure you want to delete this expense?"
+//           okText="Yes"
+//           cancelText="No"
+//           okButtonProps={{danger: true}}
+//           onConfirm={() => onDelete?.(record)}
 //         >
-//           <Button type="text" icon={<FiMoreVertical />} />
-//         </Dropdown>
+//           <Button type="text" danger icon={<FiTrash2 />} />
+//         </Popconfirm>
 //       ),
 //     };
-//     if (
-//       type === "waiveoffs" ||
-//       type === "vouchers" ||
-//       type === "commissions" ||
-//       type === "salary"
-//     ) {
+
+//     // For salary type, don't include the action column as we have status dropdown
+//     if (type === "salary") {
+//       return baseColumns[type] || [];
+//     }
+
+//     if (type === "waiveoffs" || type === "vouchers" || type === "commissions") {
 //       return baseColumns[type] || [];
 //     }
 
 //     return [...(baseColumns[type] || []), actionColumn];
 //   };
 
+//   const columns = useMemo(() => getColumns(), [type, updatingStatus]);
+
 //   return (
-//     <>
+//     <div ref={tableContainerRef}>
 //       <Table
-//         columns={getColumns()}
-//         dataSource={data.map((item) => ({...item, key: item._id}))}
-//         loading={loading}
+//         columns={columns}
+//         dataSource={allExpenses.map((item) => ({...item, key: item._id}))}
+//         loading={loading && safePagination.page === 1}
 //         scroll={{x: 1300}}
-//         pagination={{
-//           current: pagination.current,
-//           pageSize: pagination.pageSize,
-//           total: pagination.total,
-//           showSizeChanger: true,
-//           showQuickJumper: true,
-//           showTotal: (total, range) =>
-//             `${range[0]}-${range[1]} of ${total} items`,
-//           pageSizeOptions: ["10", "20", "50", "100"],
-//         }}
-//         onChange={onTableChange}
+//         pagination={false}
 //       />
+
+//       {/* Loading indicator for infinite scroll */}
+//       {(loadingMore || (loading && safePagination.page > 1)) && (
+//         <div style={{textAlign: "center", padding: "20px"}}>
+//           <Spin />
+//         </div>
+//       )}
 
 //       {/* Image Preview Modal */}
 //       <Modal
@@ -750,7 +1007,7 @@
 //         selectedCategory={selectedExpenseType}
 //         voucherId={voucherId}
 //       />
-//     </>
+//     </div>
 //   );
 // };
 
@@ -767,20 +1024,23 @@ import {
   Spin,
   message,
   Popconfirm,
+  Form,
+  Input,
+  Select,
+  DatePicker,
 } from "antd";
 import {
-  FiMoreVertical,
   FiEdit,
   FiTrash2,
   FiFileText,
   FiExternalLink,
   FiUpload,
-  FiCheckCircle,
-  FiClock,
+  FiUser,
 } from "react-icons/fi";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
 import AddExpenseFromVoucher from "../../modals/accounts/AddExpenseFromVoucher";
 import {updateSalaryStatus} from "../../hooks/accounts/useAccounts";
+import dayjs from "dayjs";
 
 const ExpenseTable = ({
   data,
@@ -789,7 +1049,7 @@ const ExpenseTable = ({
   pagination,
   total,
   onPaginationChange,
-  // onEdit,
+  onEdit,
   onDelete,
   onStatusChange,
 }) => {
@@ -801,7 +1061,15 @@ const ExpenseTable = ({
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
   const [selectedExpenseType, setSelectedExpenseType] = useState("");
   const [voucherId, setVoucherId] = useState(null);
+  const [managerId, setManagerId] = useState(null);
   const [updatingStatus, setUpdatingStatus] = useState({});
+
+  // New state for payment modal
+  const [paymentModalVisible, setPaymentModalVisible] = useState(false);
+  const [selectedRecord, setSelectedRecord] = useState(null);
+  const [paymentForm] = Form.useForm();
+  const [paymentMode, setPaymentMode] = useState("Cash");
+
   const tableContainerRef = useRef(null);
   const queryClient = useQueryClient();
 
@@ -873,8 +1141,10 @@ const ExpenseTable = ({
   };
 
   const handleCreateExpense = (record, type) => {
+    console.log(record);
     setSelectedExpenseType(type);
     setVoucherId(record._id);
+    setManagerId(record.pettyCashHolder);
     setIsExpenseModalOpen(true);
   };
 
@@ -883,8 +1153,55 @@ const ExpenseTable = ({
     setSelectedExpenseType("");
   };
 
+  // Close payment modal
+  const closePaymentModal = () => {
+    setPaymentModalVisible(false);
+    setSelectedRecord(null);
+    paymentForm.resetFields();
+  };
+
+  // Handle payment mode change
+  const handlePaymentModeChange = (value) => {
+    setPaymentMode(value);
+  };
+
+  // In handlePaymentSubmit function:
+  const handlePaymentSubmit = async (values) => {
+    if (!selectedRecord) return;
+
+    const previousStatus = selectedRecord.status || "pending";
+    const newStatus = "paid";
+
+    // Prepare updateData without salaryId
+    const updateData = {
+      status: newStatus,
+      // updatedBy: currentUserId,
+      paymentMethod: values.paymentMethod,
+      paymentDate: values.paymentDate
+        ? values.paymentDate.toISOString()
+        : new Date().toISOString(),
+      transactionId: values.transactionId || undefined,
+      giverName: values.giverName || undefined,
+    };
+
+    console.log("Updating salary:", {
+      recordId: selectedRecord._id,
+      updateData: updateData,
+    });
+
+    // Call the mutation with both parameters
+    statusUpdateMutation.mutate({
+      recordId: selectedRecord._id, // First parameter
+      updateData: updateData, // Second parameter
+      newStatus,
+      record: selectedRecord,
+      previousStatus,
+    });
+
+    closePaymentModal();
+  };
   // Optimistically update local state
-  const updateLocalExpenseStatus = (recordId, newStatus) => {
+  const updateLocalExpenseStatus = (recordId, newStatus, updateData = {}) => {
     setAllExpenses((prev) =>
       prev.map((expense) =>
         expense._id === recordId
@@ -894,10 +1211,11 @@ const ExpenseTable = ({
               ...(newStatus === "paid" && {
                 paidAmount: expense.salary,
                 paymentDate: new Date().toISOString(),
+                ...updateData,
               }),
             }
-          : expense
-      )
+          : expense,
+      ),
     );
   };
 
@@ -906,7 +1224,7 @@ const ExpenseTable = ({
     mutationFn: ({recordId, updateData}) =>
       updateSalaryStatus(recordId, updateData),
     onMutate: async (variables) => {
-      const {recordId, newStatus, record} = variables;
+      const {recordId, updateData, newStatus, record} = variables;
 
       // Cancel any outgoing refetches to avoid overwriting our optimistic update
       await queryClient.cancelQueries({queryKey: ["salaries"]});
@@ -915,7 +1233,7 @@ const ExpenseTable = ({
       const previousExpenses = queryClient.getQueryData(["salaries"]);
 
       // Optimistically update the local state immediately
-      updateLocalExpenseStatus(recordId, newStatus);
+      updateLocalExpenseStatus(recordId, newStatus, updateData);
       setUpdatingStatus((prev) => ({...prev, [recordId]: true}));
 
       // Return context with the snapshotted value
@@ -942,8 +1260,8 @@ const ExpenseTable = ({
         prev.map((expense) =>
           expense._id === recordId
             ? {...expense, status: previousStatus}
-            : expense
-        )
+            : expense,
+        ),
       );
 
       console.error("Failed to update salary status:", error);
@@ -960,59 +1278,12 @@ const ExpenseTable = ({
     },
   });
 
-  // Handle status change using the mutation
-  const handleStatusChange = async (record, newStatus) => {
-    const previousStatus = record.status || "pending";
-
-    const updateData = {
-      status: newStatus,
-      ...(newStatus === "paid" && {
-        paidAmount: record.salary,
-        paymentMethod: record.paymentMethod || "Cash",
-        paymentDate: new Date().toISOString(),
-      }),
-    };
-
-    statusUpdateMutation.mutate({
-      recordId: record._id,
-      updateData,
-      newStatus,
-      record,
-      previousStatus, // Store previous status for rollback
-    });
-  };
-
-  const getStatusDropdownItems = (record) => {
-    const currentStatus = record.status || "pending";
-    const isUpdating = updatingStatus[record._id];
-
-    return [
-      {
-        key: "paid",
-        label: (
-          <div className="flex items-center gap-2">
-            <FiCheckCircle className="text-green-600" />
-            <span>Mark as Paid</span>
-            {isUpdating && currentStatus === "pending" && <Spin size="small" />}
-          </div>
-        ),
-        disabled: currentStatus === "paid" || isUpdating,
-        onClick: () => handleStatusChange(record, "paid"),
-      },
-      {
-        key: "pending",
-        label: (
-          <div className="flex items-center gap-2">
-            <FiClock className="text-orange-600" />
-            <span>Mark as Pending</span>
-            {isUpdating && currentStatus === "paid" && <Spin size="small" />}
-          </div>
-        ),
-        disabled: currentStatus === "pending" || isUpdating,
-        onClick: () => handleStatusChange(record, "pending"),
-      },
-    ];
-  };
+  // Payment mode options
+  const paymentMethods = [
+    {label: "Cash", value: "Cash"},
+    {label: "UPI", value: "UPI"},
+    {label: "Bank Transfer", value: "Bank Transfer"},
+  ];
 
   const getColumns = () => {
     const baseColumns = {
@@ -1532,10 +1803,11 @@ const ExpenseTable = ({
             </div>
           ),
         },
+
         {
-          title: "Payment Date",
-          dataIndex: "date",
-          key: "date",
+          title: "Paid Date",
+          dataIndex: "paymentDate",
+          key: "paymentDate",
           align: "center",
           width: 110,
           render: (date) =>
@@ -1555,7 +1827,7 @@ const ExpenseTable = ({
                 </span>
               </Tooltip>
             ) : (
-              <span className="text-gray-400">N/A</span>
+              <span>N/A</span>
             ),
         },
         {
@@ -1575,114 +1847,58 @@ const ExpenseTable = ({
             return <Tag color={config.color}>{method}</Tag>;
           },
         },
-        {
-          title: "Payment Status",
-          dataIndex: "status",
-          key: "status",
-          align: "center",
-          width: 130,
-          render: (status, record) => {
-            const isUpdating = updatingStatus[record._id];
-            const statusConfig = {
-              paid: {color: "green"},
-              pending: {color: "orange"},
-            };
 
-            const safeStatus = status || "pending";
-            const config = statusConfig[safeStatus] || {
-              color: "default",
-              icon: null,
-            };
-
-            return (
-              <Dropdown
-                menu={{items: getStatusDropdownItems(record)}}
-                trigger={["click"]}
-                disabled={isUpdating}
-                placement="bottomRight"
-              >
-                <Button type="text" className="p-0 h-auto" loading={isUpdating}>
-                  <Tag
-                    color={config.color}
-                    className="cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-1"
-                    style={{margin: 0}}
-                  >
-                    {config.icon}
-                    {safeStatus.charAt(0).toUpperCase() + safeStatus.slice(1)}
-                    {isUpdating && <Spin size="small" className="ml-1" />}
-                  </Tag>
-                </Button>
-              </Dropdown>
-            );
-          },
-        },
         {
           title: "Remark",
-          dataIndex: "remarkType",
-          key: "remarkType",
-          width: 120,
+          dataIndex: "remarks",
+          key: "remarks",
+          width: 160,
           align: "center",
           render: (value) => {
             if (!value) return "-";
-            if (value === "MANUAL_ADDITION") return "Manual Addition";
-            return value
-              .toLowerCase()
-              .split("_")
-              .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-              .join(" ");
+
+            const maxLength = 20;
+            const truncated =
+              value.length > maxLength
+                ? `${value.slice(0, maxLength)}...`
+                : value;
+
+            return (
+              <Tooltip title={value}>
+                <span>{truncated}</span>
+              </Tooltip>
+            );
           },
         },
       ],
     };
 
-    // Add action column to all types except salary (since we have status dropdown)
-    // const actionColumn = {
-    //   title: "Actions",
-    //   key: "actions",
-    //   width: 80,
-    //   align: "center",
-    //   render: (_, record) => (
-    //     <Dropdown
-    //       menu={{
-    //         items: [
-    //           {
-    //             key: "edit",
-    //             label: "Edit",
-    //             icon: <FiEdit />,
-    //             onClick: () => onEdit?.(record),
-    //           },
-    //           {
-    //             key: "delete",
-    //             label: "Delete",
-    //             icon: <FiTrash2 />,
-    //             danger: true,
-    //             onClick: () => onDelete?.(record),
-    //           },
-    //         ],
-    //       }}
-    //       trigger={["hover"]}
-    //       placement="bottomRight"
-    //     >
-    //       <Button type="text" icon={<FiMoreVertical />} />
-    //     </Dropdown>
-    //   ),
-    // };
     const actionColumn = {
       title: "Actions",
       key: "actions",
-      width: 80,
+      width: 100,
       align: "center",
       render: (_, record) => (
-        <Popconfirm
-          title="Delete expense"
-          description="Are you sure you want to delete this expense?"
-          okText="Yes"
-          cancelText="No"
-          okButtonProps={{danger: true}}
-          onConfirm={() => onDelete?.(record)}
-        >
-          <Button type="text" danger icon={<FiTrash2 />} />
-        </Popconfirm>
+        <div>
+          {/* Edit */}
+          <Button
+            type="text"
+            icon={<FiEdit />}
+            onClick={() => onEdit?.(record)}
+          />
+
+          {/* Delete */}
+          <Popconfirm
+            title="Delete expense"
+            description="Are you sure you want to delete this expense?"
+            okText="Yes"
+            cancelText="No"
+            okButtonProps={{danger: true}}
+            onConfirm={() => onDelete?.(record)}
+          >
+            <Button type="text" danger icon={<FiTrash2 />} />
+          </Popconfirm>
+        </div>
       ),
     };
 
@@ -1758,11 +1974,111 @@ const ExpenseTable = ({
         </div>
       </Modal>
 
+      {/* Payment Details Modal */}
+      <Modal
+        title={`Payment Details - ${selectedRecord?.employeeName || "Employee"}`}
+        open={paymentModalVisible}
+        onCancel={closePaymentModal}
+        footer={[
+          <Button key="cancel" onClick={closePaymentModal}>
+            Cancel
+          </Button>,
+          <Button
+            key="submit"
+            type="primary"
+            onClick={() => paymentForm.submit()}
+            loading={updatingStatus[selectedRecord?._id]}
+          >
+            Mark as Paid
+          </Button>,
+        ]}
+        width={500}
+        centered
+      >
+        <Form
+          form={paymentForm}
+          layout="vertical"
+          onFinish={handlePaymentSubmit}
+          initialValues={{
+            paymentMethod: "Cash",
+            paymentDate: dayjs(),
+          }}
+        >
+          {/* Salary Amount (Read-only) */}
+          <Form.Item label="Salary Amount">
+            <Input
+              value={`₹ ${selectedRecord?.salary?.toLocaleString() || "0"}`}
+              disabled
+              className="font-semibold"
+            />
+          </Form.Item>
+
+          {/* Mode of Payment */}
+          <Form.Item
+            name="paymentMethod"
+            label="Mode of Payment"
+            rules={[{required: true, message: "Please select payment method"}]}
+          >
+            <Select
+              options={paymentMethods}
+              onChange={handlePaymentModeChange}
+              placeholder="Select payment method"
+            />
+          </Form.Item>
+
+          {/* Conditional Fields based on Payment Mode */}
+          {paymentMode === "Cash" && (
+            <Form.Item
+              name="giverName"
+              label="Name of Giver"
+              rules={[{required: true, message: "Please enter giver's name"}]}
+            >
+              <Input
+                placeholder="Enter name of person who gave the cash"
+                prefix={<FiUser />}
+              />
+            </Form.Item>
+          )}
+
+          {(paymentMode === "UPI" || paymentMode === "Bank Transfer") && (
+            <Form.Item
+              name="transactionId"
+              label="Transaction ID"
+              rules={[
+                {required: true, message: "Please enter transaction ID"},
+                {
+                  min: 5,
+                  message: "Transaction ID must be at least 5 characters",
+                },
+              ]}
+            >
+              <Input placeholder={`Enter ${paymentMode} transaction ID`} />
+            </Form.Item>
+          )}
+
+          {/* Payment Date */}
+          <Form.Item
+            name="paymentDate"
+            label="Payment Date"
+            rules={[{required: true, message: "Please select payment date"}]}
+          >
+            <DatePicker
+              format="DD/MM/YYYY"
+              style={{width: "100%"}}
+              disabledDate={(current) =>
+                current && current > dayjs().endOf("day")
+              }
+            />
+          </Form.Item>
+        </Form>
+      </Modal>
+
       <AddExpenseFromVoucher
         visible={isExpenseModalOpen}
         onCancel={handleExpenseModalClose}
         selectedCategory={selectedExpenseType}
         voucherId={voucherId}
+        managerId={managerId}
       />
     </div>
   );

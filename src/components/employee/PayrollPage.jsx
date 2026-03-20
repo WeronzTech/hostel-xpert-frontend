@@ -13,6 +13,7 @@ import UpdateLeaveModal from "./UpdateLeaveModal";
 import PageHeader from "../common/PageHeader";
 import CreateMissingPayrollModal from "./CreateMissingPayrollModal";
 import TransactionHistoryModal from "./TransactionHistoryModal";
+import EditSalaryModal from "./EditSalaryModal";
 
 const PayrollPage = () => {
   const {type} = useParams();
@@ -49,6 +50,8 @@ const PayrollPage = () => {
   const [isAdvanceModalVisible, setIsAdvanceModalVisible] = useState(false);
   const [isUpdateLeaveVisible, setIsUpdateLeaveModalVisible] = useState(false);
   const [isTransactionModalVisible, setIsTransactionModalVisible] =
+    useState(false);
+  const [isEditSalaryModalVisible, setIsEditSalaryModalVisible] =
     useState(false);
 
   const [selectedPayroll, setSelectedPayroll] = useState(null);
@@ -124,7 +127,7 @@ const PayrollPage = () => {
         }
       });
 
-      console.log("Sending query params:", queryParams);
+      // console.log("Sending query params:", queryParams);
       return getPayrolls(queryParams);
     },
     keepPreviousData: true,
@@ -148,10 +151,11 @@ const PayrollPage = () => {
     {
       title: "Employee",
       key: "employee",
+      width: 220,
       render: (_, record) => (
         <div>
           <div className="font-medium">
-            {record.name}
+            {record.name}{" "}
             <span className="text-xs text-gray-500">{record.jobTitle}</span>
           </div>
         </div>
@@ -173,12 +177,14 @@ const PayrollPage = () => {
     },
     {
       title: "Leave Deduction",
+      width: 160,
       dataIndex: "leaveDeduction",
       key: "leaveDeduction",
       render: (value) => `₹${value?.toLocaleString() || 0}`,
     },
     {
       title: "Advance Adjusted",
+      width: 160,
       dataIndex: "advanceAdjusted",
       key: "advanceAdjusted",
       render: (value) => `₹${value?.toLocaleString() || 0}`,
@@ -215,8 +221,10 @@ const PayrollPage = () => {
     {
       title: "Actions",
       key: "actions",
+      width: 240,
+      align: "center",
       render: (_, record) => (
-        <Space>
+        <Space size={4} style={{whiteSpace: "nowrap"}}>
           {record.status !== "Paid" && (
             <Tooltip title="Make Payment">
               <Button
@@ -249,40 +257,38 @@ const PayrollPage = () => {
           )}
 
           {record.status === "Pending" && (
-            <Tooltip title="Leave Reduction">
-              <Button
-                type="dashed"
-                size="small"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleLeaveReduction(record);
-                }}
-              >
-                Leave
-              </Button>
-            </Tooltip>
+            <>
+              <Tooltip title="Leave Reduction">
+                <Button
+                  type="dashed"
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleLeaveReduction(record);
+                  }}
+                >
+                  Leave
+                </Button>
+              </Tooltip>
+
+              <Tooltip title="Edit Salary">
+                <Button
+                  type="default"
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleEditSalary(record);
+                  }}
+                >
+                  Edit
+                </Button>
+              </Tooltip>
+            </>
           )}
         </Space>
       ),
     },
   ];
-
-  // Add context column based on type - only show if we have actual property/kitchen data
-  if (isProperty && filters.propertyId !== "all") {
-    columns.splice(1, 0, {
-      title: "Property",
-      key: "property",
-      render: (_, record) =>
-        record.propertyName || selectedProperty?.name || "N/A",
-    });
-  } else if (isKitchen && filters.kitchenId !== "all") {
-    columns.splice(1, 0, {
-      title: "Kitchen",
-      key: "kitchen",
-      render: (_, record) =>
-        record.kitchenName || selectedKitchen?.name || "N/A",
-    });
-  }
 
   // Handlers
   const handleFilterChange = (key, value) => {
@@ -306,6 +312,11 @@ const PayrollPage = () => {
   const handleLeaveReduction = (record) => {
     setSelectedPayroll(record);
     setIsUpdateLeaveModalVisible(true);
+  };
+
+  const handleEditSalary = (record) => {
+    setSelectedPayroll(record);
+    setIsEditSalaryModalVisible(true);
   };
 
   const handleCreateMissing = () => {
@@ -355,7 +366,6 @@ const PayrollPage = () => {
           })}
         />
       </Card>
-
       <TransactionHistoryModal
         visible={isTransactionModalVisible}
         payroll={selectedPayroll}
@@ -364,7 +374,6 @@ const PayrollPage = () => {
           setSelectedPayroll(null);
         }}
       />
-
       <PaymentModal
         visible={isPaymentModalVisible}
         payroll={selectedPayroll}
@@ -378,7 +387,6 @@ const PayrollPage = () => {
           refetch();
         }}
       />
-
       <AdvancePaymentModal
         visible={isAdvanceModalVisible}
         payroll={selectedPayroll}
@@ -392,7 +400,6 @@ const PayrollPage = () => {
           refetch();
         }}
       />
-
       <UpdateLeaveModal
         visible={isUpdateLeaveVisible}
         payroll={selectedPayroll}
@@ -406,12 +413,24 @@ const PayrollPage = () => {
           refetch();
         }}
       />
-
       <CreateMissingPayrollModal
         visible={isCreateModalVisible}
         onCancel={() => setIsCreateModalVisible(false)}
         onSuccess={() => {
           setIsCreateModalVisible(false);
+          refetch();
+        }}
+      />{" "}
+      <EditSalaryModal
+        visible={isEditSalaryModalVisible}
+        payroll={selectedPayroll}
+        onCancel={() => {
+          setIsEditSalaryModalVisible(false);
+          setSelectedPayroll(null);
+        }}
+        onSuccess={() => {
+          setIsEditSalaryModalVisible(false);
+          setSelectedPayroll(null);
           refetch();
         }}
       />

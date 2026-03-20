@@ -6,14 +6,31 @@ import RolePage from "../../components/employee/RolePage";
 import AttendanceOverview from "../../components/employee/AttendanceOverview";
 import PayrollPage from "../../components/employee/PayrollPage";
 import {useSelector} from "react-redux";
+import {getRoleById} from "../../hooks/employee/useEmployee";
+import {useQuery} from "@tanstack/react-query";
+import {DownOutlined} from "@ant-design/icons";
 
 const {TabPane} = Tabs;
 
 const EmployeePage = () => {
+  const roleId = useSelector((state) => state?.auth?.user?.role?.id);
   const {user} = useSelector((state) => state.auth);
   const navigate = useNavigate();
   const {type} = useParams();
   const [searchParams] = useSearchParams();
+
+  const {data: role} = useQuery({
+    queryKey: ["get-role", roleId],
+    queryFn: () => getRoleById(roleId),
+  });
+
+  const permissions = role?.permissions ?? [];
+
+  const hasPermission = (requiredPermission) => {
+    if (!permissions.length) return false;
+    if (permissions.includes("ALL_PRIVILEGES")) return true;
+    return permissions.includes(requiredPermission);
+  };
 
   const tab = searchParams.get("tab");
 
@@ -59,20 +76,33 @@ const EmployeePage = () => {
         <TabPane
           key="2"
           tab={
-            <Dropdown menu={payrollMenu} trigger={["hover"]}>
-              <span>Payroll</span>
-            </Dropdown>
+            <span style={{display: "flex", alignItems: "center", gap: 4}}>
+              <Dropdown menu={payrollMenu} trigger={["hover"]}>
+                <span style={{cursor: "pointer"}}>
+                  Payroll <DownOutlined style={{fontSize: 10}} />
+                </span>
+              </Dropdown>
+            </span>
           }
+          disabled={!hasPermission("PAYROLL_VIEW")}
         >
           <PayrollPage payrollType={type} />
         </TabPane>
 
-        <TabPane tab="Attendance Overview" key="3">
+        <TabPane
+          tab="Attendance Overview"
+          key="3"
+          disabled={!hasPermission("ATTENDANCE_VIEW")}
+        >
           <AttendanceOverview />
         </TabPane>
 
         {user?.role?.name === "Admin" && (
-          <TabPane tab="Roles & Permissions" key="3">
+          <TabPane
+            tab="Roles & Permissions"
+            key="4"
+            disabled={!hasPermission("ALL_PRIVILEGES")}
+          >
             <RolePage />
           </TabPane>
         )}

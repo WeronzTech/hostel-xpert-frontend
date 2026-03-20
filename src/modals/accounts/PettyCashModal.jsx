@@ -11,25 +11,29 @@ import {
   Card,
   Statistic,
   Space,
+  Input,
+  DatePicker,
 } from "antd";
 import {FiPocket, FiPlus} from "react-icons/fi";
 import {useSelector} from "react-redux";
-import {HomeOutlined} from "../../icons";
 import {useQuery, useMutation, useQueryClient} from "@tanstack/react-query";
 import {getAllManagers} from "../../hooks/employee/useEmployee";
 import {
   addPettyCash,
   getPettyCashByManagerId,
 } from "../../hooks/accounts/useAccounts";
+import dayjs from "dayjs";
 
 const {Option} = Select;
+const {TextArea} = Input;
 
 const PettyCashModal = ({visible, onCancel, selectedEmployeeId}) => {
-  const {properties} = useSelector((state) => state.properties);
   const {selectedProperty} = useSelector((state) => state.properties);
+  const {user} = useSelector((state) => state.auth); // Get current user from auth
   const [form] = Form.useForm();
   const [selectedManager, setSelectedManager] = useState(null);
   const [amountType, setAmountType] = useState(null);
+  const [paymentMode, setPaymentMode] = useState(null);
   const [currentProperty, setCurrentProperty] = useState(selectedProperty);
   const queryClient = useQueryClient();
 
@@ -106,41 +110,35 @@ const PettyCashModal = ({visible, onCancel, selectedEmployeeId}) => {
   useEffect(() => {
     if (visible) {
       setCurrentProperty(selectedProperty);
+      // Set default date to today
+      form.setFieldsValue({
+        date: dayjs(),
+      });
     }
-  }, [visible, selectedProperty]);
+  }, [visible, selectedProperty, form]);
 
   const handleManagerChange = (managerId) => {
     const manager = managers.find((m) => m._id === managerId);
     setSelectedManager(manager);
   };
 
-  const handlePropertyChange = (propertyId) => {
-    if (propertyId) {
-      const property = properties.find((p) => p._id === propertyId);
-      setCurrentProperty({
-        id: property._id,
-        name: property.name,
-      });
-      setSelectedManager(null);
-      form.setFieldsValue({
-        managerId: undefined,
-      });
-    } else {
-      setCurrentProperty({id: null, name: ""});
-      setSelectedManager(null);
-      form.setFieldsValue({
-        managerId: undefined,
-      });
-    }
-  };
-
   const handleAmountTypeChange = (type) => {
     setAmountType(type);
-    form.setFieldsValue({amountType: type});
+    setPaymentMode(null); // Reset payment mode when amount type changes
+    form.setFieldsValue({
+      amountType: type,
+      paymentMode: undefined,
+      transactionId: undefined,
+    });
+  };
+
+  const handlePaymentModeChange = (mode) => {
+    setPaymentMode(mode);
+    form.setFieldsValue({paymentMode: mode});
   };
 
   const onFinish = async (values) => {
-    const {managerId, amount} = values;
+    const {managerId, amount, date, paymentMode, transactionId, notes} = values;
     const manager = managers.find((m) => m._id === managerId);
 
     if (!manager) {
@@ -148,20 +146,32 @@ const PettyCashModal = ({visible, onCancel, selectedEmployeeId}) => {
       return;
     }
 
+    if (!user) {
+      message.error("User not authenticated");
+      return;
+    }
+
     // ✅ Prepare data for API based on amount type
     const requestData = {
       manager: managerId,
       managerName: manager.name,
-      property: currentProperty?.id || null,
+      date: date.format("YYYY-MM-DD"), // Format date as string
+      createdBy: user._id || user.id, // Add current user ID
+      createdByName: user.name || user.email, // Add current user name
+      notes: notes || "", // Add notes if provided
     };
 
     // ✅ Set amounts based on selected type
     if (amountType === "hand") {
       requestData.inHandAmount = amount;
       requestData.inAccountAmount = 0;
+      requestData.paymentMode = "cash"; // For hand cash, default to cash
+      requestData.transactionId = null;
     } else {
       requestData.inHandAmount = 0;
       requestData.inAccountAmount = amount;
+      requestData.paymentMode = paymentMode;
+      requestData.transactionId = transactionId || null;
     }
 
     console.log("Adding Petty Cash:", requestData);
@@ -174,6 +184,7 @@ const PettyCashModal = ({visible, onCancel, selectedEmployeeId}) => {
     form.resetFields();
     setSelectedManager(null);
     setAmountType(null);
+    setPaymentMode(null);
     setCurrentProperty({id: null, name: ""});
     onCancel();
   };
@@ -201,33 +212,6 @@ const PettyCashModal = ({visible, onCancel, selectedEmployeeId}) => {
         maskClosable={false}
       >
         <Form form={form} layout="vertical" onFinish={onFinish}>
-          {/* Property Selection */}
-          {!selectedProperty?.id && (
-            <Card size="small" style={{marginBottom: 16}}>
-              <Form.Item
-                label="Select Property"
-                name="propertyId"
-                rules={[{required: true, message: "Please select a property"}]}
-                initialValue={currentProperty?._id}
-              >
-                <Select
-                  placeholder="Choose a property"
-                  onChange={handlePropertyChange}
-                  suffixIcon={<HomeOutlined />}
-                  allowClear
-                >
-                  {properties
-                    .filter((property) => property._id !== null)
-                    .map((property) => (
-                      <Option key={property._id} value={property._id}>
-                        {property.name}
-                      </Option>
-                    ))}
-                </Select>
-              </Form.Item>
-            </Card>
-          )}
-
           {/* ✅ Select Manager from API */}
           <Form.Item
             name="managerId"
@@ -239,8 +223,8 @@ const PettyCashModal = ({visible, onCancel, selectedEmployeeId}) => {
                 managersLoading
                   ? "Loading managers..."
                   : selectedProperty?.id && selectedEmployeeId
-                  ? "Selected manager"
-                  : "Choose a manager"
+                    ? "Selected manager"
+                    : "Choose a manager"
               }
               onChange={handleManagerChange}
               showSearch={!selectedProperty?.id || !selectedEmployeeId}
@@ -304,13 +288,54 @@ const PettyCashModal = ({visible, onCancel, selectedEmployeeId}) => {
             <Select
               placeholder="Please select where to add cash"
               onChange={handleAmountTypeChange}
-              value={amountType} // 👈 make sure controlled value matches state
-              allowClearsetFieldsValue
+              value={amountType}
+              allowClear
             >
               <Option value="hand">Cash In Hand</Option>
               <Option value="account">Cash In Account</Option>
             </Select>
           </Form.Item>
+
+          {/* Payment Mode (only for account) */}
+          {amountType === "account" && (
+            <>
+              <Form.Item
+                name="paymentMode"
+                label="Payment Mode"
+                rules={[
+                  {required: true, message: "Please select payment mode"},
+                ]}
+              >
+                <Select
+                  placeholder="Select payment mode"
+                  onChange={handlePaymentModeChange}
+                  value={paymentMode}
+                  allowClear
+                >
+                  <Option value="upi">UPI</Option>
+                  <Option value="bank_transfer">Bank Transfer</Option>
+                </Select>
+              </Form.Item>
+
+              {/* Transaction ID (only for account and if payment mode selected) */}
+              {paymentMode && paymentMode !== "cash" && (
+                <Form.Item
+                  name="transactionId"
+                  label={`${paymentMode.replace("_", " ").toUpperCase()} Transaction ID`}
+                  rules={[
+                    {
+                      required: true,
+                      message: `Please enter ${paymentMode} transaction ID`,
+                    },
+                  ]}
+                >
+                  <Input
+                    placeholder={`Enter ${paymentMode.replace("_", " ")} transaction ID`}
+                  />
+                </Form.Item>
+              )}
+            </>
+          )}
 
           {/* Amount Input */}
           <Form.Item
@@ -322,7 +347,7 @@ const PettyCashModal = ({visible, onCancel, selectedEmployeeId}) => {
                 validator: (_, value) => {
                   if (value <= 0) {
                     return Promise.reject(
-                      new Error("Amount must be greater than 0")
+                      new Error("Amount must be greater than 0"),
                     );
                   }
                   return Promise.resolve();
@@ -339,6 +364,48 @@ const PettyCashModal = ({visible, onCancel, selectedEmployeeId}) => {
             />
           </Form.Item>
 
+          {/* Date Field */}
+          <Form.Item
+            name="date"
+            label="Date of Transaction"
+            rules={[{required: true, message: "Please select a date"}]}
+          >
+            <DatePicker
+              style={{width: "100%"}}
+              format="DD-MM-YYYY"
+              disabledDate={(current) => {
+                // Can't select future dates
+                return current && current > dayjs().endOf("day");
+              }}
+            />
+          </Form.Item>
+
+          {/* Notes Field (Optional) */}
+          <Form.Item name="notes" label="Notes (Optional)">
+            <TextArea
+              placeholder="Enter any additional notes about this transaction"
+              rows={2}
+              maxLength={500}
+              showCount
+            />
+          </Form.Item>
+
+          {/* Added By Info (Read-only) */}
+          {user && (
+            <div
+              style={{
+                backgroundColor: "#f6f6f6",
+                borderRadius: 6,
+                padding: 8,
+                marginBottom: 16,
+                fontSize: 12,
+                color: "#666",
+              }}
+            >
+              <strong>Added by:</strong> {user.name || user.email}
+            </div>
+          )}
+
           {/* Actions */}
           <Form.Item style={{marginBottom: 0, textAlign: "right"}}>
             <Space>
@@ -351,7 +418,11 @@ const PettyCashModal = ({visible, onCancel, selectedEmployeeId}) => {
               <Button
                 type="primary"
                 htmlType="submit"
-                disabled={!selectedManager || pettyCashLoading}
+                disabled={
+                  !selectedManager ||
+                  pettyCashLoading ||
+                  (amountType === "account" && !paymentMode)
+                }
                 loading={addPettyCashMutation.isLoading}
               >
                 <FiPlus /> Add Cash

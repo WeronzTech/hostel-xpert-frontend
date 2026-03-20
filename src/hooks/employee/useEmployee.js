@@ -67,6 +67,7 @@ export const addManager = async (managerData) => {
 
 export const editManager = async (managerId, managerData) => {
   try {
+    console.log(managerData);
     const res = await apiClient.put(
       `/client/manager/edit/${managerId}`,
       managerData,
