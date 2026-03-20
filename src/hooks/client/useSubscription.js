@@ -43,3 +43,36 @@ export const getMyPaymentHistory = async (clientId) => {
     };
   }
 };
+
+export const getMonthlyOverviews = async (clientId, month, year) => {
+  try {
+    const response = await apiClient.get(
+      "/client/subscription-payments/monthly-overviews",
+      {
+        params: { clientId, month, year }, // 🔹 ADDED: month and year
+      },
+    );
+    return response.data;
+  } catch (error) {
+    throw {
+      message:
+        error.response?.data?.message || "Failed to fetch monthly overviews",
+      status: error.response?.status,
+    };
+  }
+};
+
+export const paySubscriptionBill = async (billId, paymentData) => {
+  try {
+    const response = await apiClient.post(
+      `/client/subscription-payments/${billId}/pay`,
+      paymentData,
+    );
+    return response.data;
+  } catch (error) {
+    throw {
+      message: error.response?.data?.message || "Failed to submit payment",
+      status: error.response?.status,
+    };
+  }
+};
