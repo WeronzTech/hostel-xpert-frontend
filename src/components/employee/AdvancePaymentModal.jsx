@@ -2,6 +2,7 @@ import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import {
   processAdvancePayment,
   getEmployeeAdvanceForMonth,
+  getAllPettyCashes,
 } from "../../hooks/accounts/useAccounts";
 import {useState, useEffect} from "react";
 import dayjs from "dayjs";
@@ -22,6 +23,7 @@ import {
   Grid,
   Spin,
 } from "antd";
+import {useSelector} from "react-redux";
 
 const {Option} = Select;
 const {TextArea} = Input;
@@ -43,7 +45,9 @@ const AdvancePaymentModal = ({visible, payroll, onCancel, onSuccess}) => {
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
   const [selectedPettyCashType, setSelectedPettyCashType] = useState(null);
-  const [selectedManager, setSelectedManager] = useState(null);
+
+  const {selectedProperty} = useSelector((state) => state.properties);
+  const {user} = useSelector((state) => state.auth);
 
   const screens = useBreakpoint();
   const isMobile = !screens.md;
@@ -73,12 +77,23 @@ const AdvancePaymentModal = ({visible, payroll, onCancel, onSuccess}) => {
     if (method === "UPI" || method === "Bank Transfer") {
       return true;
     }
-    if (method === "Petty Cash" && pettyCashType === "In Account") {
+    if (method === "Petty Cash" && pettyCashType === "inAccount") {
       return true;
     }
     return false;
   };
 
+  const {data: pettyCashes = [], isLoading: pettyCashLoading} = useQuery({
+    queryKey: ["pettyCashes", selectedProperty?.id, user.userType],
+    queryFn: () =>
+      getAllPettyCashes({
+        propertyId: selectedProperty?.id,
+        userType: user.userType,
+      }),
+    refetchOnWindowFocus: false,
+    staleTime: 5 * 60 * 1000,
+  });
+  console.log(pettyCashes);
   // Fetch advance summary for selected month
   const {data: advanceSummary, isLoading: summaryLoading} = useQuery({
     queryKey: ["advanceSummary", payroll?.employeeId, selectedMonth],
@@ -106,7 +121,6 @@ const AdvancePaymentModal = ({visible, payroll, onCancel, onSuccess}) => {
       setSelectedMonth(availableMonths[0]?.value);
       setSelectedPaymentMethod(null);
       setSelectedPettyCashType(null);
-      setSelectedManager(null);
       setIsSubmitting(false);
     }
   }, [visible, payroll, form]);
@@ -115,7 +129,6 @@ const AdvancePaymentModal = ({visible, payroll, onCancel, onSuccess}) => {
   const handlePaymentMethodChange = (value) => {
     setSelectedPaymentMethod(value);
     setSelectedPettyCashType(null);
-    setSelectedManager(null);
     // Clear related fields
     form.setFieldsValue({
       transactionId: undefined,
@@ -136,7 +149,7 @@ const AdvancePaymentModal = ({visible, payroll, onCancel, onSuccess}) => {
     setSelectedPettyCashType(value);
     form.setFieldsValue({transactionId: undefined});
 
-    if (value === "In Account") {
+    if (value === "inAccount") {
       form.validateFields(["transactionId"]);
     } else {
       form.setFields([{name: "transactionId", errors: []}]);
@@ -179,6 +192,11 @@ const AdvancePaymentModal = ({visible, payroll, onCancel, onSuccess}) => {
     // Parse selected month
     const [year, month] = selectedMonth.split("-").map(Number);
 
+    // Find the selected petty cash to get manager ID
+    const selectedPettyCash = pettyCashes.find(
+      (pc) => pc._id === values.pettyCashHolder,
+    );
+
     // Build advance data with all fields
     const advanceData = {
       employeeId: payroll.employeeId,
@@ -195,23 +213,15 @@ const AdvancePaymentModal = ({visible, payroll, onCancel, onSuccess}) => {
       propertyId: payroll.propertyId,
       kitchenId: payroll.kitchenId,
       clientId: payroll.clientId,
+      ...(values.paymentMethod === "Petty Cash" && {
+        managerId: selectedPettyCash?.manager,
+        managerName: selectedPettyCash?.managerName,
+        pettyCashId: values.pettyCashHolder,
+        pettyCashType: values.pettyCashMode,
+      }),
     };
 
-    // Add petty cash specific fields
-    if (values.paymentMethod === "Petty Cash") {
-      advanceData.pettyCashHolder = values.managerId;
-      advanceData.pettyCashType = values.pettyCashType;
-
-      // Find manager name for display purposes
-      const selectedManager = mockManagers.find(
-        (m) => m.id === values.managerId,
-      );
-      if (selectedManager) {
-        advanceData.pettyCashHolderName = selectedManager.name;
-      }
-    }
-
-    // console.log("Submitting advance:", advanceData);
+    console.log("Submitting advance:", advanceData);
     advanceMutation.mutate(advanceData);
   };
 
@@ -238,7 +248,7 @@ const AdvancePaymentModal = ({visible, payroll, onCancel, onSuccess}) => {
     selectedPaymentMethod === "UPI" ||
     selectedPaymentMethod === "Bank Transfer" ||
     (selectedPaymentMethod === "Petty Cash" &&
-      selectedPettyCashType === "In Account");
+      selectedPettyCashType === "inAccount");
 
   return (
     <>
@@ -478,7 +488,7 @@ const AdvancePaymentModal = ({visible, payroll, onCancel, onSuccess}) => {
               <Row gutter={16}>
                 <Col span={12}>
                   <Form.Item
-                    name="managerId"
+                    name="pettyCashHolder"
                     label={
                       <Space>
                         <span>Petty Cash Holder</span>
@@ -492,15 +502,55 @@ const AdvancePaymentModal = ({visible, payroll, onCancel, onSuccess}) => {
                     ]}
                   >
                     <Select
-                      placeholder="Select manager"
-                      onChange={setSelectedManager}
+                      placeholder="Select petty cash holder"
+                      loading={pettyCashLoading}
+                      disabled={isSubmitting || advanceMutation.isLoading}
+                      optionLabelProp="label"
                       showSearch
-                      optionFilterProp="children"
+                      filterOption={(input, option) =>
+                        option.props.label
+                          .toLowerCase()
+                          .indexOf(input.toLowerCase()) >= 0
+                      }
                     >
-                      {mockManagers.map((manager) => (
-                        <Option key={manager.id} value={manager.id}>
-                          {manager.name}
-                        </Option>
+                      {pettyCashes.map((holder) => (
+                        <Select.Option
+                          key={holder._id}
+                          value={holder._id}
+                          label={`${holder.managerName} - ₹${(holder.inHandAmount + holder.inAccountAmount).toLocaleString()}`}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                            }}
+                          >
+                            <span>{holder.managerName}</span>
+                            <span style={{color: "#666"}}>
+                              Total: ₹
+                              {(
+                                holder.inHandAmount + holder.inAccountAmount
+                              ).toLocaleString()}
+                            </span>
+                          </div>
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              fontSize: "11px",
+                              color: "#999",
+                              marginTop: 2,
+                            }}
+                          >
+                            <span>
+                              In Hand: ₹{holder.inHandAmount.toLocaleString()}
+                            </span>
+                            <span>
+                              In Account: ₹
+                              {holder.inAccountAmount.toLocaleString()}
+                            </span>
+                          </div>
+                        </Select.Option>
                       ))}
                     </Select>
                   </Form.Item>
@@ -508,7 +558,7 @@ const AdvancePaymentModal = ({visible, payroll, onCancel, onSuccess}) => {
 
                 <Col span={12}>
                   <Form.Item
-                    name="pettyCashType"
+                    name="pettyCashMode"
                     label={
                       <Space>
                         <span>Petty Cash Type</span>
@@ -525,8 +575,8 @@ const AdvancePaymentModal = ({visible, payroll, onCancel, onSuccess}) => {
                       placeholder="Select type"
                       onChange={handlePettyCashTypeChange}
                     >
-                      <Option value="In Hand">In Hand</Option>
-                      <Option value="In Account">In Account</Option>
+                      <Option value="inHand">In Hand</Option>
+                      <Option value="inAccount">In Account</Option>
                     </Select>
                   </Form.Item>
                 </Col>

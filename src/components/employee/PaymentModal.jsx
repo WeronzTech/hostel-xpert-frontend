@@ -9,21 +9,22 @@ import {
   Row,
   Col,
 } from "antd";
-import {useMutation, useQueryClient} from "@tanstack/react-query";
-import {processPayment} from "../../hooks/accounts/useAccounts";
+import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
+import {
+  getAllPettyCashes,
+  processPayment,
+} from "../../hooks/accounts/useAccounts";
 import {useState} from "react";
+import {useSelector} from "react-redux";
 
-const PaymentModal = ({
-  visible,
-  payroll,
-  onCancel,
-  onSuccess,
-  pettyCashHolders = [],
-}) => {
+const PaymentModal = ({visible, payroll, onCancel, onSuccess}) => {
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
   const [messageApi, contextHolder] = message.useMessage();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const {selectedProperty} = useSelector((state) => state.properties);
+  const {user} = useSelector((state) => state.auth);
 
   const paymentMethod = Form.useWatch("paymentMethod", form);
   const pettyCashMode = Form.useWatch("pettyCashMode", form);
@@ -59,6 +60,17 @@ const PaymentModal = ({
     return `${months[month % 12]} ${year}`;
   };
 
+  const {data: pettyCashes = [], isLoading: pettyCashLoading} = useQuery({
+    queryKey: ["pettyCashes", selectedProperty?.id, user.userType],
+    queryFn: () =>
+      getAllPettyCashes({
+        propertyId: selectedProperty?.id,
+        userType: user.userType,
+      }),
+    refetchOnWindowFocus: false,
+    staleTime: 5 * 60 * 1000,
+  });
+
   const paymentMutation = useMutation({
     mutationFn: (data) => {
       return processPayment(data);
@@ -92,10 +104,21 @@ const PaymentModal = ({
 
     setIsSubmitting(true);
 
+    // Find the selected petty cash to get manager ID
+    const selectedPettyCash = pettyCashes.find(
+      (pc) => pc._id === values.pettyCashHolder,
+    );
+
     const paymentData = {
       ...values,
       payrollId: payroll._id,
       paymentDate: values.paymentDate.toISOString(),
+      // Add manager ID if petty cash is selected
+      ...(values.paymentMethod === "Petty Cash" && {
+        managerId: selectedPettyCash?.manager,
+        pettyCashId: values.pettyCashHolder,
+        pettyCashType: values.pettyCashMode,
+      }),
     };
 
     paymentMutation.mutate(paymentData);
@@ -250,11 +273,52 @@ const PaymentModal = ({
               >
                 <Select
                   placeholder="Select petty cash holder"
+                  loading={pettyCashLoading}
                   disabled={isSubmitting || paymentMutation.isLoading}
+                  optionLabelProp="label"
+                  showSearch
+                  filterOption={(input, option) =>
+                    option.props.label
+                      .toLowerCase()
+                      .indexOf(input.toLowerCase()) >= 0
+                  }
                 >
-                  {pettyCashHolders.map((holder) => (
-                    <Select.Option key={holder._id} value={holder._id}>
-                      {holder.name}
+                  {pettyCashes.map((holder) => (
+                    <Select.Option
+                      key={holder._id}
+                      value={holder._id}
+                      label={`${holder.managerName} - ₹${(holder.inHandAmount + holder.inAccountAmount).toLocaleString()}`}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                        }}
+                      >
+                        <span>{holder.managerName}</span>
+                        <span style={{color: "#666"}}>
+                          Total: ₹
+                          {(
+                            holder.inHandAmount + holder.inAccountAmount
+                          ).toLocaleString()}
+                        </span>
+                      </div>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          fontSize: "11px",
+                          color: "#999",
+                          marginTop: 2,
+                        }}
+                      >
+                        <span>
+                          In Hand: ₹{holder.inHandAmount.toLocaleString()}
+                        </span>
+                        <span>
+                          In Account: ₹{holder.inAccountAmount.toLocaleString()}
+                        </span>
+                      </div>
                     </Select.Option>
                   ))}
                 </Select>
@@ -268,9 +332,13 @@ const PaymentModal = ({
                 <Select
                   placeholder="Select type"
                   disabled={isSubmitting || paymentMutation.isLoading}
+                  onChange={() => {
+                    // Clear transaction ID when switching modes
+                    form.setFieldsValue({transactionId: undefined});
+                  }}
                 >
-                  <Select.Option value="InHand">In Hand</Select.Option>
-                  <Select.Option value="InAccount">In Account</Select.Option>
+                  <Select.Option value="inHand">In Hand</Select.Option>
+                  <Select.Option value="inAccount">In Account</Select.Option>
                 </Select>
               </Form.Item>
             </>
@@ -279,7 +347,7 @@ const PaymentModal = ({
           {(paymentMethod === "UPI" ||
             paymentMethod === "Bank Transfer" ||
             (paymentMethod === "Petty Cash" &&
-              pettyCashMode === "InAccount")) && (
+              pettyCashMode === "inAccount")) && (
             <Form.Item
               name="transactionId"
               label="Transaction ID"
