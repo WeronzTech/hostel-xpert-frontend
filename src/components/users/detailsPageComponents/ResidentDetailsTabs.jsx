@@ -13,8 +13,8 @@ import {
   FiFile,
   FiUsers,
 } from "../../../icons/index";
-import {Image} from "antd";
-import {FaRupeeSign, FaRegIdCard, FaHistory} from "react-icons/fa";
+import {Image, message} from "antd";
+import {FaRupeeSign, FaRegIdCard, FaHistory, FaUndo} from "react-icons/fa";
 import {
   HiOutlineCake,
   HiOutlineDocumentText,
@@ -30,15 +30,36 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import TransactionHistoryModal from "./TransactionHistoryModal";
 import {useSelector} from "react-redux";
 import RentCollectionModal from "../../../modals/accounts/RentCollectionModal";
-import {useQueryClient} from "@tanstack/react-query";
+import {useQuery, useQueryClient} from "@tanstack/react-query";
+import RefundInitiateModal from "../../../modals/accounts/RefundInitiateModal";
+import {useHasPermission} from "../../../utils/useHasPermission";
+import {getRoleById} from "../../../hooks/employee/useEmployee";
 
 const ResidentDetailsTabs = ({resident}) => {
   const {selectedProperty} = useSelector((state) => state.properties);
-
   const [transactionModalVisible, setTransactionModalVisible] = useState(false);
   const [activeTab, setActiveTab] = useState("personal");
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [residentForPayment, setResidentForPayment] = useState(null);
+  const [refundModalOpen, setRefundModalOpen] = useState(false);
+  const canManagePayment = useHasPermission("FEE_PAYMENT_MANAGE");
+
+  const [messageApi, contextHolder] = message.useMessage();
+  const roleId = useSelector((state) => state?.auth?.user?.role?.id);
+
+  const {data: role} = useQuery({
+    queryKey: ["get-role", roleId],
+    queryFn: () => getRoleById(roleId),
+  });
+
+  const permissions = role?.permissions ?? [];
+
+  const hasPermission = (requiredPermission) => {
+    if (!permissions.length) return false;
+    if (permissions.includes("ALL_PRIVILEGES")) return true;
+    return permissions.includes(requiredPermission);
+  };
+
   dayjs.extend(relativeTime);
   const queryClient = useQueryClient();
 
@@ -92,6 +113,10 @@ const ResidentDetailsTabs = ({resident}) => {
     setResidentForPayment(null);
   };
 
+  const handleDepositRefund = () => {
+    setRefundModalOpen(true);
+  };
+
   const handlePaymentSuccess = () => {
     // Refresh the residents data after successful payment
     queryClient.invalidateQueries(["residents"]);
@@ -133,6 +158,7 @@ const ResidentDetailsTabs = ({resident}) => {
 
   return (
     <div className="lg:col-span-8">
+      {contextHolder}
       <DetailCard>
         <div className="w-full overflow-x-auto text-center">
           <div className="inline-flex space-x-1 mx-auto px-4 py-2 md:py-0 md:px-0 w-max">
@@ -480,13 +506,12 @@ const ResidentDetailsTabs = ({resident}) => {
                     <DetailItem
                       label="Monthly Rent"
                       value={
-                        resident.stayDetails?.monthlyRent ?? "Not Provided"
+                        resident.financialDetails?.monthlyRent ?? "Not Provided"
                       }
                       icon={<FaRupeeSign />}
                       isCurrency
                     />
                   )}
-
                   {resident.userType === "dailyRent" && (
                     <DetailItem
                       label="Rent / Day"
@@ -495,7 +520,6 @@ const ResidentDetailsTabs = ({resident}) => {
                       isCurrency
                     />
                   )}
-
                   {resident.userType === "messOnly" && (
                     <DetailItem
                       label="Rate / Day"
@@ -504,7 +528,6 @@ const ResidentDetailsTabs = ({resident}) => {
                       isCurrency
                     />
                   )}
-
                   {/* Pending amount / rent */}
                   {["student", "worker"].includes(resident.userType) ? (
                     <DetailItem
@@ -526,7 +549,6 @@ const ResidentDetailsTabs = ({resident}) => {
                       isCurrency
                     />
                   )}
-
                   {/* Payment Status */}
                   <DetailItem
                     label="Payment Status"
@@ -534,21 +556,19 @@ const ResidentDetailsTabs = ({resident}) => {
                     icon={<FiCreditCard />}
                     isStatus
                   />
+                  {["student", "worker"].includes(resident.userType) && (
+                    <DetailItem
+                      label="Deposit Status"
+                      value={depositStatusLabel}
+                      icon={<FiCreditCard />}
+                      isStatus
+                    />
+                  )}
                 </div>
 
                 <div className="space-y-4">
                   {/* Account Balance / Total Amount */}
-                  {["student", "worker"].includes(resident.userType) ? (
-                    <DetailItem
-                      label="Account Balance"
-                      value={
-                        resident.financialDetails?.accountBalance ??
-                        "Not Provided"
-                      }
-                      icon={<FaRupeeSign />}
-                      isCurrency
-                    />
-                  ) : (
+                  {["student", "worker"].includes(resident.userType) ? null : (
                     <DetailItem
                       label="Total Amount"
                       value={
@@ -560,22 +580,29 @@ const ResidentDetailsTabs = ({resident}) => {
                   )}
 
                   {/* Deposit fields: only for student / worker */}
+
                   {["student", "worker"].includes(resident.userType) && (
                     <>
                       <DetailItem
-                        label="Deposit Amount"
-                        value={
-                          (resident.stayDetails?.nonRefundableDeposit || 0) +
-                          (resident.stayDetails?.refundableDeposit || 0)
-                        }
+                        label="Refundable Deposit"
+                        value={resident.stayDetails?.refundableDeposit || 0}
                         icon={<FaRupeeSign />}
                         isCurrency
                       />
                       <DetailItem
-                        label="Deposit Status"
-                        value={depositStatusLabel}
-                        icon={<FiCreditCard />}
-                        isStatus
+                        label="Non-Refundable Deposit"
+                        value={resident.stayDetails?.nonRefundableDeposit || 0}
+                        icon={<FaRupeeSign />}
+                        isCurrency
+                      />{" "}
+                      <DetailItem
+                        label="Total Deposit Amount"
+                        value={
+                          (resident.stayDetails?.refundableDeposit || 0) +
+                          (resident.stayDetails?.nonRefundableDeposit || 0)
+                        }
+                        icon={<FaRupeeSign />}
+                        isCurrency
                       />
                     </>
                   )}
@@ -594,24 +621,48 @@ const ResidentDetailsTabs = ({resident}) => {
                   <div className="flex items-center space-x-2">
                     {/* Transaction History */}
                     <button
-                      className="cursor-pointer inline-flex items-center px-4 py-2 bg-[#059669] hover:bg-[#059669] text-white text-sm font-medium rounded-md shadow-sm transition-colors"
-                      onClick={() => setTransactionModalVisible(true)}
+                      className="cursor-pointer inline-flex items-center px-4 py-2 bg-[#059669]  text-white text-sm font-medium rounded-md shadow-sm transition-colors"
+                      onClick={() => {
+                        if (hasPermission("TRANSACTIONS_VIEW")) {
+                          setTransactionModalVisible(true);
+                        } else {
+                          messageApi.error(
+                            "You do not have permission to view transaction history",
+                          );
+                        }
+                      }}
                     >
                       <FaHistory className="mr-2" />
                       Transaction History
                     </button>
 
                     {/* Make Payment */}
-                    <button
-                      className="cursor-pointer inline-flex items-center px-4 py-2 bg-[#059669] hover:bg-[#059669] text-white text-sm font-medium rounded-md shadow-sm transition-colors"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handlePaymentClick(resident);
-                      }}
-                    >
-                      <FaRupeeSign className="mr-2" />
-                      Make Payment
-                    </button>
+                    {canManagePayment && (
+                      <button
+                        className="cursor-pointer inline-flex items-center px-4 py-2 bg-[#059669]  text-white text-sm font-medium rounded-md shadow-sm transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handlePaymentClick(resident);
+                        }}
+                      >
+                        <FaRupeeSign className="mr-2" />
+                        Make Payment
+                      </button>
+                    )}
+                    {/* Make Refund (only if refundableDeposit > 0 AND user has permission) */}
+                    {canManagePayment &&
+                      resident?.stayDetails?.refundableDeposit > 0 && (
+                        <button
+                          className="cursor-pointer inline-flex items-center px-4 py-2 bg-[#059669]  text-white text-sm font-medium rounded-md shadow-sm transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDepositRefund();
+                          }}
+                        >
+                          <FaUndo className="mr-2" />
+                          Make Refund
+                        </button>
+                      )}
                   </div>
 
                   {/* RIGHT side → Next Payment Due (only for monthly) */}
@@ -636,7 +687,6 @@ const ResidentDetailsTabs = ({resident}) => {
         visible={transactionModalVisible}
         onClose={() => setTransactionModalVisible(false)}
       />
-
       {showPaymentModal && residentForPayment && (
         <RentCollectionModal
           visible={showPaymentModal}
@@ -647,6 +697,15 @@ const ResidentDetailsTabs = ({resident}) => {
           selectedOption={resident.rentType}
         />
       )}
+      {/* ✅ Refund Modal */}
+      <RefundInitiateModal
+        open={refundModalOpen}
+        onClose={() => setRefundModalOpen(false)}
+        user={resident}
+        onSuccess={(refundData) => {
+          setRefundModalOpen(false);
+        }}
+      />
     </div>
   );
 };

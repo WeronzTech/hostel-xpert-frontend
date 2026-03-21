@@ -675,7 +675,7 @@ const ResidentStayDetails = ({resident, form}) => {
     resident?.stayDetails?.sharingType,
   );
   const [selectedKitchenId, setSelectedKitchenId] = useState(
-    resident?.messDetails?.kitchenId
+    resident?.messDetails?.kitchenId,
   );
   const [extendModalVisible, setExtendModalVisible] = useState(false);
   const [updateRentDateModalVisible, setUpdateRentDateModalVisible] =
@@ -768,8 +768,8 @@ const ResidentStayDetails = ({resident, form}) => {
   // Handle kitchen change for mess only
   const handleKitchenChange = (kitchenId, option) => {
     setSelectedKitchenId(kitchenId);
-    const selectedKitchen = kitchens?.find(k => k._id === kitchenId);
-    
+    const selectedKitchen = kitchens?.find((k) => k._id === kitchenId);
+
     form.setFieldsValue({
       messDetails: {
         kitchenId: kitchenId,
@@ -868,14 +868,18 @@ const ResidentStayDetails = ({resident, form}) => {
     }));
 
   // Kitchen options (for messOnly)
-  const kitchenOptions = kitchens?.map((kitchen) => ({
-    value: kitchen._id,
-    label: `${kitchen.name} - ${kitchen.location}`,
-  })) || [];
+  const kitchenOptions =
+    kitchens?.map((kitchen) => ({
+      value: kitchen._id,
+      label: `${kitchen.name} - ${kitchen.location}`,
+    })) || [];
 
   // Get current kitchen name for display
-  const currentKitchenName = resident?.messDetails?.kitchenName || 
-    (selectedKitchenId ? kitchens?.find(k => k._id === selectedKitchenId)?.name : null);
+  const currentKitchenName =
+    resident?.messDetails?.kitchenName ||
+    (selectedKitchenId
+      ? kitchens?.find((k) => k._id === selectedKitchenId)?.name
+      : null);
 
   // Common form items with consistent 4-field layout
   const renderPropertyFields = () => (
@@ -930,7 +934,14 @@ const ResidentStayDetails = ({resident, form}) => {
       {/* Sharing Type - only for non-mess users */}
       {userType !== "messOnly" && (
         <>
-          <Col xs={24} sm={12} md={12} lg={6} xl={6} className="sm:mt-0 md:mt-2">
+          <Col
+            xs={24}
+            sm={12}
+            md={12}
+            lg={6}
+            xl={6}
+            className="sm:mt-0 md:mt-2"
+          >
             <Form.Item
               label={<span className="text-base">Sharing Type</span>}
               name={["stayDetails", "sharingType"]}
@@ -951,7 +962,14 @@ const ResidentStayDetails = ({resident, form}) => {
             </Form.Item>
           </Col>
 
-          <Col xs={24} sm={12} md={12} lg={6} xl={6} className="sm:mt-0 md:mt-2">
+          <Col
+            xs={24}
+            sm={12}
+            md={12}
+            lg={6}
+            xl={6}
+            className="sm:mt-0 md:mt-2"
+          >
             <Form.Item
               label={<span className="text-base">Room Number</span>}
               name={["stayDetails", "roomNumber"]}
@@ -1226,7 +1244,7 @@ const ResidentStayDetails = ({resident, form}) => {
         <Col xs={24} sm={12} md={12} lg={6} xl={6} className="sm:mt-0 md:mt-2">
           <Form.Item
             label={<span className="text-base">Monthly Rent (₹)</span>}
-            name={["stayDetails", "monthlyRent"]}
+            name={["financialDetails", "monthlyRent"]}
             rules={[{required: true, message: "Please enter amount"}]}
           >
             <InputNumber

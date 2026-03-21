@@ -191,25 +191,29 @@ const Navbar = () => {
   };
 
   const notificationItems = [
-    hasPermission("/notification/push-notification") && isModuleActive("users") && {
-      key: "1",
-      label: "Push Notification",
-    },
-    hasPermission("/notification/alert-notification") && isModuleActive("users") && {
-      key: "2",
-      label: "Alert Notification",
-    },
-    hasPermission("/notification/notification-logs") && isModuleActive("users") && {
-      key: "3",
-      label: "Notification Logs",
-    },
+    hasPermission("/notification/push-notification") &&
+      isModuleActive("users") && {
+        key: "1",
+        label: "Push Notification",
+      },
+    hasPermission("/notification/alert-notification") &&
+      isModuleActive("users") && {
+        key: "2",
+        label: "Alert Notification",
+      },
+    hasPermission("/notification/notification-logs") &&
+      isModuleActive("users") && {
+        key: "3",
+        label: "Notification Logs",
+      },
   ].filter(Boolean);
 
   const settingsItems = [
-    hasPermission("CAROUSEL_MANAGE") && isModuleActive("properties") && {
-      key: "1",
-      label: "Carousel Management",
-    },
+    hasPermission("CAROUSEL_MANAGE") &&
+      isModuleActive("properties") && {
+        key: "1",
+        label: "Carousel Management",
+      },
   ].filter(Boolean);
 
   const userRoutes = [
@@ -228,14 +232,20 @@ const Navbar = () => {
     {path: "/leave", label: "Leave", canView: hasPermission("/leave")},
   ];
 
-  const canViewAccounts = hasPermission("/accounts") && isModuleActive("accounts");
-  const canViewAccounting = hasPermission("/accounting") && isModuleActive("accounts");
-  const canViewProperties = hasPermission("/property") && isModuleActive("properties");
+  const canViewAccounts =
+    hasPermission("/accounts") && isModuleActive("accounts");
+  const canViewAccounting =
+    hasPermission("/accounting") && isModuleActive("accounts");
+  const canViewProperties =
+    hasPermission("/property") && isModuleActive("properties");
   const canViewRooms = hasPermission("/rooms") && isModuleActive("properties");
   const canViewFloors = hasPermission("/floor") && isModuleActive("properties");
-  const canViewOrderDetails = hasPermission("/mess") && isModuleActive("kitchen");
-  const canViewKitchens = hasPermission("/kitchen") && isModuleActive("kitchen");
-  const canViewDailyUsage = hasPermission("/stock-usage") && isModuleActive("kitchen");
+  const canViewOrderDetails =
+    hasPermission("/mess") && isModuleActive("kitchen");
+  const canViewKitchens =
+    hasPermission("/kitchen") && isModuleActive("kitchen");
+  const canViewDailyUsage =
+    hasPermission("/stock-usage") && isModuleActive("kitchen");
 
   const propertyRoutes = [
     {path: "/property", label: "Properties", canView: canViewProperties},
@@ -251,10 +261,12 @@ const Navbar = () => {
 
   const allowedKitchenRoutes = kitchenRoutes.filter((route) => route.canView);
   const allowedPropertyRoutes = propertyRoutes.filter((route) => route.canView);
-  const allowedUserRoutes = isModuleActive("users") ? userRoutes.filter((route) =>
-    hasPermission(route.permission),
-  ) : [];
-  const allowedTimeOffRoutes = isModuleActive("timeOff") ? timeOffRoutes.filter((route) => route.canView) : [];
+  const allowedUserRoutes = isModuleActive("users")
+    ? userRoutes.filter((route) => hasPermission(route.permission))
+    : [];
+  const allowedTimeOffRoutes = isModuleActive("timeOff")
+    ? timeOffRoutes.filter((route) => route.canView)
+    : [];
 
   useEffect(() => {
     const fetchProperties = async () => {
@@ -1665,7 +1677,7 @@ const Navbar = () => {
       )}
 
       {hasPermission("/activity-logs") && isModuleActive("users") && (
-        <div style={{ display: "flex", flexDirection: "column" }}>
+        <div style={{display: "flex", flexDirection: "column"}}>
           <Button
             type="text"
             onClick={() => setMoreDropdownOpen(!moreDropdownOpen)}
@@ -1793,7 +1805,7 @@ const Navbar = () => {
                 )}
               </Text>
             </Link>
-            
+
             <Text style={{color: "white", opacity: 0.5}}>|</Text>
 
             {/* Conditional Dropdown - Property or Kitchen based on route */}

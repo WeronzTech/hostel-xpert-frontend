@@ -92,9 +92,9 @@ export const DetailItem = ({
  */
 export const SectionHeader = ({title, icon}) => (
   <div className="flex items-center mt-3">
-    <div className="w-1 h-6 bg-indigo-600 rounded-full mr-3"></div>
+    <div className="w-1 h-6 bg-[#059669] rounded-full mr-3"></div>
     <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-      {icon && <span className="text-indigo-600">{icon}</span>}
+      {icon && <span className="text-[#059669]">{icon}</span>}
       {title}
     </h3>
   </div>
