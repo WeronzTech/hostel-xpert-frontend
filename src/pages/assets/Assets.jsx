@@ -22,7 +22,7 @@ import {
   getRoomsByFloorId,
   getAssetCategory,
 } from "../../hooks/property/useProperty.js";
-import { Image, Select, Button, message, Modal } from "antd";
+import { Image, Select, Button, message, Modal, Dropdown } from "antd";
 import { EyeOutlined, DownloadOutlined } from "@ant-design/icons";
 import { useSelector } from "react-redux";
 
@@ -34,7 +34,6 @@ const Assets = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState(null);
-  const [openDropdownId, setOpenDropdownId] = useState(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [assetToDelete, setAssetToDelete] = useState(null);
   const [downloadModalOpen, setDownloadModalOpen] = useState(false);
@@ -88,7 +87,7 @@ const Assets = () => {
   });
 
   // Fetch categories
-  const { data: categoriesData, isLoading: loadingCategories } = useQuery({
+  const { data: categoriesData } = useQuery({
     queryKey: ["assetCategories", selectedProperty?.id],
     queryFn: async () => {
       const response = await getAssetCategory(selectedProperty?.id);
@@ -108,7 +107,7 @@ const Assets = () => {
   });
 
   // Fetch rooms for the selected floor (for room filter)
-  const { data: roomsForFilter = [], isLoading: loadingRoomsForFilter } =
+  const { data: roomsForFilter = [] } =
     useQuery({
       queryKey: ["roomsForFilter", selectedFloorForRoomFilter],
       queryFn: async () => {
@@ -120,7 +119,7 @@ const Assets = () => {
     });
 
   // Fetch rooms for assets table display (keep this for display logic)
-  const { data: rooms = [], isLoading: loadingRooms } = useQuery({
+  const { isLoading: loadingRooms } = useQuery({
     queryKey: ["rooms", selectedFloorId],
     queryFn: async () => {
       if (!selectedFloorId) return [];
@@ -208,16 +207,7 @@ const Assets = () => {
     },
   });
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (!e.target.closest(".status-dropdown")) {
-        setOpenDropdownId(null);
-      }
-    };
-    document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
-  }, []);
+  // Delete this effect since we use AntD Dropdown now
 
   // Reset floor selection when property changes
   useEffect(() => {
@@ -241,12 +231,7 @@ const Assets = () => {
     setRoomFilter("");
   };
 
-  const handleStatusClick = (assetId) => {
-    setOpenDropdownId((prevId) => (prevId === assetId ? null : assetId));
-  };
-
   const handleStatusChange = (assetId, newStatus) => {
-    setOpenDropdownId(null);
     updateStatusMutation.mutate({ assetId, newStatus });
   };
 
@@ -456,7 +441,6 @@ const Assets = () => {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries(["assets"]);
-      setOpenDropdownId(null);
       message.success("Asset status updated successfully");
     },
     onError: (error) => {
@@ -1127,47 +1111,45 @@ const Assets = () => {
 
                         {/* Status Dropdown */}
                         <td className="px-6 py-4 whitespace-nowrap relative status-dropdown">
-                          <button
-                            onClick={() => handleStatusClick(asset._id)}
-                            className={`px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${getStatusColor(
-                              asset.status,
-                            )} hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[#059669] disabled:opacity-50 cursor-pointer`}
-                          >
-                            {asset.status}
-                            <FiChevronDown className="text-gray-500 text-sm" />
-                          </button>
-
-                          {openDropdownId === asset._id && (
-                            <div className="absolute z-10 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg">
-                              {[
+                          <Dropdown
+                            menu={{
+                              items: [
                                 "Active",
                                 "In-Repair",
                                 "Retired",
                                 "Sold",
                                 "In Inventory",
-                              ].map((statusOption) => (
-                                <button
-                                  key={statusOption}
-                                  onClick={() =>
-                                    handleStatusChange(asset._id, statusOption)
-                                  }
-                                  disabled={updateStatusMutation.isLoading}
-                                  className={`block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 ${
-                                    asset.status === statusOption
-                                      ? "text-[#059669] font-semibold"
-                                      : "text-gray-700"
-                                  }`}
-                                >
-                                  {statusOption}
-                                </button>
-                              ))}
-                            </div>
-                          )}
+                              ].map((statusOption) => ({
+                                key: statusOption,
+                                label: statusOption,
+                                onClick: () => handleStatusChange(asset._id, statusOption),
+                              })),
+                            }}
+                            trigger={['click']}
+                            disabled={updateStatusMutation.isLoading}
+                          >
+                            <button
+                              className={`px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${getStatusColor(
+                                asset.status,
+                              )} hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[#059669] disabled:opacity-50 cursor-pointer`}
+                            >
+                              {asset.status}
+                              <FiChevronDown className="text-gray-500 text-sm" />
+                            </button>
+                          </Dropdown>
                         </td>
 
                         {/* Actions Column */}
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex items-center gap-2">
+                            <button
+                              className="text-blue-600 hover:text-blue-800 transition-colors p-1 rounded hover:bg-blue-50 cursor-pointer"
+                              title="Download Label"
+                              onClick={() => downloadLabelsMutation.mutate({ id: asset._id })}
+                              disabled={downloadLabelsMutation.isLoading}
+                            >
+                              <FiDownload className="text-lg" />
+                            </button>
                             <button
                               className="text-[#059669] hover:text-[#059669] transition-colors p-1 rounded hover:bg-gray-100 cursor-pointer"
                               title="Edit Asset"
