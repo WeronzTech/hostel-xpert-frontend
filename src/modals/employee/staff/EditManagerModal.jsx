@@ -12,6 +12,7 @@ import {
   DatePicker,
 } from "antd";
 import {UploadOutlined} from "@ant-design/icons";
+import dayjs from "dayjs";
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import {useSelector} from "react-redux";
 import {editManager, getAllRoles} from "../../../hooks/employee/useEmployee";
@@ -56,7 +57,7 @@ const EditManagerModal = ({kitchens, open, onClose, manager}) => {
         gender: manager.gender,
         role: manager.role?._id,
         salary: manager.salary,
-        // joinDate: manager.joinDate,
+        joinDate: manager.joinDate ? dayjs(manager.joinDate) : null,
         address: manager.address,
         selectedmanagerType: manager.managerType || manager.employeeType,
         propertyId: manager.propertyId || [],
@@ -184,11 +185,6 @@ const EditManagerModal = ({kitchens, open, onClose, manager}) => {
 
       // Append manager type
       formData.append("managerType", values.selectedmanagerType);
-
-      // Only append password if a new one is entered
-      if (values.password) {
-        formData.append("password", values.password);
-      }
 
       // Append files only if they have been changed and exist
       if (fileLists.photo?.[0]?.originFileObj) {
