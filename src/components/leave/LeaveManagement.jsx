@@ -41,7 +41,10 @@ import {
   getAllLeaveRequests,
   respondToLeave,
 } from "../../hooks/users/useUser";
+
 import MobileLeaveDrawer from "./MobileLeaveDrawer";
+import ExportButtons from "../common/ExportButtons";
+import {downloadFile} from "../../utils/downloadHelper";
 
 const {RangePicker} = DatePicker;
 const {Option} = Select;
@@ -164,6 +167,30 @@ const LeaveManagement = ({selectedProperty, queryClient}) => {
       reviewedBy: "Current User",
       adminName: "Admin Name",
     });
+  };
+
+  const [isExporting, setIsExporting] = useState(false);
+  const handleExport = async (format) => {
+    try {
+      setIsExporting(true);
+      const params = {
+        propertyId: selectedProperty?.id,
+        search: searchText || undefined,
+        status: statusFilter !== "all" ? statusFilter : undefined,
+        fromDate: dateRange?.[0] ? dateRange[0].format("YYYY-MM-DD") : undefined,
+        toDate: dateRange?.[1] ? dateRange[1].format("YYYY-MM-DD") : undefined,
+        format,
+      };
+      await downloadFile(
+        "/user/leave/export",
+        params,
+        `Leaves_${dayjs().format("YYYYMMDD")}.${format}`,
+      );
+    } catch (error) {
+      console.error("Export failed:", error);
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const getStatusTag = (status) => {
@@ -392,7 +419,7 @@ const LeaveManagement = ({selectedProperty, queryClient}) => {
               />
             </Col>
 
-            <Col xs={24} sm={8} md={8}>
+            <Col xs={24} sm={8} md={6}>
               <Button
                 type="primary"
                 icon={<PlusOutlined />}
@@ -405,6 +432,9 @@ const LeaveManagement = ({selectedProperty, queryClient}) => {
               >
                 Manage Categories
               </Button>
+            </Col>
+            <Col xs={24} sm={8} md={4}>
+               <ExportButtons onExport={handleExport} isExporting={isExporting} />
             </Col>
           </Row>
         </Col>

@@ -15,6 +15,8 @@ import {FiFilter, FiDownload} from "react-icons/fi";
 import dayjs from "dayjs";
 import {useQuery} from "@tanstack/react-query";
 import {getPettyCashTransactionsByManagerId} from "../../hooks/accounts/useAccounts";
+import ExportButtons from "../../components/common/ExportButtons";
+import {downloadFile} from "../../utils/downloadHelper";
 
 const {RangePicker} = DatePicker;
 const {Search} = Input;
@@ -102,6 +104,23 @@ const PettyCashTransactionsModal = ({
 
     return true;
   });
+
+  const [isExporting, setIsExporting] = useState(false);
+  const handleExport = async (format) => {
+    try {
+      setIsExporting(true);
+      const params = { format };
+      await downloadFile(
+        `/client/pettycash/transaction/export/${managerId}`,
+        params,
+        `PettyCash_Txns_${managerName}_${dayjs().format("YYYYMMDD")}.${format}`
+      );
+    } catch (error) {
+      console.error("Export failed:", error);
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   // Format date
   const formatDate = (dateString) => {
@@ -231,7 +250,7 @@ const PettyCashTransactionsModal = ({
   ];
 
   // Handle table change
-  const handleTableChange = (newPagination, filters, sorter) => {
+  const handleTableChange = (newPagination) => {
     setPagination(newPagination);
   };
 
@@ -355,6 +374,7 @@ const PettyCashTransactionsModal = ({
           <Button onClick={handleResetFilters} size="small">
             Reset Filters
           </Button>
+          <ExportButtons onExport={handleExport} isExporting={isExporting} />
         </div>
 
         {/* Active filters indicator */}
@@ -429,19 +449,6 @@ const PettyCashTransactionsModal = ({
         scroll={{x: 1100}}
         size="small"
         bordered
-        summary={(pageData) => {
-          if (!pageData.length) return null;
-
-          const totalInHand = pageData.reduce(
-            (sum, item) => sum + (item.inHandAmount || 0),
-            0,
-          );
-          const totalInAccount = pageData.reduce(
-            (sum, item) => sum + (item.inAccountAmount || 0),
-            0,
-          );
-          const totalAmount = totalInHand + totalInAccount;
-        }}
         locale={{
           emptyText: error ? (
             <div style={{padding: "40px 0", color: "#ff4d4f"}}>

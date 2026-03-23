@@ -12,6 +12,9 @@ import PageHeader from "../../components/common/PageHeader";
 import AddAsset from "../../modals/property/AddAsset";
 import UpdateAsset from "../../modals/property/UpdateAsset";
 import ConfirmModal from "../../modals/common/ConfirmModal";
+import ExportButtons from "../../components/common/ExportButtons";
+import { downloadFile } from "../../utils/downloadHelper";
+import dayjs from "dayjs";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getAllAssets,
@@ -277,6 +280,32 @@ const Assets = () => {
 
     console.log("Downloading labels with final filters:", filters);
     downloadLabelsMutation.mutate(filters);
+  };
+
+  const [isExporting, setIsExporting] = useState(false);
+  const handleDataExport = async (format) => {
+    try {
+      setIsExporting(true);
+      const params = {
+        propertyId: selectedProperty?.id,
+        categoryId: categoryFilter || undefined,
+        status: statusFilter || undefined,
+        floorId: floorFilter || undefined,
+        roomId: roomFilter || undefined,
+        search: searchTerm || undefined,
+        format,
+      };
+      await downloadFile(
+        "/property/asset/export",
+        params,
+        `Assets_Report_${dayjs().format("YYYYMMDD")}.${format}`
+      );
+    } catch (error) {
+      console.error("Export failed:", error);
+      message.error("Failed to export data");
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   // Open download modal
@@ -750,6 +779,8 @@ const Assets = () => {
                   <span>Clear Filters</span>
                 </button>
               )}
+
+              <ExportButtons onExport={handleDataExport} isExporting={isExporting} />
 
               <button
                 className="w-full sm:w-auto cursor-pointer flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"

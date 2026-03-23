@@ -16,6 +16,8 @@ import LoadingSpinner from "../../ui/loadingSpinner/LoadingSpinner.jsx";
 import ErrorState from "../../components/common/ErrorState.jsx";
 import { messApiService } from "../../hooks/mess/messApiService.js";
 import { ActionButton } from "../../components/index.js";
+import ExportButtons from "../../components/common/ExportButtons.jsx";
+import {downloadFile} from "../../utils/downloadHelper.js";
 
 const { Title, Text } = Typography;
 
@@ -57,6 +59,8 @@ function MessMenuPage() {
     (state) => state.properties.selectedProperty.kitchenId,
   );
 
+  const [isExporting, setIsExporting] = useState(false);
+
   // State to track selected day in the week
   const [selectedDay, setSelectedDay] = useState(
     [
@@ -81,7 +85,7 @@ function MessMenuPage() {
   ][new Date().getDay()];
 
   // Fetch mess menu using tanstack-query
-  const { data, error, isLoading, isError, refetch } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["messMenu", selectedKitchenId],
     queryFn: () => messApiService.getMessMenu(selectedKitchenId),
     enabled: !!selectedKitchenId,
@@ -153,6 +157,26 @@ function MessMenuPage() {
     }, 0); // 0 or 100ms to avoid render-block
   };
 
+  const handleExport = async (format) => {
+    try {
+      setIsExporting(true);
+      const params = {
+        kitchenId: selectedKitchenId,
+        dayOfWeek: selectedDay,
+        format,
+      };
+      await downloadFile(
+        "/inventory/mess/export",
+        params,
+        `Mess_Menu_${selectedDay}_${dayjs().format("YYYYMMDD")}.${format}`,
+      );
+    } catch (error) {
+      console.error("Export failed:", error);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 xl:px-12 lg:px-4 lg:pt-6 lg:pb-12 px-4 pt-4 pb-8">
       {/* Page Header */}
@@ -170,13 +194,16 @@ function MessMenuPage() {
         }
         showCalendar={false}
       />
-      <Button
-        type="primary"
-        icon={<PlusOutlined />}
-        onClick={() => navigate("/mess/create/menu")}
-      >
-        Add Menu
-      </Button>
+      <div className="flex justify-end gap-2 mb-4">
+        <ExportButtons onExport={handleExport} isExporting={isExporting} />
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => navigate("/mess/create/menu")}
+        >
+          Add Menu
+        </Button>
+      </div>
       <div className="max-w-7xl mx-auto bg-white rounded-xl shadow-lg p-6">
         {/* Timings Header */}
         <Header

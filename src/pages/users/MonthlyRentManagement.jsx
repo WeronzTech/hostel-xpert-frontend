@@ -1,8 +1,10 @@
-import {useEffect} from "react";
+import {useEffect, useState} from "react";
 import StatsGrid from "../../components/common/StatsGrid";
 import SearchFilters from "../../components/common/SearchFilters";
 import PageHeader from "../../components/common/PageHeader";
 import ResidentsTable from "../../components/users/ResidentsTable";
+import ExportButtons from "../../components/common/ExportButtons";
+import {downloadFile} from "../../utils/downloadHelper";
 import {useSelector} from "react-redux";
 import {useQuery} from "@tanstack/react-query";
 import {getUsers} from "../../hooks/users/useUser";
@@ -98,6 +100,32 @@ const MonthlyRentManagement = () => {
     setJoinDateFilter(date);
   };
 
+  const [isExporting, setIsExporting] = useState(false);
+  const handleExport = async (format) => {
+    try {
+      setIsExporting(true);
+      const params = {
+        rentType: "monthly",
+        propertyId: selectedProperty?.id,
+        search: searchTerm,
+        status: statusFilter !== "All" ? statusFilter : undefined,
+        joinDate: normalizedJoinDateFilter
+          ? normalizedJoinDateFilter.format("YYYY-MM-DD")
+          : undefined,
+        format,
+      };
+      await downloadFile(
+        "/user/export",
+        params,
+        `Monthly_Rent_Users_${dayjs().format("YYYYMMDD")}.${format}`,
+      );
+    } catch (error) {
+      console.error("Export failed:", error);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const stats = [
     {
       title: "Total Residents",
@@ -153,6 +181,9 @@ const MonthlyRentManagement = () => {
           searchTerm || statusFilter !== "All" || normalizedJoinDateFilter
         }
       />
+      <div className="flex justify-end mb-4">
+        <ExportButtons onExport={handleExport} isExporting={isExporting} />
+      </div>
       {/* Residents Table */}
       <div className="bg-white rounded-lg shadow-sm">
         <ResidentsTable

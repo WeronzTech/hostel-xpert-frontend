@@ -18,6 +18,8 @@ import AttendanceHistoryModal from "../../components/attendance/AttendanceHistor
 import RemarksModal from "../../components/attendance/RemarksModal";
 import {getDesktopColumns} from "../../components/attendance/DesktopColumns";
 import {getMobileColumns} from "../../components/attendance/MobileColumns";
+import ExportButtons from "../../components/common/ExportButtons";
+import {downloadFile} from "../../utils/downloadHelper";
 
 const PRIMARY_COLOR = "#059669";
 
@@ -143,6 +145,30 @@ const AttendanceManagement = () => {
       remarks: remarks || (status === "Late" ? "Late arrival" : ""),
       date: selectedDate.format("YYYY-MM-DD"),
     });
+  };
+
+  const [isExporting, setIsExporting] = useState(false);
+  const handleExport = async (format) => {
+    try {
+      setIsExporting(true);
+      const params = {
+        date: selectedDate?.format("YYYY-MM-DD"),
+        search: searchText || undefined,
+        propertyId: selectedProperty?.id,
+        status: statusFilter !== "all" ? statusFilter : undefined,
+        roomId: selectedRoomId || undefined,
+        format,
+      };
+      await downloadFile(
+        "/user/attendance/export",
+        params,
+        `Attendance_${dayjs().format("YYYYMMDD")}.${format}`,
+      );
+    } catch (error) {
+      console.error("Export failed:", error);
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   // Handle update remarks only
@@ -290,6 +316,10 @@ const AttendanceManagement = () => {
         onBulkMark={handleBulkMarkAttendance}
         isBulkLoading={isBulkLoading}
       />
+
+      <div className="flex justify-end mb-4">
+        <ExportButtons onExport={handleExport} isExporting={isExporting} />
+      </div>
 
       {/* Room Info Banner */}
       {selectedRoomDetails && (
