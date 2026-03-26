@@ -1051,6 +1051,7 @@ const ExpenseTable = ({
   onPaginationChange,
   onEdit,
   onDelete,
+  onPay,
   onStatusChange,
 }) => {
   const [allExpenses, setAllExpenses] = useState([]);
@@ -1335,6 +1336,18 @@ const ExpenseTable = ({
           width: 120,
         },
         {
+          title: "Vendor",
+          dataIndex: "vendorId",
+          key: "vendor",
+          align: "center",
+          width: 150,
+          render: (vendor) => (
+            <span className="font-medium text-gray-700">
+              {vendor?.vendorName || "N/A"}
+            </span>
+          ),
+        },
+        {
           title: "Amount",
           dataIndex: "amount",
           key: "amount",
@@ -1379,6 +1392,9 @@ const ExpenseTable = ({
           align: "center",
           width: 130,
           render: (method) => {
+            if (!method) {
+              return <Tag color="default">N/A</Tag>;
+            }
             const methodConfig = {
               Cash: {color: "green"},
               UPI: {color: "blue"},
@@ -1909,6 +1925,37 @@ const ExpenseTable = ({
 
     if (type === "waiveoffs" || type === "vouchers" || type === "commissions") {
       return baseColumns[type] || [];
+    }
+
+    if (type === "pendingExpenses") {
+      const pendingActionColumn = {
+        title: "Actions",
+        key: "actions",
+        width: 120,
+        align: "center",
+        render: (_, record) => (
+          <div className="flex gap-2 justify-center align-center">
+            <Button 
+               type="primary" 
+               size="small" 
+               onClick={() => onPay?.(record)}
+            >
+               Mark Paid
+            </Button>
+            <Popconfirm
+              title="Delete expense"
+              description="Are you sure you want to delete this expense?"
+              okText="Yes"
+              cancelText="No"
+              okButtonProps={{danger: true}}
+              onConfirm={() => onDelete?.(record)}
+            >
+              <Button type="text" danger icon={<FiTrash2 />} />
+            </Popconfirm>
+          </div>
+        ),
+      };
+      return [...(baseColumns.expenses || []), pendingActionColumn];
     }
 
     return [...(baseColumns[type] || []), actionColumn];

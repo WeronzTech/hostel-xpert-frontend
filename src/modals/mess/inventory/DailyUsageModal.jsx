@@ -1,4 +1,4 @@
-import { Modal, Form, InputNumber, Select, Button, message } from "antd";
+import { Modal, Form, InputNumber, Select, Button, message, DatePicker } from "antd";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSelector } from "react-redux";
 import {
@@ -99,6 +99,13 @@ const DailyUsageModal = ({ open, onClose, loading, inventoryItem }) => {
                 </Option>
               ))}
             </Select>
+          </Form.Item>
+          <Form.Item
+            name="date"
+            label="Date"
+            rules={[{ required: true, message: "Please select a date!" }]}
+          >
+            <DatePicker style={{ width: "100%" }} />
           </Form.Item>
           <Form.Item
             name="quantity"

@@ -27,6 +27,8 @@ import {
   getCategoryByMainCategory,
   addExpense,
   getAllPettyCashes,
+  getAllVendors,
+  addVendor,
 } from "../../hooks/accounts/useAccounts";
 
 const {Option} = Select;
@@ -52,6 +54,13 @@ const AddExpenseModal = ({visible, onCancel, selectedCategory}) => {
   const [apiError, setApiError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Inline vendor add state
+  const [showAddVendor, setShowAddVendor] = useState(false);
+  const [newVendorName, setNewVendorName] = useState("");
+  const [newVendorMobile, setNewVendorMobile] = useState("");
+  const [newVendorType, setNewVendorType] = useState("GENERAL");
+
+  const status = Form.useWatch("status", form);
   const spentVia = Form.useWatch("spentVia", form);
   const selectedPaymentMethod = Form.useWatch("paymentMethod", form);
 
@@ -67,6 +76,55 @@ const AddExpenseModal = ({visible, onCancel, selectedCategory}) => {
     staleTime: 5 * 60 * 1000,
     enabled: !!currentProperty?._id || !!selectedProperty?.id,
   });
+
+  const clientId = selectedProperty?.client || selectedProperty?.clientId || user?.clientId || user?.client;
+
+  const { data: vendorsData, refetch: refetchVendors } = useQuery({
+    queryKey: ["vendors", clientId],
+    queryFn: () => getAllVendors({ clientId }),
+    enabled: !!clientId,
+  });
+  const vendors = vendorsData?.data || [];
+
+  const addVendorMutation = useMutation({
+    mutationFn: addVendor,
+    onSuccess: (data) => {
+      if (data.success) {
+        messageApi.success("Vendor added successfully");
+        refetchVendors();
+        // Auto-select the newly created vendor
+        form.setFieldsValue({ vendorId: data.data?._id });
+        setNewVendorName("");
+        setNewVendorMobile("");
+        setNewVendorType("GENERAL");
+        setShowAddVendor(false);
+      } else {
+        messageApi.error(data.message || "Failed to add vendor");
+      }
+    },
+    onError: (err) => messageApi.error(err.message || "Failed to add vendor"),
+  });
+
+  const handleAddVendorInline = () => {
+    if (!newVendorName.trim()) {
+      message.error("Please enter vendor name");
+      return;
+    }
+    addVendorMutation.mutate({
+      vendorName: newVendorName.trim(),
+      mobileNumber: newVendorMobile.trim(),
+      vendorType: newVendorType,
+      clientId,
+    });
+  };
+
+  const vendorTypes = [
+    "GENERAL", "MAINTENANCE", "ELECTRICAL", "PLUMBING", "CARPENTRY",
+    "PAINTING", "HOUSEKEEPING", "FOOD", "LAUNDRY", "SECURITY",
+    "INTERNET", "UTILITY", "FURNITURE", "APPLIANCE REPAIR", "PEST CONTROL",
+    "CONSTRUCTION", "ELEVATOR MAINTENANCE", "FIRE SAFETY", "REAL ESTATE AGENT",
+    "LEGAL", "ACCOUNTING", "INTERIOR DESIGN", "BANK", "OTHERS",
+  ];
 
   const paymentMethods = ["Cash", "UPI", "Bank Transfer", "Card", "Petty Cash"];
 
@@ -372,6 +430,8 @@ const AddExpenseModal = ({visible, onCancel, selectedCategory}) => {
         type: values.categoryType,
         category: values.category,
         amount: values.amount,
+        status: values.status,
+        vendorId: values.vendorId || undefined,
         date:
           values.date?.format?.("YYYY-MM-DD") ||
           new Date().toISOString().split("T")[0],
@@ -797,14 +857,50 @@ const AddExpenseModal = ({visible, onCancel, selectedCategory}) => {
               </Col>
             </Row>
 
-            {/* Amount and Payment Method */}
+            {/* Amount and Status */}
+            <Row gutter={[16, 16]}>
+              <Col xs={24} sm={24} md={12}>
+                <Form.Item
+                  name="amount"
+                  label="Amount"
+                  rules={[{required: true, message: "Please enter amount"}]}
+                >
+                  <InputNumber
+                    style={{width: "100%"}}
+                    placeholder="Enter amount"
+                    prefix="₹"
+                    min={0}
+                    step={100}
+                    disabled={isLoading}
+                  />
+                </Form.Item>
+              </Col>
+              <Col xs={24} sm={24} md={12}>
+                <Form.Item
+                  name="status"
+                  label="Payment Status"
+                  rules={[{required: true, message: "Please select status"}]}
+                  initialValue="paid"
+                >
+                  <Select disabled={isLoading}>
+                    <Option value="paid">Paid</Option>
+                    <Option value="pending">Pending</Option>
+                  </Select>
+                </Form.Item>
+              </Col>
+            </Row>
+
+            {/* Payment Method and Vendor Selection */}
             <Row gutter={[16, 16]}>
               <Col xs={24} sm={24} md={12}>
                 <Form.Item
                   name="paymentMethod"
                   label="Payment Method"
                   rules={[
-                    {required: true, message: "Please select payment method"},
+                    {
+                      required: status !== "pending",
+                      message: "Please select payment method",
+                    },
                   ]}
                 >
                   <Select
@@ -820,21 +916,86 @@ const AddExpenseModal = ({visible, onCancel, selectedCategory}) => {
                   </Select>
                 </Form.Item>
               </Col>
-
+              
               <Col xs={24} sm={24} md={12}>
                 <Form.Item
-                  name="amount"
-                  label="Amount"
-                  rules={[{required: true, message: "Please enter amount"}]}
+                  name="vendorId"
+                  label="Vendor (Optional)"
                 >
-                  <InputNumber
-                    style={{width: "100%"}}
-                    placeholder="Enter amount"
-                    prefix="₹"
-                    min={0}
-                    step={100}
+                  <Select
+                    placeholder="Select vendor"
+                    showSearch
+                    allowClear
+                    optionFilterProp="children"
                     disabled={isLoading}
-                  />
+                    dropdownRender={(menu) => (
+                      <div>
+                        {menu}
+                        <Divider style={{ margin: "8px 0" }} />
+                        <div style={{ padding: "8px" }}>
+                          {showAddVendor ? (
+                            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                              <Input
+                                placeholder="Vendor name"
+                                value={newVendorName}
+                                onChange={(e) => setNewVendorName(e.target.value)}
+                                size="small"
+                              />
+                              <Input
+                                placeholder="Mobile number"
+                                value={newVendorMobile}
+                                onChange={(e) => setNewVendorMobile(e.target.value)}
+                                onPressEnter={handleAddVendorInline}
+                                size="small"
+                              />
+                              <Select
+                                size="small"
+                                value={newVendorType}
+                                onChange={setNewVendorType}
+                                style={{ width: "100%" }}
+                                placeholder="Vendor type"
+                                getPopupContainer={(t) => t.parentElement}
+                              >
+                                {vendorTypes.map((vt) => (
+                                  <Option key={vt} value={vt}>{vt}</Option>
+                                ))}
+                              </Select>
+                              <Space>
+                                <Button
+                                  type="primary"
+                                  size="small"
+                                  loading={addVendorMutation.isPending}
+                                  onClick={handleAddVendorInline}
+                                >
+                                  Add
+                                </Button>
+                                <Button
+                                  size="small"
+                                  onClick={() => { setShowAddVendor(false); setNewVendorName(""); }}
+                                >
+                                  Cancel
+                                </Button>
+                              </Space>
+                            </div>
+                          ) : (
+                            <Button
+                              type="dashed"
+                              block
+                              icon={<FiPlus />}
+                              onClick={() => setShowAddVendor(true)}
+                              size="small"
+                            >
+                              Add New Vendor
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  >
+                    {vendors.map((v) => (
+                      <Option key={v._id} value={v._id}>{v.vendorName}</Option>
+                    ))}
+                  </Select>
                 </Form.Item>
               </Col>
             </Row>

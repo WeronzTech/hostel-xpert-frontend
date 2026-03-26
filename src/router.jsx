@@ -56,6 +56,7 @@ import AttendanceManagement from "./pages/Attendance/AttendanceManagement.jsx";
 import LeaveGatePassManagement from "./pages/leave/LeaveGatePassManagement.jsx";
 import FinancialReports from "./pages/accounts/FinancialReports.jsx";
 import UserProfile from "./pages/profile/UserProfile.jsx";
+import VendorDashboard from "./pages/accounts/VendorDashboard.jsx";
 
 const Dashboard = lazy(() => import("./pages/home/Dashboard.jsx"));
 const AccountsDashboard = lazy(
@@ -86,6 +87,7 @@ const appRoutes = [
   },
   { path: "accounts/transactions/:type", element: <FinancialDetailsPage /> },
   { path: "accounts/transactions/expenses", element: <ExpenseDetailsPage /> },
+  { path: "accounts/vendors", element: <VendorDashboard /> },
   { path: "monthlyRent", element: <MonthlyRentManagement /> },
   { path: "resident/:id", element: <ResidentDetails /> },
   { path: "resident/:id/edit", element: <EditResident /> },

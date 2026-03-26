@@ -1,6 +1,7 @@
 import {useState} from "react";
+import {useNavigate} from "react-router-dom";
 import {Button, Dropdown, Menu} from "antd";
-import {FiDownload, FiUpload, FiPocket} from "react-icons/fi";
+import {FiDownload, FiUpload, FiPocket, FiUsers} from "react-icons/fi";
 import {BsPercent, BsReceipt} from "react-icons/bs";
 import RentCollectionModal from "../../modals/accounts/RentCollectionModal";
 import AddExpenseModal from "../../modals/accounts/AddExpenseModal";
@@ -12,6 +13,7 @@ import GSTExportComponent from "../../utils/GSTExportComponent"; // Import the c
 import AllocateUsersModal from "../../modals/accounts/AllocateUsersModal";
 
 const QuickActionsBar = () => {
+  const navigate = useNavigate();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedOption, setSelectedOption] = useState("");
   const [isExpenseModalVisible, setIsExpenseModalVisible] = useState(false);
@@ -278,6 +280,25 @@ const QuickActionsBar = () => {
           >
             <BsReceipt />
             Create Voucher
+          </Button>
+
+          {/* Vendors Navigation Button */}
+          <Button
+            style={{
+              flex: 1,
+              minWidth: "150px",
+              backgroundColor: "white",
+              borderColor: "#059669",
+              color: "#059669",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "8px",
+              height: "48px",
+            }}
+            onClick={() => navigate("/accounts/vendors")}
+          >
+            <FiUsers /> Vendors
           </Button>
 
           {/* Use the combined GST Export Component */}

@@ -42,10 +42,16 @@ export const editInventoryItem = async (itemId, updatedData) => {
   }
 };
 
-export const getCategoriesByProperty = async (propertyId) => {
+export const getCategoriesByProperty = async (propertyId, kitchenId) => {
   try {
+    const params = {};
+    if (propertyId) params.propertyId = propertyId;
+    if (kitchenId) {
+      params.kitchenId = Array.isArray(kitchenId) ? kitchenId.join(",") : kitchenId;
+    }
+
     const res = await apiClient.get(`/inventory/category/get-by-property`, {
-      params: {propertyId},
+      params,
     });
     return res.data.data || [];
   } catch (err) {
