@@ -1,460 +1,6 @@
-// import {useState} from "react";
-// import {useNavigate} from "react-router-dom";
-// import {validateRegistrationForm} from "../../utils/validator.js";
-// import {registerClient} from "../../hooks/client/useClient.js";
-// import {
-//   Card,
-//   Form,
-//   Input,
-//   Button,
-//   Alert,
-//   Typography,
-//   Row,
-//   Col,
-//   Select,
-//   Divider,
-//   message,
-// } from "antd";
-// import {
-//   UserOutlined,
-//   MailOutlined,
-//   PhoneOutlined,
-//   LockOutlined,
-//   HomeOutlined,
-//   EnvironmentOutlined,
-// } from "@ant-design/icons";
-
-// const {Title, Paragraph, Text} = Typography;
-// const {Option} = Select;
-
-// const AdminRegistration = () => {
-//   const navigate = useNavigate();
-//   const [form] = Form.useForm();
-//   const [showPassword, setShowPassword] = useState(false);
-//   const [loading, setLoading] = useState(false);
-//   const [errorMsg, setErrorMsg] = useState("");
-//   const [messageApi, contextHolder] = message.useMessage();
-
-//   const initialValues = {
-//     companyName: "",
-//     primaryAdmin: {
-//       name: "",
-//       email: "",
-//       phone: "",
-//       password: "",
-//     },
-//     address: {
-//       street: "",
-//       city: "",
-//       state: "",
-//       country: "",
-//       // zipCode: "",
-//     },
-//     activeModules: ["properties", "users", "timeOff", "kitchen", "accounts"],
-//   };
-
-//   const handleSubmit = async (values) => {
-//     setErrorMsg("");
-//     setLoading(true);
-
-//     // Frontend validation
-//     const validationErrors = validateRegistrationForm(values);
-//     if (validationErrors.length > 0) {
-//       setErrorMsg(validationErrors.join("\n"));
-//       setLoading(false);
-//       return;
-//     }
-
-//     try {
-//       const response = await registerClient(values);
-//       console.log("Registration Success:", response);
-//       messageApi.success(response?.data?.message || "Registration Success");
-
-//       if (response.success) {
-//         navigate("/login", {
-//           state: {
-//             email: values.primaryAdmin.email,
-//             password: values.primaryAdmin.password,
-//           },
-//         });
-//       } else {
-//         console.log(response);
-//         setErrorMsg(response.message || "Registration completed with warnings");
-//       }
-//     } catch (err) {
-//       console.error("Registration Error:", err);
-
-//       let errorMessage = "Registration failed. Please try again.";
-
-//       if (err.details) {
-//         console.log(err.details);
-//         if (Array.isArray(err.details)) {
-//           errorMessage = err.details.join("\n");
-//         } else if (typeof err.details === "object") {
-//           errorMessage = Object.values(err.details).flat().join("\n");
-//         } else {
-//           errorMessage = err.details;
-//         }
-//       } else if (err.message) {
-//         errorMessage = err.message;
-//       }
-//       console.log(errorMessage);
-//       setErrorMsg(err?.details?.message);
-//       window.scrollTo({top: 0, behavior: "smooth"});
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   return (
-//     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-//       {contextHolder}
-//       <Card
-//         className="w-full max-w-4xl shadow-lg rounded-2xl overflow-hidden"
-//         bordered={false}
-//         styles={{
-//           body: {padding: 0},
-//         }}
-//       >
-//         {/* Header */}
-//         <div
-//           className="bg-gradient-to-r from-[#059669] to-[#059669] p-6 text-white"
-//           style={{
-//             background: "linear-gradient(to right, #059669, #059669)",
-//           }}
-//         >
-//           <Title level={3} style={{color: "white", margin: 0}}>
-//             Admin Registration
-//           </Title>
-//           <Paragraph style={{color: "#e0e7ff", margin: "0.25rem 0 0 0"}}>
-//             Create your organization's admin account
-//           </Paragraph>
-//         </div>
-
-//         <div className="p-6 sm:p-8">
-//           <Form
-//             form={form}
-//             name="registration-form"
-//             initialValues={initialValues}
-//             onFinish={handleSubmit}
-//             layout="vertical"
-//             size="large"
-//           >
-//             {/* Error Message */}
-//             {errorMsg && (
-//               <Alert
-//                 message={<div style={{whiteSpace: "pre-line"}}>{errorMsg}</div>}
-//                 type="error"
-//                 showIcon
-//                 style={{marginBottom: "24px", borderRadius: "8px"}}
-//                 closable
-//                 onClose={() => setErrorMsg("")}
-//               />
-//             )}
-
-//             {/* Company Information */}
-//             <div style={{marginBottom: "32px"}}>
-//               <div
-//                 style={{
-//                   display: "flex",
-//                   alignItems: "center",
-//                   marginBottom: "24px",
-//                   paddingBottom: "12px",
-//                   borderBottom: "2px solid #e5e7eb",
-//                 }}
-//               >
-//                 <HomeOutlined
-//                   style={{
-//                     color: "#059669",
-//                     marginRight: "12px",
-//                     fontSize: "18px",
-//                   }}
-//                 />
-//                 <Title level={4} style={{margin: 0, color: "#1f2937"}}>
-//                   Company Information
-//                 </Title>
-//               </div>
-//               <Form.Item
-//                 label="Company Name"
-//                 name="companyName"
-//                 rules={[{required: true, message: "Please enter company name"}]}
-//                 style={{marginBottom: "16px"}}
-//               >
-//                 <Input
-//                   prefix={<HomeOutlined style={{color: "#9ca3af"}} />}
-//                   placeholder="Enter company/organization name"
-//                   style={{borderRadius: "8px"}}
-//                 />
-//               </Form.Item>
-
-//               <Form.Item
-//                 label="Active Modules"
-//                 name="activeModules"
-//                 rules={[{required: true, message: "Please select at least one module"}]}
-//                 style={{marginBottom: "16px"}}
-//               >
-//                 <Select
-//                   mode="multiple"
-//                   placeholder="Select modules for this client"
-//                   style={{borderRadius: "8px"}}
-//                 >
-//                   <Option value="properties">Property Management</Option>
-//                   <Option value="users">User Management</Option>
-//                   <Option value="timeOff">Attendance & Leave</Option>
-//                   <Option value="kitchen">Mess & Kitchen</Option>
-//                   <Option value="accounts">Accounts & Finance</Option>
-//                 </Select>
-//               </Form.Item>
-//             </div>
-
-//             <Row gutter={[24, 0]}>
-//               {/* Primary Admin Section */}
-//               <Col xs={24} md={12}>
-//                 <div
-//                   style={{
-//                     display: "flex",
-//                     alignItems: "center",
-//                     marginBottom: "24px",
-//                     paddingBottom: "12px",
-//                     borderBottom: "2px solid #e5e7eb",
-//                   }}
-//                 >
-//                   <UserOutlined
-//                     style={{
-//                       color: "#059669",
-//                       marginRight: "12px",
-//                       fontSize: "18px",
-//                     }}
-//                   />
-//                   <Title level={4} style={{margin: 0, color: "#1f2937"}}>
-//                     Primary Admin
-//                   </Title>
-//                 </div>
-
-//                 <Form.Item
-//                   label="Full Name"
-//                   name={["primaryAdmin", "name"]}
-//                   rules={[{required: true, message: "Please enter admin name"}]}
-//                   style={{marginBottom: "16px"}}
-//                 >
-//                   <Input
-//                     prefix={<UserOutlined style={{color: "#9ca3af"}} />}
-//                     placeholder="Admin's full name"
-//                     style={{borderRadius: "8px"}}
-//                   />
-//                 </Form.Item>
-
-//                 <Form.Item
-//                   label="Email"
-//                   name={["primaryAdmin", "email"]}
-//                   rules={[
-//                     {required: true, message: "Please enter email"},
-//                     {type: "email", message: "Please enter valid email"},
-//                   ]}
-//                   style={{marginBottom: "16px"}}
-//                 >
-//                   <Input
-//                     prefix={<MailOutlined style={{color: "#9ca3af"}} />}
-//                     placeholder="official@company.com"
-//                     style={{borderRadius: "8px"}}
-//                   />
-//                 </Form.Item>
-
-//                 <Form.Item
-//                   label="Phone"
-//                   name={["primaryAdmin", "phone"]}
-//                   rules={[
-//                     {required: true, message: "Please enter phone number"},
-//                   ]}
-//                   style={{marginBottom: "16px"}}
-//                 >
-//                   <Input
-//                     prefix={<PhoneOutlined style={{color: "#9ca3af"}} />}
-//                     placeholder="Please enter phone number"
-//                     style={{borderRadius: "8px"}}
-//                   />
-//                 </Form.Item>
-
-//                 <Form.Item
-//                   label="Password"
-//                   name={["primaryAdmin", "password"]}
-//                   rules={[
-//                     {required: true, message: "Please enter password"},
-//                     {min: 6, message: "Minimum 6 characters"},
-//                   ]}
-//                   style={{marginBottom: "8px"}}
-//                 >
-//                   <Input.Password
-//                     prefix={<LockOutlined style={{color: "#9ca3af"}} />}
-//                     placeholder="••••••••"
-//                     style={{borderRadius: "8px"}}
-//                     visibilityToggle={{
-//                       visible: showPassword,
-//                       onVisibleChange: setShowPassword,
-//                     }}
-//                   />
-//                 </Form.Item>
-//                 <Text
-//                   type="secondary"
-//                   style={{
-//                     fontSize: "12px",
-//                     display: "block",
-//                     marginBottom: "24px",
-//                   }}
-//                 >
-//                   Min 6 chars, incl. 1 number, uppercase & special character
-//                 </Text>
-//               </Col>
-
-//               {/* Address Information Section */}
-//               <Col xs={24} md={12}>
-//                 <div
-//                   style={{
-//                     display: "flex",
-//                     alignItems: "center",
-//                     marginBottom: "24px",
-//                     paddingBottom: "12px",
-//                     borderBottom: "2px solid #e5e7eb",
-//                   }}
-//                 >
-//                   <EnvironmentOutlined
-//                     style={{
-//                       color: "#059669",
-//                       marginRight: "12px",
-//                       fontSize: "18px",
-//                     }}
-//                   />
-//                   <Title level={4} style={{margin: 0, color: "#1f2937"}}>
-//                     Company Address
-//                   </Title>
-//                 </div>
-
-//                 <Form.Item
-//                   label="Street"
-//                   name={["address", "street"]}
-//                   rules={[
-//                     {required: true, message: "Please enter street address"},
-//                   ]}
-//                   style={{marginBottom: "16px"}}
-//                 >
-//                   <Input
-//                     prefix={<EnvironmentOutlined style={{color: "#9ca3af"}} />}
-//                     placeholder="Street address"
-//                     style={{borderRadius: "8px"}}
-//                   />
-//                 </Form.Item>
-
-//                 <Row gutter={16} style={{marginBottom: "16px"}}>
-//                   <Col span={12}>
-//                     <Form.Item
-//                       label="City"
-//                       name={["address", "city"]}
-//                       rules={[{required: true, message: "Please enter city"}]}
-//                       style={{marginBottom: 0}}
-//                     >
-//                       <Input placeholder="City" style={{borderRadius: "8px"}} />
-//                     </Form.Item>
-//                   </Col>
-//                   <Col span={12}>
-//                     <Form.Item
-//                       label="State"
-//                       name={["address", "state"]}
-//                       rules={[{required: true, message: "Please enter state"}]}
-//                       style={{marginBottom: 0}}
-//                     >
-//                       <Input
-//                         placeholder="State/Province"
-//                         style={{borderRadius: "8px"}}
-//                       />
-//                     </Form.Item>
-//                   </Col>
-//                 </Row>
-
-//                 <Row gutter={16}>
-//                   <Col span={12}>
-//                     <Form.Item
-//                       label="Country"
-//                       name={["address", "country"]}
-//                       rules={[
-//                         {required: true, message: "Please enter country"},
-//                       ]}
-//                       style={{marginBottom: 0}}
-//                     >
-//                       <Input
-//                         placeholder="Enter country"
-//                         style={{borderRadius: "8px"}}
-//                       />
-//                     </Form.Item>
-//                   </Col>
-//                   {/* <Col span={12}>
-//                     <Form.Item
-//                       label="ZIP Code"
-//                       name={["address", "zipCode"]}
-//                       rules={[
-//                         {required: true, message: "Please enter ZIP code"},
-//                       ]}
-//                       style={{marginBottom: 0}}
-//                     >
-//                       <Input
-//                         placeholder="Postal/ZIP code"
-//                         style={{borderRadius: "8px"}}
-//                       />
-//                     </Form.Item>
-//                   </Col> */}
-//                 </Row>
-//               </Col>
-//             </Row>
-
-//             {/* Form Actions */}
-//             <Divider style={{margin: "32px 0 24px 0"}} />
-
-//             <div className="flex flex-col-reverse sm:flex-row sm:justify-between items-center gap-4">
-//               <Text style={{color: "#6b7280", textAlign: "center"}}>
-//                 Already have an account?{" "}
-//                 <Button
-//                   type="link"
-//                   onClick={() => navigate("/login")}
-//                   style={{
-//                     color: "#059669",
-//                     padding: 0,
-//                     height: "auto",
-//                     fontWeight: 500,
-//                   }}
-//                 >
-//                   Login
-//                 </Button>
-//               </Text>
-
-//               <Button
-//                 type="primary"
-//                 htmlType="submit"
-//                 loading={loading}
-//                 style={{
-//                   backgroundColor: "#059669",
-//                   borderColor: "#059669",
-//                   borderRadius: "8px",
-//                   height: "40px",
-//                   padding: "0 24px",
-//                   fontWeight: 500,
-//                   width: "100%",
-//                   maxWidth: "200px",
-//                 }}
-//                 className="hover:opacity-90"
-//               >
-//                 {loading ? "Registering..." : "Register"}
-//               </Button>
-//             </div>
-//           </Form>
-//         </div>
-//       </Card>
-//     </div>
-//   );
-// };
-
-import { useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import { validateRegistrationForm } from "../../utils/validator.js";
-import { registerClient } from "../../hooks/client/useClient.js";
+import {useState, useRef} from "react";
+import {useNavigate} from "react-router-dom";
+import {registerClient} from "../../hooks/client/useClient.js";
 import {
   Form,
   Input,
@@ -465,7 +11,9 @@ import {
   Steps,
   Row,
   Col,
-  ConfigProvider
+  ConfigProvider,
+  Typography,
+  InputNumber,
 } from "antd";
 import {
   UserOutlined,
@@ -476,20 +24,32 @@ import {
   EnvironmentOutlined,
   AppstoreAddOutlined,
   ArrowRightOutlined,
-  ArrowLeftOutlined
+  ArrowLeftOutlined,
+  DollarOutlined,
+  CalendarOutlined,
 } from "@ant-design/icons";
 
-const { Option } = Select;
+const {Option} = Select;
+const {Title, Text} = Typography;
 
 const QUOTES = [
-  { text: "Great things in business are never done by one person.", author: "Steve Jobs" },
-  { text: "The beginning is the most important part of the work.", author: "Plato" },
-  { text: "Growth is never by mere chance; it is the result of forces working together.", author: "James Cash Penney" }
+  {
+    text: "Great things in business are never done by one person.",
+    author: "Steve Jobs",
+  },
+  {
+    text: "The beginning is the most important part of the work.",
+    author: "Plato",
+  },
+  {
+    text: "Growth is never by mere chance; it is the result of forces working together.",
+    author: "James Cash Penney",
+  },
 ];
 const SELECTED_QUOTE = QUOTES[Math.floor(Math.random() * QUOTES.length)];
 
 // Floating orb component for the background
-const Orb = ({ style }) => (
+const Orb = ({style}) => (
   <div
     style={{
       position: "absolute",
@@ -508,27 +68,31 @@ const AdminRegistration = () => {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [messageApi, contextHolder] = message.useMessage();
-  
+
   // Ref to handle smooth scrolling to the top of the form
   const formTopRef = useRef(null);
 
   const initialValues = {
     companyName: "",
-    primaryAdmin: { name: "", email: "", phone: "", password: "" },
-    address: { street: "", city: "", state: "", country: "" },
+    primaryAdmin: {name: "", email: "", phone: "", password: ""},
+    address: {street: "", city: "", state: "", country: ""},
     activeModules: ["properties", "users", "timeOff", "kitchen", "accounts"],
+    billingConfig: {
+      billingDay: 1,
+      graceDays: 7,
+    },
   };
 
   const stepsConfig = [
-    { title: "Organization", fields: ["companyName", "activeModules"] },
+    {title: "Organization", fields: ["companyName", "activeModules"]},
     {
       title: "Admin Info",
       fields: [
         ["primaryAdmin", "name"],
         ["primaryAdmin", "email"],
         ["primaryAdmin", "phone"],
-        ["primaryAdmin", "password"]
-      ]
+        ["primaryAdmin", "password"],
+      ],
     },
     {
       title: "Location",
@@ -536,15 +100,22 @@ const AdminRegistration = () => {
         ["address", "street"],
         ["address", "city"],
         ["address", "state"],
-        ["address", "country"]
-      ]
-    }
+        ["address", "country"],
+      ],
+    },
+    {
+      title: "Billing",
+      fields: [
+        ["billingConfig", "billingDay"],
+        ["billingConfig", "graceDays"],
+      ],
+    },
   ];
 
   const smoothScrollToTop = () => {
     // Small timeout ensures the DOM has rendered the new step before scrolling
     setTimeout(() => {
-      formTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      formTopRef.current?.scrollIntoView({behavior: "smooth", block: "start"});
     }, 100);
   };
 
@@ -552,7 +123,7 @@ const AdminRegistration = () => {
     try {
       await form.validateFields(stepsConfig[currentStep].fields);
       setErrorMsg("");
-      setCurrentStep(prev => prev + 1);
+      setCurrentStep((prev) => prev + 1);
       smoothScrollToTop();
     } catch (error) {
       console.log("Validation failed:", error);
@@ -561,82 +132,194 @@ const AdminRegistration = () => {
 
   const handlePrev = () => {
     setErrorMsg("");
-    setCurrentStep(prev => prev - 1);
+    setCurrentStep((prev) => prev - 1);
     smoothScrollToTop();
   };
 
-  const handleSubmit = async (values) => {
-    setErrorMsg("");
-    setLoading(true);
-
-    const validationErrors = validateRegistrationForm(values);
-    if (validationErrors?.length > 0) {
-      setErrorMsg(validationErrors.join("\n"));
-      setLoading(false);
+  const handleSubmit = async () => {
+    // Prevent multiple submissions while loading
+    if (loading) {
       return;
     }
 
-    try {
-      const response = await registerClient(values);
-      messageApi.success(response?.data?.message || "Registration Success");
+    setErrorMsg("");
+    setLoading(true);
 
-      if (response.success) {
-        navigate("/login", {
-          state: {
-            email: values.primaryAdmin.email,
-            password: values.primaryAdmin.password,
-          },
+    try {
+      // Get ALL form values (not just current step)
+      const allValues = form.getFieldsValue(true);
+
+      console.log("All form values:", allValues);
+      console.log("Company Name:", allValues.companyName);
+      console.log("PrimaryAdmin:", allValues.primaryAdmin);
+      console.log("Address:", allValues.address);
+      console.log("Active Modules:", allValues.activeModules);
+      console.log("Billing Config:", allValues.billingConfig);
+
+      // Check if values are present
+      if (!allValues.companyName) {
+        console.error("Company name is missing");
+        setErrorMsg("Company name is required");
+        setLoading(false);
+        return;
+      }
+
+      if (!allValues.primaryAdmin) {
+        console.error("PrimaryAdmin object is missing");
+        setErrorMsg("Admin information is required");
+        setLoading(false);
+        return;
+      }
+
+      if (
+        !allValues.primaryAdmin.name ||
+        !allValues.primaryAdmin.email ||
+        !allValues.primaryAdmin.phone ||
+        !allValues.primaryAdmin.password
+      ) {
+        console.error("Admin fields are missing:", {
+          name: allValues.primaryAdmin.name,
+          email: allValues.primaryAdmin.email,
+          phone: allValues.primaryAdmin.phone,
+          password: allValues.primaryAdmin.password,
         });
+        setErrorMsg("All admin fields are required");
+        setLoading(false);
+        return;
+      }
+
+      if (!allValues.address) {
+        console.error("Address object is missing");
+        setErrorMsg("Address information is required");
+        setLoading(false);
+        return;
+      }
+
+      if (
+        !allValues.address.street ||
+        !allValues.address.city ||
+        !allValues.address.state ||
+        !allValues.address.country
+      ) {
+        console.error("Address fields are missing:", allValues.address);
+        setErrorMsg("All address fields are required");
+        setLoading(false);
+        return;
+      }
+
+      // Prepare the data - ensure all fields are properly structured
+      const submissionData = {
+        companyName: allValues.companyName,
+        activeModules: allValues.activeModules || [
+          "properties",
+          "users",
+          "timeOff",
+          "kitchen",
+          "accounts",
+        ],
+        primaryAdmin: {
+          name: allValues.primaryAdmin.name,
+          email: allValues.primaryAdmin.email,
+          phone: allValues.primaryAdmin.phone,
+          password: allValues.primaryAdmin.password,
+        },
+        address: {
+          street: allValues.address.street,
+          city: allValues.address.city,
+          state: allValues.address.state,
+          country: allValues.address.country,
+        },
+        billingConfig: {
+          billingDay: allValues.billingConfig?.billingDay || 1,
+          graceDays: allValues.billingConfig?.graceDays || 7,
+        },
+      };
+
+      console.log("Final submission data:", submissionData);
+
+      const response = await registerClient(submissionData);
+      console.log("Registration response:", response);
+
+      if (response && response.success) {
+        messageApi.success(
+          response?.data?.message || "Registration Successful!",
+        );
+
+        setTimeout(() => {
+          navigate("/login", {
+            state: {
+              email: submissionData.primaryAdmin.email,
+              password: submissionData.primaryAdmin.password,
+            },
+          });
+        }, 1500);
       } else {
-        setErrorMsg(response.message || "Registration completed with warnings");
+        setErrorMsg(
+          response?.message || "Registration completed with warnings",
+        );
+        setLoading(false);
       }
     } catch (err) {
+      console.error("Registration error:", err);
+
       let errorMessage = "Registration failed. Please try again.";
-      if (err.details) {
+      if (err?.details) {
         errorMessage = Array.isArray(err.details)
           ? err.details.join("\n")
           : typeof err.details === "object"
             ? Object.values(err.details).flat().join("\n")
             : err.details;
-      } else if (err.message) {
+      } else if (err?.message) {
         errorMessage = err.message;
       }
-      setErrorMsg(err?.details?.message || errorMessage);
+
+      setErrorMsg(errorMessage);
       smoothScrollToTop();
-    } finally {
       setLoading(false);
     }
+  };
+
+  // Helper function to get module display name
+  const getModuleDisplayName = (module) => {
+    const moduleMap = {
+      properties: "Property Management",
+      users: "User Management",
+      timeOff: "Attendance & Leave",
+      kitchen: "Mess & Kitchen",
+      accounts: "Accounts & Finance",
+    };
+    return moduleMap[module] || module;
   };
 
   return (
     <ConfigProvider
       theme={{
         token: {
-          colorPrimary: '#059669', 
+          colorPrimary: "#059669",
           borderRadius: 12,
           fontFamily: "'DM Sans', sans-serif",
-          colorBorder: '#e5e7eb',
-          colorBgContainer: '#ffffff',
-          colorError: '#ef4444',
+          colorBorder: "#e5e7eb",
+          colorBgContainer: "#ffffff",
+          colorError: "#ef4444",
         },
         components: {
           Input: {
             controlHeight: 50,
             paddingInline: 16,
-            activeShadow: '0 0 0 3px rgba(5,150,105,0.12)',
+            activeShadow: "0 0 0 3px rgba(5,150,105,0.12)",
           },
           Select: {
             controlHeight: 50,
-            activeShadow: '0 0 0 3px rgba(5,150,105,0.12)',
+            activeShadow: "0 0 0 3px rgba(5,150,105,0.12)",
           },
           Button: {
             controlHeight: 48,
             fontWeight: 600,
           },
           Steps: {
-            colorPrimary: '#059669',
-          }
-        }
+            colorPrimary: "#059669",
+          },
+        },
       }}
     >
       <style>{`
@@ -732,60 +415,104 @@ const AdminRegistration = () => {
 
       {contextHolder}
       <div className="ar-root">
-        
         {/* ── LEFT PANEL ── */}
         <div className="ar-left">
-          <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)", backgroundSize: "48px 48px", pointerEvents: "none" }} />
-          <Orb style={{ width: 500, height: 500, background: "#ffffff", top: -150, left: -150 }} />
-          <Orb style={{ width: 400, height: 400, background: "#d1fae5", bottom: 0, right: -100, opacity: 0.3 }} />
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              backgroundImage:
+                "linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)",
+              backgroundSize: "48px 48px",
+              pointerEvents: "none",
+            }}
+          />
+          <Orb
+            style={{
+              width: 500,
+              height: 500,
+              background: "#ffffff",
+              top: -150,
+              left: -150,
+            }}
+          />
+          <Orb
+            style={{
+              width: 400,
+              height: 400,
+              background: "#d1fae5",
+              bottom: 0,
+              right: -100,
+              opacity: 0.3,
+            }}
+          />
 
-          <div style={{ position: "relative", zIndex: 1 }}>
-            <div className="ar-brand">Hostel<em>Xpert</em><span>Business</span></div>
+          <div style={{position: "relative", zIndex: 1}}>
+            <div className="ar-brand">
+              Hostel<em>Xpert</em>
+              <span>Business</span>
+            </div>
           </div>
 
-          <div style={{ position: "relative", zIndex: 1 }}>
-            <h1 className="ar-tagline">Set up your workspace,<br /><em>step by step.</em></h1>
+          <div style={{position: "relative", zIndex: 1}}>
+            <h1 className="ar-tagline">
+              Set up your workspace,
+              <br />
+              <em>step by step.</em>
+            </h1>
             <div className="ar-quote-block">
               <p className="ar-quote-text">"{SELECTED_QUOTE.text}"</p>
               <p className="ar-quote-author">— {SELECTED_QUOTE.author}</p>
             </div>
           </div>
 
-          <div style={{ position: "relative", zIndex: 1 }}>
-            <p style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.7)", letterSpacing: "0.04em", margin: 0 }}>© 2026 HostelXpert Business. All rights reserved.</p>
+          <div style={{position: "relative", zIndex: 1}}>
+            <p
+              style={{
+                fontSize: "0.75rem",
+                color: "rgba(255,255,255,0.7)",
+                letterSpacing: "0.04em",
+                margin: 0,
+              }}
+            >
+              © 2026 HostelXpert Business. All rights reserved.
+            </p>
           </div>
         </div>
 
         {/* ── RIGHT PANEL ── */}
         <div className="ar-right">
           {/* Invisible ref element to control scroll position */}
-          <div ref={formTopRef} style={{ position: "absolute", top: 0 }} />
+          <div ref={formTopRef} style={{position: "absolute", top: 0}} />
 
           <div className="ar-form-wrap">
             <h2 className="ar-title">Create Account</h2>
-            <p className="ar-subtitle">Join us to manage your properties effortlessly.</p>
+            <p className="ar-subtitle">
+              Join us to manage your properties effortlessly.
+            </p>
 
             {errorMsg && (
               <Alert
-                message={<div style={{ whiteSpace: "pre-line" }}>{errorMsg}</div>}
+                message={<div style={{whiteSpace: "pre-line"}}>{errorMsg}</div>}
                 type="error"
                 showIcon
-                style={{ marginBottom: "24px", borderRadius: "10px" }}
+                style={{marginBottom: "24px", borderRadius: "10px"}}
                 closable
                 onClose={() => setErrorMsg("")}
               />
             )}
 
-            <Steps 
-              current={currentStep} 
-              size="small" 
+            <Steps
+              current={currentStep}
+              size="small"
               responsive={false}
               labelPlacement="vertical"
-              style={{ marginBottom: "2rem" }}
+              style={{marginBottom: "2rem"}}
               items={[
-                { title: 'Company' },
-                { title: 'Admin' },
-                { title: 'Address' }
+                {title: "Company"},
+                {title: "Admin"},
+                {title: "Location"},
+                {title: "Billing"},
               ]}
             />
 
@@ -793,7 +520,6 @@ const AdminRegistration = () => {
               form={form}
               layout="vertical"
               initialValues={initialValues}
-              onFinish={handleSubmit}
               requiredMark={false}
             >
               {/* STEP 0: ORGANIZATION */}
@@ -802,15 +528,25 @@ const AdminRegistration = () => {
                   <Form.Item
                     label="Company Name"
                     name="companyName"
-                    rules={[{ required: true, message: "Please enter company name" }]}
+                    rules={[
+                      {required: true, message: "Please enter company name"},
+                    ]}
                   >
-                    <Input prefix={<HomeOutlined />} placeholder="e.g. Acme Properties Ltd." />
+                    <Input
+                      prefix={<HomeOutlined />}
+                      placeholder="e.g. Acme Properties Ltd."
+                    />
                   </Form.Item>
 
                   <Form.Item
                     label="Active Modules"
                     name="activeModules"
-                    rules={[{ required: true, message: "Please select at least one module" }]}
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please select at least one module",
+                      },
+                    ]}
                   >
                     <Select
                       mode="multiple"
@@ -833,7 +569,9 @@ const AdminRegistration = () => {
                   <Form.Item
                     label="Admin Full Name"
                     name={["primaryAdmin", "name"]}
-                    rules={[{ required: true, message: "Please enter admin name" }]}
+                    rules={[
+                      {required: true, message: "Please enter admin name"},
+                    ]}
                   >
                     <Input prefix={<UserOutlined />} placeholder="Jane Doe" />
                   </Form.Item>
@@ -842,11 +580,14 @@ const AdminRegistration = () => {
                     label="Email Address"
                     name={["primaryAdmin", "email"]}
                     rules={[
-                      { required: true, message: "Please enter email" },
-                      { type: "email", message: "Please enter valid email" },
+                      {required: true, message: "Please enter email"},
+                      {type: "email", message: "Please enter valid email"},
                     ]}
                   >
-                    <Input prefix={<MailOutlined />} placeholder="jane@company.com" />
+                    <Input
+                      prefix={<MailOutlined />}
+                      placeholder="jane@company.com"
+                    />
                   </Form.Item>
 
                   <Row gutter={16}>
@@ -854,9 +595,12 @@ const AdminRegistration = () => {
                       <Form.Item
                         label="Phone Number"
                         name={["primaryAdmin", "phone"]}
-                        rules={[{ required: true, message: "Required" }]}
+                        rules={[{required: true, message: "Required"}]}
                       >
-                        <Input prefix={<PhoneOutlined />} placeholder="+1 234 567 890" />
+                        <Input
+                          prefix={<PhoneOutlined />}
+                          placeholder="+1 234 567 890"
+                        />
                       </Form.Item>
                     </Col>
                     <Col xs={24} sm={12}>
@@ -864,11 +608,14 @@ const AdminRegistration = () => {
                         label="Password"
                         name={["primaryAdmin", "password"]}
                         rules={[
-                          { required: true, message: "Required" },
-                          { min: 6, message: "Min 6 chars" },
+                          {required: true, message: "Required"},
+                          {min: 6, message: "Min 6 chars"},
                         ]}
                       >
-                        <Input.Password prefix={<LockOutlined />} placeholder="••••••••" />
+                        <Input.Password
+                          prefix={<LockOutlined />}
+                          placeholder="••••••••"
+                        />
                       </Form.Item>
                     </Col>
                   </Row>
@@ -881,9 +628,14 @@ const AdminRegistration = () => {
                   <Form.Item
                     label="Street Address"
                     name={["address", "street"]}
-                    rules={[{ required: true, message: "Please enter street address" }]}
+                    rules={[
+                      {required: true, message: "Please enter street address"},
+                    ]}
                   >
-                    <Input prefix={<EnvironmentOutlined />} placeholder="123 Business Parkway" />
+                    <Input
+                      prefix={<EnvironmentOutlined />}
+                      placeholder="123 Business Parkway"
+                    />
                   </Form.Item>
 
                   <Row gutter={16}>
@@ -891,7 +643,7 @@ const AdminRegistration = () => {
                       <Form.Item
                         label="City"
                         name={["address", "city"]}
-                        rules={[{ required: true, message: "Required" }]}
+                        rules={[{required: true, message: "Required"}]}
                       >
                         <Input placeholder="City" />
                       </Form.Item>
@@ -900,7 +652,7 @@ const AdminRegistration = () => {
                       <Form.Item
                         label="State/Province"
                         name={["address", "state"]}
-                        rules={[{ required: true, message: "Required" }]}
+                        rules={[{required: true, message: "Required"}]}
                       >
                         <Input placeholder="State" />
                       </Form.Item>
@@ -910,32 +662,176 @@ const AdminRegistration = () => {
                   <Form.Item
                     label="Country"
                     name={["address", "country"]}
-                    rules={[{ required: true, message: "Please enter country" }]}
+                    rules={[{required: true, message: "Please enter country"}]}
                   >
                     <Input placeholder="Country" />
                   </Form.Item>
                 </div>
               )}
 
+              {/* STEP 3: BILLING CONFIG & REGISTRATION */}
+              {currentStep === 3 && (
+                <div className="ar-step-content" key="step-3">
+                  <div style={{marginBottom: "32px"}}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        marginBottom: "24px",
+                        paddingBottom: "12px",
+                        borderBottom: "2px solid #e5e7eb",
+                      }}
+                    >
+                      <DollarOutlined
+                        style={{
+                          color: "#059669",
+                          marginRight: "12px",
+                          fontSize: "18px",
+                        }}
+                      />
+                      <Title level={4} style={{margin: 0, color: "#1f2937"}}>
+                        Billing Settings
+                      </Title>
+                    </div>
+
+                    <Row gutter={[24, 24]}>
+                      <Col xs={24} md={12}>
+                        <Form.Item
+                          label={
+                            <span>
+                              <CalendarOutlined
+                                style={{marginRight: "8px", color: "#059669"}}
+                              />
+                              Billing Day
+                            </span>
+                          }
+                          name={["billingConfig", "billingDay"]}
+                          rules={[
+                            {
+                              required: true,
+                              message: "Please select billing day",
+                            },
+                            {
+                              type: "number",
+                              min: 1,
+                              max: 28,
+                              message: "Billing day must be between 1 and 28",
+                            },
+                          ]}
+                          tooltip="The day of the month when billing will be processed (1-28)"
+                        >
+                          <InputNumber
+                            min={1}
+                            max={28}
+                            placeholder="Select billing day (1-28)"
+                            style={{width: "100%", borderRadius: "8px"}}
+                          />
+                        </Form.Item>
+                      </Col>
+
+                      <Col xs={24} md={12}>
+                        <Form.Item
+                          label={
+                            <span>
+                              <CalendarOutlined
+                                style={{marginRight: "8px", color: "#059669"}}
+                              />
+                              Grace Period (Days)
+                            </span>
+                          }
+                          name={["billingConfig", "graceDays"]}
+                          rules={[
+                            {
+                              required: true,
+                              message: "Please enter grace period",
+                            },
+                            {
+                              type: "number",
+                              min: 0,
+                              max: 30,
+                              message:
+                                "Grace period must be between 0 and 30 days",
+                            },
+                          ]}
+                          tooltip="Number of days allowed for payment after the billing date"
+                        >
+                          <InputNumber
+                            min={0}
+                            max={30}
+                            placeholder="Enter grace period in days"
+                            style={{width: "100%", borderRadius: "8px"}}
+                          />
+                        </Form.Item>
+                      </Col>
+                    </Row>
+
+                    {/* Billing Summary Card */}
+                    <div
+                      style={{
+                        padding: "14px",
+                        backgroundColor: "#f0f9ff",
+                        borderRadius: "12px",
+                        border: "1px solid #bae6fd",
+                        marginBottom: "24px",
+                      }}
+                    >
+                      <Text type="secondary" style={{fontSize: "12px"}}>
+                        Billing will be automatically processed on the selected
+                        day each month. Users will have the configured grace
+                        period to complete their payment.
+                      </Text>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Navigation Buttons */}
-              <div style={{ display: "flex", justifyContent: "space-between", marginTop: "1rem", paddingTop: "1.5rem", borderTop: "1px solid #f3f4f6" }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  marginTop: "1rem",
+                  paddingTop: "1.5rem",
+                  borderTop: "1px solid #f3f4f6",
+                }}
+              >
                 {currentStep > 0 ? (
-                  <Button onClick={handlePrev} icon={<ArrowLeftOutlined />}>
+                  <Button
+                    onClick={handlePrev}
+                    icon={<ArrowLeftOutlined />}
+                    disabled={loading}
+                  >
                     Back
                   </Button>
                 ) : (
-                  <Button type="text" onClick={() => navigate("/login")} style={{ color: "#6b7280", paddingLeft: 0 }}>
+                  <Button
+                    type="text"
+                    onClick={() => navigate("/login")}
+                    style={{color: "#6b7280", paddingLeft: 0}}
+                    disabled={loading}
+                  >
                     Log in instead
                   </Button>
                 )}
 
                 {currentStep < stepsConfig.length - 1 ? (
-                  <Button type="primary" onClick={handleNext} style={{ display: 'flex', alignItems: 'center' }}>
+                  <Button
+                    type="primary"
+                    onClick={handleNext}
+                    style={{display: "flex", alignItems: "center"}}
+                    disabled={loading}
+                  >
                     Next Step <ArrowRightOutlined />
                   </Button>
                 ) : (
-                  <Button type="primary" htmlType="submit" loading={loading} style={{ width: 140 }}>
-                    {loading ? "Registering" : "Complete"}
+                  <Button
+                    type="primary"
+                    onClick={handleSubmit}
+                    loading={loading}
+                    style={{width: 200, backgroundColor: "#059669"}}
+                    size="large"
+                  >
+                    {loading ? "Registering..." : "Complete Registration"}
                   </Button>
                 )}
               </div>
