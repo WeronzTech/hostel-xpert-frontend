@@ -20,6 +20,7 @@ import {
   getCategoryByMainCategory,
   deleteExpense,
   getAllPettyCashes,
+  payExpense,
 } from "../../hooks/accounts/useAccounts";
 import {useSelector} from "react-redux";
 import ExpenseAnalytics from "../../components/accounts/ExpenseAnalytics";
@@ -27,6 +28,7 @@ import dayjs from "dayjs";
 import usePersistentState from "../../hooks/usePersistentState";
 import EditExpenseModal from "../../modals/accounts/EditExpenseModal";
 import {getRoleById} from "../../hooks/employee/useEmployee";
+import PayExpenseModal from "../../modals/accounts/PayExpenseModal";
 
 const {TabPane} = Tabs;
 const {Option} = Select;
@@ -38,6 +40,9 @@ const ExpenseDetailsPage = () => {
   const queryClient = useQueryClient();
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState(null);
+  const [payModalVisible, setPayModalVisible] = useState(false);
+  const [selectedRecordForPay, setSelectedRecordForPay] = useState(null);
+  const [isPaying, setIsPaying] = useState(false);
 
   const [messageApi, contextHolder] = message.useMessage();
   const roleId = useSelector((state) => state?.auth?.user?.role?.id);
@@ -81,6 +86,19 @@ const ExpenseDetailsPage = () => {
   // Persistent filter states for each tab
   const [expensesFilters, setExpensesFilters] = usePersistentState(
     "expenseDetails_expensesFilters",
+    {
+      type: "",
+      category: "",
+      paymentMethod: "",
+      pettyCashType: "",
+      manager: "",
+      selectedMonth: null,
+      search: "",
+    },
+  );
+
+  const [pendingExpensesFilters, setPendingExpensesFilters] = usePersistentState(
+    "expenseDetails_pendingExpensesFilters",
     {
       type: "",
       category: "",
@@ -140,6 +158,13 @@ const ExpenseDetailsPage = () => {
       : null,
   };
 
+  const normalizedPendingExpensesFilters = {
+    ...pendingExpensesFilters,
+    selectedMonth: pendingExpensesFilters.selectedMonth
+      ? dayjs(pendingExpensesFilters.selectedMonth)
+      : null,
+  };
+
   const normalizedSalaryFilters = {
     ...salaryFilters,
     selectedMonth: salaryFilters.selectedMonth
@@ -171,6 +196,7 @@ const ExpenseDetailsPage = () => {
   // Use regular state for pagination to avoid complex objects in localStorage
   const [pagination, setPagination] = useState({
     expenses: {page: 1, limit: 10},
+    pendingExpenses: {page: 1, limit: 10},
     salary: {page: 1, limit: 10},
     waiveoffs: {page: 1, limit: 10},
     commissions: {page: 1, limit: 10},
@@ -196,6 +222,7 @@ const ExpenseDetailsPage = () => {
   const getCurrentFilters = () => {
     const filtersMap = {
       expenses: normalizedExpensesFilters,
+      pendingExpenses: normalizedPendingExpensesFilters,
       salary: normalizedSalaryFilters,
       waiveoffs: normalizedWaiveoffsFilters,
       commissions: normalizedCommissionsFilters,
@@ -264,6 +291,7 @@ const ExpenseDetailsPage = () => {
     }));
   }, [
     expensesFilters,
+    pendingExpensesFilters,
     salaryFilters,
     waiveoffsFilters,
     commissionsFilters,
@@ -300,6 +328,16 @@ const ExpenseDetailsPage = () => {
         placeholder: "Select Payment Mode",
         options: ["Cash", "UPI", "Bank Transfer", "Card", "Petty Cash"],
         type: "select",
+      },
+      selectedMonth: {
+        placeholder: "Select Month",
+        type: "month",
+      },
+    },
+    pendingExpenses: {
+      search: {
+        placeholder: "Search by title or transaction ID",
+        type: "search",
       },
       selectedMonth: {
         placeholder: "Select Month",
@@ -382,6 +420,7 @@ const ExpenseDetailsPage = () => {
   const handleFilterChange = (filterKey, value) => {
     const setterMap = {
       expenses: setExpensesFilters,
+      pendingExpenses: setPendingExpensesFilters,
       salary: setSalaryFilters,
       waiveoffs: setWaiveoffsFilters,
       commissions: setCommissionsFilters,
@@ -562,12 +601,45 @@ const ExpenseDetailsPage = () => {
       const params = {
         page: pagination.expenses.page,
         limit: pagination.expenses.limit,
+        status: "paid",
         ...expensesFilters,
         propertyId: selectedProperty?.id,
       };
 
       if (expensesFilters.selectedMonth) {
         const month = dayjs(expensesFilters.selectedMonth);
+        params.month = month.month() + 1;
+        params.year = month.year();
+        delete params.selectedMonth;
+      }
+
+      return getAllExpenses(params);
+    },
+  });
+
+  const {
+    data: pendingExpensesData,
+    isLoading: pendingExpensesLoading,
+    error: pendingExpensesError,
+  } = useQuery({
+    queryKey: [
+      "pending-expenses",
+      pagination.pendingExpenses.page,
+      pagination.pendingExpenses.limit,
+      ...Object.values(pendingExpensesFilters),
+      selectedProperty?.id,
+    ],
+    queryFn: () => {
+      const params = {
+        page: pagination.pendingExpenses.page,
+        limit: pagination.pendingExpenses.limit,
+        status: "pending",
+        ...pendingExpensesFilters,
+        propertyId: selectedProperty?.id,
+      };
+
+      if (pendingExpensesFilters.selectedMonth) {
+        const month = dayjs(pendingExpensesFilters.selectedMonth);
         params.month = month.month() + 1;
         params.year = month.year();
         delete params.selectedMonth;
@@ -801,6 +873,9 @@ const ExpenseDetailsPage = () => {
       case "expenses":
         filteredData = expensesData?.data || [];
         break;
+      case "pendingExpenses":
+        filteredData = pendingExpensesData?.data || [];
+        break;
       case "waiveoffs":
         filteredData = waveOffData?.data?.payments || [];
         break;
@@ -827,6 +902,7 @@ const ExpenseDetailsPage = () => {
   const getCurrentTotal = () => {
     const totalMap = {
       expenses: expensesData?.pagination?.total || 0,
+      pendingExpenses: pendingExpensesData?.pagination?.total || 0,
       salary: salaryData?.pagination?.total || 0,
       waiveoffs: waveOffData?.data?.payments?.length || 0,
       commissions: commissionData?.data?.length || 0,
@@ -878,6 +954,32 @@ const ExpenseDetailsPage = () => {
     setSelectedExpense(null);
   };
 
+  const handlePayExpense = (record) => {
+    setSelectedRecordForPay(record);
+    setPayModalVisible(true);
+  };
+
+  const handlePayConfirm = async (paymentData) => {
+    setIsPaying(true);
+    try {
+      await payExpense({
+        expenseId: selectedRecordForPay._id,
+        ...paymentData,
+      });
+      messageApi.success("Expense marked as paid successfully");
+      queryClient.invalidateQueries({queryKey: ["pending-expenses"]});
+      queryClient.invalidateQueries({queryKey: ["expenses"]});
+      queryClient.invalidateQueries({queryKey: ["expense-analytics"]});
+      queryClient.invalidateQueries({queryKey: ["accountDashboardExpense"]});
+      setPayModalVisible(false);
+      setSelectedRecordForPay(null);
+    } catch (error) {
+      messageApi.error(error.message || "Failed to mark expense as paid");
+    } finally {
+      setIsPaying(false);
+    }
+  };
+
   const handleView = (record, type) => {
     console.log(`View ${type}:`, record);
   };
@@ -919,6 +1021,19 @@ const ExpenseDetailsPage = () => {
               onEdit={(record) => handleEdit(record, "expense")}
               onDelete={(record) => handleDelete(record, "expense")}
               onView={(record) => handleView(record, "expense")}
+            />
+          </TabPane>
+
+          <TabPane tab="Pending Expenses" key="pendingExpenses">
+            <ExpenseTable
+              data={getTabData()}
+              type="pendingExpenses"
+              loading={pendingExpensesLoading}
+              pagination={getCurrentPagination()}
+              total={getCurrentTotal()}
+              onPaginationChange={handlePaginationChange}
+              onPay={handlePayExpense}
+              onDelete={(record) => handleDelete(record, "expense")}
             />
           </TabPane>
 
@@ -1012,6 +1127,16 @@ const ExpenseDetailsPage = () => {
         visible={editModalVisible}
         onCancel={handleEditCancel}
         expenseDoc={selectedExpense}
+      />
+      <PayExpenseModal
+        visible={payModalVisible}
+        onCancel={() => {
+          setPayModalVisible(false);
+          setSelectedRecordForPay(null);
+        }}
+        onConfirm={handlePayConfirm}
+        expense={selectedRecordForPay}
+        loading={isPaying}
       />
     </>
   );

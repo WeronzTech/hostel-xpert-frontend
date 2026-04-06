@@ -1,7 +1,7 @@
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import {Form, Input, message, Modal, Select} from "antd";
-import {getAllHeavensProperties} from "../../../hooks/property/useProperty";
-import {addCategory} from "../../../hooks/inventory/useInventory";
+import { useSelector } from "react-redux";
+import { getKitchens, addCategory } from "../../../hooks/inventory/useInventory";
 
 const {Option} = Select;
 
@@ -11,9 +11,13 @@ const AddCategoryModal = ({open, onClose}) => {
   const queryClient = useQueryClient();
   const [messageApi, contextHolder] = message.useMessage();
 
-  const {data: properties, isLoading: propertiesLoading} = useQuery({
-    queryKey: ["properties"],
-    queryFn: () => getAllHeavensProperties(),
+  const selectedPropertyId = useSelector(
+    (state) => state.properties.selectedProperty?.id
+  );
+
+  const { data: kitchens, isLoading: kitchensLoading } = useQuery({
+    queryKey: ["kitchens", selectedPropertyId],
+    queryFn: () => getKitchens({ propertyId: selectedPropertyId }),
     enabled: open,
   });
 
@@ -39,7 +43,7 @@ const AddCategoryModal = ({open, onClose}) => {
         title="Add New Category"
         onCancel={onClose}
         confirmLoading={AddCategory.isLoading}
-        onOk={() => AddCategory.mutate(form.getFieldsValue())}
+        onOk={() => AddCategory.mutate({ ...form.getFieldsValue(), propertyId: selectedPropertyId })}
         destroyOnClose
       >
         <Form form={form} layout="vertical" name="add_category_form">
@@ -53,14 +57,14 @@ const AddCategoryModal = ({open, onClose}) => {
             <Input placeholder="e.g., Vegetables" />
           </Form.Item>
           <Form.Item
-            name="propertyId"
-            label="Property"
-            rules={[{required: true, message: "Please select a property!"}]}
+            name="kitchenId"
+            label="Kitchen"
+            rules={[{required: true, message: "Please select a kitchen!"}]}
           >
-            <Select placeholder="Select a property" loading={propertiesLoading}>
-              {properties?.map((prop) => (
-                <Option key={prop._id} value={prop._id}>
-                  {prop.propertyName}
+            <Select placeholder="Select a kitchen" loading={kitchensLoading}>
+              {kitchens?.map((kitchen) => (
+                <Option key={kitchen._id} value={kitchen._id}>
+                  {kitchen.name}
                 </Option>
               ))}
             </Select>

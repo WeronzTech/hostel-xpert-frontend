@@ -12,7 +12,7 @@ import { FiPlusCircle } from "../../../icons/index.js";
 
 const { Option } = Select;
 
-const quantityTypeOptions = ["kg", "g", "l", "ml"];
+const quantityTypeOptions = ["kg", "g", "l", "ml", "numbers", "packet"];
 
 const AddInventoryModal = ({ open, onClose, loading }) => {
   const [form] = Form.useForm();
@@ -24,9 +24,11 @@ const AddInventoryModal = ({ open, onClose, loading }) => {
     (state) => state.properties.selectedProperty?.id
   );
 
+  const selectedKitchens = Form.useWatch("kitchenId", form);
+
   const { data: categories, isLoading: categoriesLoading } = useQuery({
-    queryKey: ["categories", selectedPropertyId],
-    queryFn: () => getCategoriesByProperty(selectedPropertyId),
+    queryKey: ["categories", selectedPropertyId, selectedKitchens],
+    queryFn: () => getCategoriesByProperty(selectedPropertyId, selectedKitchens),
     enabled: open,
   });
 

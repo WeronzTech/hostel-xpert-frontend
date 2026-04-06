@@ -88,6 +88,8 @@ export const addExpense = async (data) => {
       "type",
       "category",
       "amount",
+      "status",
+      "vendorId",
       "date",
       "description",
       "paymentMethod",
@@ -1616,5 +1618,57 @@ export const editPayrollSalary = async (data) => {
     return res.data;
   } catch (error) {
     throw new Error(error.response?.data?.message || "Salary updation failed");
+  }
+};
+
+// Vendor APIs
+export const getAllVendors = async (filters = {}) => {
+  try {
+    const response = await apiClient.get("/vendor", { params: filters });
+    return response.data;
+  } catch (error) {
+    console.error("Fetching vendors failed:", error);
+    throw error.response?.data?.message || "Failed to fetch vendors";
+  }
+};
+
+export const addVendor = async (data) => {
+  try {
+    const response = await apiClient.post("/vendor", data);
+    return response.data;
+  } catch (error) {
+    console.error("Adding vendor failed:", error);
+    throw error.response?.data?.message || "Failed to add vendor";
+  }
+};
+
+export const editVendor = async (data) => {
+  try {
+    const response = await apiClient.put("/vendor", data);
+    return response.data;
+  } catch (error) {
+    console.error("Editing vendor failed:", error);
+    throw error.response?.data?.message || "Failed to edit vendor";
+  }
+};
+
+export const getVendorSummary = async (vendorId) => {
+  try {
+    const response = await apiClient.get(`/vendor/summary/${vendorId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Fetching vendor summary failed:", error);
+    throw error.response?.data?.message || "Failed to fetch vendor summary";
+  }
+};
+
+// Expense API extensions
+export const payExpense = async ({expenseId, ...paymentData}) => {
+  try {
+    const response = await apiClient.put(`/expense/pay/${expenseId}`, paymentData);
+    return response.data;
+  } catch (error) {
+    console.error("Paying expense failed:", error);
+    throw error.response?.data?.message || "Failed to pay expense";
   }
 };

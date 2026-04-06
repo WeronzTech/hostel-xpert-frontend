@@ -12,7 +12,7 @@ import { FiPlusCircle } from "react-icons/fi";
 
 const { Option } = Select;
 
-const quantityTypeOptions = ["kg", "g", "l", "ml"];
+const quantityTypeOptions = ["kg", "g", "l", "ml", "numbers", "packet"];
 
 const EditInventoryModal = ({ open, onClose, loading, initialData }) => {
   const [form] = Form.useForm();
@@ -24,9 +24,11 @@ const EditInventoryModal = ({ open, onClose, loading, initialData }) => {
     (state) => state.properties.selectedProperty?.id
   );
 
+  const selectedKitchen = Form.useWatch("kitchenId", form);
+
   const { data: categories, isLoading: categoriesLoading } = useQuery({
-    queryKey: ["categories", selectedPropertyId],
-    queryFn: () => getCategoriesByProperty(selectedPropertyId),
+    queryKey: ["categories", selectedPropertyId, selectedKitchen],
+    queryFn: () => getCategoriesByProperty(selectedPropertyId, selectedKitchen),
     enabled: open,
   });
 

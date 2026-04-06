@@ -179,16 +179,6 @@ const PushNotificationModal = ({ open, onClose, onSubmit, loading }) => {
           <Form.Item
             name="image"
             label="Image"
-            rules={[
-              {
-                validator: () => {
-                  if (fileList.length === 0) {
-                    return Promise.reject("Please upload an image");
-                  }
-                  return Promise.resolve();
-                },
-              },
-            ]}
           >
             <Upload
               fileList={fileList}
