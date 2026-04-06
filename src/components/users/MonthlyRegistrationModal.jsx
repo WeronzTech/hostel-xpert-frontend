@@ -328,6 +328,7 @@ const MonthlyRegistrationModal = ({visible, onCancel, onSuccess}) => {
         "userType",
         // Stay tab fields
         ["stayDetails", "propertyId"],
+        ["stayDetails", "propertyName"],
         ["stayDetails", "sharingType"],
         ["stayDetails", "roomNumber"],
         ["stayDetails", "joinDate"],

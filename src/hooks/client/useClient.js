@@ -79,3 +79,46 @@ export const updateClientProfile = async (profileData) => {
     };
   }
 };
+
+export const setBillingConfig = async ({billingDay, graceDays}) => {
+  try {
+    const response = await apiClient.post("client/billingConfig/set", {
+      billingDay,
+      graceDays,
+    });
+
+    console.debug("config successfully:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Set Config failed:", error);
+
+    const apiError = {
+      message: error.response?.data?.message || "Failed to set config",
+      details:
+        error.response?.data?.errors || error.response?.data || error.message,
+      status: error.response?.status,
+    };
+
+    throw apiError;
+  }
+};
+
+export const getBillingConfig = async () => {
+  try {
+    const response = await apiClient.get("client/billingConfig/get", {});
+
+    console.debug("get config successfully:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("get Config failed:", error);
+
+    const apiError = {
+      message: error.response?.data?.message || "Failed to get config",
+      details:
+        error.response?.data?.errors || error.response?.data || error.message,
+      status: error.response?.status,
+    };
+
+    throw apiError;
+  }
+};
