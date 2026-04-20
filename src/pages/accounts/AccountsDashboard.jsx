@@ -75,7 +75,7 @@ const AccountsDashboard = () => {
     refetchOnWindowFocus: false,
     staleTime: 5 * 60 * 1000,
   });
-
+  console.log(pettyCashes);
   useEffect(() => {
     if (summaryData?.availableYears?.length) {
       setAvailableYears(summaryData?.availableYears);

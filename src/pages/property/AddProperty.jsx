@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { addProperty } from "../../redux/propertiesSlice";
-import { useNotification } from "../../ui/NotificationContext";
+import {useState, useEffect} from "react";
+import {useNavigate, useParams} from "react-router-dom";
+import {useDispatch, useSelector} from "react-redux";
+import {addProperty} from "../../redux/propertiesSlice";
+import {useNotification} from "../../ui/NotificationContext";
 import {
   registerProperty,
   updateProperty,
@@ -15,10 +15,10 @@ import {
 } from "../../components/property/SectionsForAddProperty.jsx";
 import PageHeader from "../../components/common/PageHeader.jsx";
 
-const AddProperty = ({ isEdit }) => {
-  const { id } = useParams();
-  const { user } = useSelector((state) => state.auth);
-  const { showNotification } = useNotification();
+const AddProperty = ({isEdit}) => {
+  const {id} = useParams();
+  const {user} = useSelector((state) => state.auth);
+  const {showNotification} = useNotification();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
@@ -92,7 +92,7 @@ const AddProperty = ({ isEdit }) => {
   }, [isEdit, id, showNotification]);
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const {name, value, type, checked} = e.target;
 
     // Handle nested objects (like contacts, razorpayCredentials)
     if (name.includes(".")) {
@@ -114,7 +114,7 @@ const AddProperty = ({ isEdit }) => {
   };
 
   const handleDepositChange = (e) => {
-    const { name, value } = e.target;
+    const {name, value} = e.target;
     setPropertyData((prev) => ({
       ...prev,
       deposit: {
@@ -125,7 +125,7 @@ const AddProperty = ({ isEdit }) => {
   };
 
   const handleRazorpayChange = (e) => {
-    const { name, value } = e.target;
+    const {name, value} = e.target;
     setPropertyData((prev) => ({
       ...prev,
       razorpayCredentials: {
@@ -136,7 +136,7 @@ const AddProperty = ({ isEdit }) => {
   };
 
   const handleRentDetailsChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const {name, value, type, checked} = e.target;
     setPropertyData((prev) => ({
       ...prev,
       rentDetails: {
@@ -147,7 +147,7 @@ const AddProperty = ({ isEdit }) => {
   };
 
   const handleSharingPriceChange = (e) => {
-    const { name, value } = e.target;
+    const {name, value} = e.target;
     setCurrentSharingPrice((prev) => ({
       ...prev,
       [name]: value,
@@ -163,12 +163,12 @@ const AddProperty = ({ isEdit }) => {
           [currentSharingPrice.type]: Number(currentSharingPrice.price),
         },
       }));
-      setCurrentSharingPrice({ type: "", price: "" });
+      setCurrentSharingPrice({type: "", price: ""});
     }
   };
 
   const removeSharingPrice = (type) => {
-    const newSharingPrices = { ...propertyData.sharingPrices };
+    const newSharingPrices = {...propertyData.sharingPrices};
     delete newSharingPrices[type];
     setPropertyData((prev) => ({
       ...prev,
@@ -176,23 +176,8 @@ const AddProperty = ({ isEdit }) => {
     }));
   };
 
-  // const validateForm = () => {
-  //   if (
-  //     !propertyData.razorpayCredentials.keyId ||
-  //     !propertyData.razorpayCredentials.keySecret
-  //   ) {
-  //     showNotification("Razorpay Key ID and Key Secret are required", "error");
-  //     return false;
-  //   }
-  //   return true;
-  // };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // if (!validateForm()) {
-    //   return;
-    // }
 
     setIsLoading(true);
     try {
@@ -220,11 +205,11 @@ const AddProperty = ({ isEdit }) => {
         await updateProperty(id, submitData);
         showNotification("Property updated successfully!", "success");
       } else {
-        await registerProperty(submitData);
+        const property = await registerProperty(submitData);
         dispatch(
           addProperty({
-            name: propertyData.propertyName,
-            _id: propertyData._id,
+            name: property.propertyName,
+            _id: property._id,
           }),
         );
         showNotification("Property registered successfully!", "success");

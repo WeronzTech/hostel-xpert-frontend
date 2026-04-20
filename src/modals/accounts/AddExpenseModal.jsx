@@ -916,7 +916,7 @@
 //                   </Select>
 //                 </Form.Item>
 //               </Col>
-              
+
 //               <Col xs={24} sm={24} md={12}>
 //                 <Form.Item
 //                   name="vendorId"
@@ -1185,7 +1185,7 @@
 
 // export default AddExpenseModal;
 
-import { useState, useEffect } from "react";
+import {useState, useEffect} from "react";
 import {
   Modal,
   Form,
@@ -1203,18 +1203,18 @@ import {
   Row,
   Col,
 } from "antd";
-import { 
-  FiPlus, 
-  FiX, 
-  FiUpload, 
-  FiCheckCircle, 
-  FiClock, 
-  FiUser 
+import {
+  FiPlus,
+  FiX,
+  FiUpload,
+  FiCheckCircle,
+  FiClock,
+  FiUser,
 } from "react-icons/fi";
-import { useSelector } from "react-redux";
-import { HomeOutlined } from "../../icons";
-import { getKitchensForDropDown } from "../../hooks/inventory/useInventory";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {useSelector} from "react-redux";
+import {HomeOutlined} from "../../icons";
+import {getKitchensForDropDown} from "../../hooks/inventory/useInventory";
+import {useQuery, useMutation, useQueryClient} from "@tanstack/react-query";
 import {
   addExpenseCategory,
   deleteCategory,
@@ -1225,14 +1225,14 @@ import {
   addVendor,
 } from "../../hooks/accounts/useAccounts";
 
-const { Option } = Select;
+const {Option} = Select;
 
-const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
-  const { properties, selectedProperty } = useSelector(
-    (state) => state.properties
+const AddExpenseModal = ({visible, onCancel, selectedCategory}) => {
+  const {properties, selectedProperty} = useSelector(
+    (state) => state.properties,
   );
 
-  const { user } = useSelector((state) => state.auth);
+  const {user} = useSelector((state) => state.auth);
   const adminName = user.name;
 
   const [form] = Form.useForm();
@@ -1254,7 +1254,7 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
   const [newVendorMobile, setNewVendorMobile] = useState("");
   const [newVendorType, setNewVendorType] = useState("GENERAL");
 
-  const status = Form.useWatch("status", form) || "Paid Expense";
+  const status = Form.useWatch("status", form) || "paid";
   const spentVia = Form.useWatch("spentVia", form);
   const selectedPaymentMethod = Form.useWatch("paymentMethod", form);
 
@@ -1262,7 +1262,7 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
 
   const queryClient = useQueryClient();
 
-  const { data: pettyCashes = [], isLoading: pettyCashLoading } = useQuery({
+  const {data: pettyCashes = [], isLoading: pettyCashLoading} = useQuery({
     queryKey: ["pettyCashes", currentProperty?._id || selectedProperty?.id],
     queryFn: () =>
       getAllPettyCashes(currentProperty?._id || selectedProperty?.id),
@@ -1277,9 +1277,9 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
     user?.clientId ||
     user?.client;
 
-  const { data: vendorsData, refetch: refetchVendors } = useQuery({
+  const {data: vendorsData, refetch: refetchVendors} = useQuery({
     queryKey: ["vendors", clientId],
-    queryFn: () => getAllVendors({ clientId }),
+    queryFn: () => getAllVendors({clientId}),
     enabled: !!clientId,
   });
   const vendors = vendorsData?.data || [];
@@ -1291,7 +1291,7 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
         messageApi.success("Vendor added successfully");
         refetchVendors();
         // Auto-select the newly created vendor
-        form.setFieldsValue({ vendorId: data.data?._id });
+        form.setFieldsValue({vendorId: data.data?._id});
         setNewVendorName("");
         setNewVendorMobile("");
         setNewVendorType("GENERAL");
@@ -1317,19 +1317,38 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
   };
 
   const vendorTypes = [
-    "GENERAL", "MAINTENANCE", "ELECTRICAL", "PLUMBING", "CARPENTRY",
-    "PAINTING", "HOUSEKEEPING", "FOOD", "LAUNDRY", "SECURITY",
-    "INTERNET", "UTILITY", "FURNITURE", "APPLIANCE REPAIR", "PEST CONTROL",
-    "CONSTRUCTION", "ELEVATOR MAINTENANCE", "FIRE SAFETY", "REAL ESTATE AGENT",
-    "LEGAL", "ACCOUNTING", "INTERIOR DESIGN", "BANK", "OTHERS",
+    "GENERAL",
+    "MAINTENANCE",
+    "ELECTRICAL",
+    "PLUMBING",
+    "CARPENTRY",
+    "PAINTING",
+    "HOUSEKEEPING",
+    "FOOD",
+    "LAUNDRY",
+    "SECURITY",
+    "INTERNET",
+    "UTILITY",
+    "FURNITURE",
+    "APPLIANCE REPAIR",
+    "PEST CONTROL",
+    "CONSTRUCTION",
+    "ELEVATOR MAINTENANCE",
+    "FIRE SAFETY",
+    "REAL ESTATE AGENT",
+    "LEGAL",
+    "ACCOUNTING",
+    "INTERIOR DESIGN",
+    "BANK",
+    "OTHERS",
   ];
 
   const paymentMethods = ["Cash", "UPI", "Bank Transfer", "Card", "Petty Cash"];
 
   // Fetch kitchens
-  const { data: kitchens } = useQuery({
+  const {data: kitchens} = useQuery({
     queryKey: ["kitchens", selectedProperty?.id || currentProperty?._id],
-    queryFn: ({ queryKey }) => {
+    queryFn: ({queryKey}) => {
       const [, propertyId] = queryKey;
       return getKitchensForDropDown(propertyId);
     },
@@ -1365,10 +1384,10 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
   });
 
   // Fetch categories by mainCategory
-  const { data: categoriesData, isLoading: categoriesLoading } = useQuery({
+  const {data: categoriesData, isLoading: categoriesLoading} = useQuery({
     queryKey: ["categories", currentCategoryType],
     queryFn: () =>
-      getCategoryByMainCategory({ mainCategory: currentCategoryType }),
+      getCategoryByMainCategory({mainCategory: currentCategoryType}),
     enabled: !!currentCategoryType,
   });
 
@@ -1451,7 +1470,7 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
     const categoryToDeleteObj = categoriesData?.data?.find(
       (cat) =>
         cat.subCategory === categoryToDelete &&
-        cat.mainCategory === categoryType
+        cat.mainCategory === categoryType,
     );
 
     if (categoryToDeleteObj) {
@@ -1464,7 +1483,7 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
   useEffect(() => {
     if (selectedCategory) {
       setCurrentCategoryType(selectedCategory);
-      form.setFieldsValue({ categoryType: selectedCategory });
+      form.setFieldsValue({categoryType: selectedCategory});
     }
   }, [selectedCategory, form]);
 
@@ -1472,14 +1491,14 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
     if (selectedProperty && selectedProperty.id) {
       setCurrentProperty(selectedProperty);
     } else {
-      setCurrentProperty({ id: null, name: "" });
+      setCurrentProperty({id: null, name: ""});
     }
   }, [selectedProperty]);
 
   // Handle visual status toggle
   const handleStatusChange = (value) => {
-    form.setFieldsValue({ status: value });
-    if (value === "Pending Expense") {
+    form.setFieldsValue({status: value});
+    if (value === "pending") {
       setPaymentMethod("");
       setHandler("");
       form.setFieldsValue({
@@ -1495,9 +1514,9 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
     setPaymentMethod(value);
     if (value !== "Petty Cash") {
       setHandler("");
-      form.setFieldsValue({ handler: undefined, spentVia: undefined });
+      form.setFieldsValue({handler: undefined, spentVia: undefined});
     } else {
-      form.setFieldsValue({ spentVia: undefined });
+      form.setFieldsValue({spentVia: undefined});
     }
   };
 
@@ -1508,13 +1527,13 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
       message.info(
         `Available - In-hand: ₹${
           selectedHandler.inHandAmount ?? 0
-        }, In-account: ₹${selectedHandler.inAccountAmount ?? 0}`
+        }, In-account: ₹${selectedHandler.inAccountAmount ?? 0}`,
       );
     }
   };
 
   const compressImage = (file, options = {}) => {
-    const { maxWidth = 1280, maxHeight = 1280, quality = 0.7 } = options;
+    const {maxWidth = 1280, maxHeight = 1280, quality = 0.7} = options;
 
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -1528,7 +1547,7 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
       reader.readAsDataURL(file);
 
       img.onload = () => {
-        let { width, height } = img;
+        let {width, height} = img;
 
         const ratio = Math.min(maxWidth / width, maxHeight / height, 1);
 
@@ -1553,11 +1572,11 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
               new File([blob], file.name, {
                 type: file.type,
                 lastModified: Date.now(),
-              })
+              }),
             );
           },
           file.type,
-          quality
+          quality,
         );
       };
 
@@ -1565,7 +1584,7 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
     });
   };
 
-  const handleFileChange = async ({ fileList: newFileList }) => {
+  const handleFileChange = async ({fileList: newFileList}) => {
     if (!newFileList.length) {
       setFileList([]);
       setImagePreview(null);
@@ -1606,10 +1625,10 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
       const property = properties.find((p) => p._id === propertyId);
       setCurrentProperty(property);
       setHandler("");
-      form.setFieldsValue({ handler: undefined });
-      form.setFieldsValue({ kitchenId: undefined });
+      form.setFieldsValue({handler: undefined});
+      form.setFieldsValue({kitchenId: undefined});
     } else {
-      setCurrentProperty({ _id: null, name: "" });
+      setCurrentProperty({_id: null, name: ""});
     }
   };
 
@@ -1625,16 +1644,16 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
         type: values.categoryType,
         category: values.category,
         amount: values.amount,
-        status: values.status, 
+        status: values.status,
         vendorId: values.vendorId || undefined,
         date:
           values.date?.format?.("YYYY-MM-DD") ||
           new Date().toISOString().split("T")[0],
         description: values.description || "",
         paymentMethod:
-          values.status === "Paid Expense" ? values.paymentMethod : undefined,
+          values.status === "paid" ? values.paymentMethod : undefined,
         transactionId:
-          values.status === "Paid Expense" ? values.transactionId : undefined,
+          values.status === "paid" ? values.transactionId : undefined,
         property: {
           id: values.propertyId || currentProperty?._id,
           name: currentProperty?.name || "",
@@ -1668,10 +1687,10 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
     setShowAddCategory(false);
     setNewCategory("");
     setCurrentCategoryType("");
-    setCurrentProperty(selectedProperty || { id: null, name: "" });
+    setCurrentProperty(selectedProperty || {id: null, name: ""});
     setApiError("");
     setIsSubmitting(false);
-    
+
     // reset vendor inline states
     setShowAddVendor(false);
     setNewVendorName("");
@@ -1732,7 +1751,7 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
       {contextHolder}
       <Modal
         title={
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{display: "flex", alignItems: "center", gap: 8}}>
             {getModalTitle()}
           </div>
         }
@@ -1743,28 +1762,28 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
         centered
         maskClosable={false}
         closable={!isLoading}
-        style={{ pointerEvents: isLoading ? "none" : "auto" }}
+        style={{pointerEvents: isLoading ? "none" : "auto"}}
       >
-        <div style={{ position: "relative" }}>
+        <div style={{position: "relative"}}>
           <Form
             form={form}
             layout="vertical"
             onFinish={onFinish}
-            initialValues={{ date: null, status: "Paid Expense" }}
+            initialValues={{date: null, status: "paid"}}
           >
             {/* Hidden Input to capture Payment Status from our visual cards */}
-            <Form.Item name="status" style={{ display: "none" }}>
+            <Form.Item name="status" style={{display: "none"}}>
               <Input type="hidden" />
             </Form.Item>
 
             {/* Property Selection for Mess Category when no property is selected */}
             {selectedCategory === "Mess" && !hasSelectedProperty && (
-              <Card size="small" style={{ marginBottom: 16 }}>
+              <Card size="small" style={{marginBottom: 16}}>
                 <Form.Item
                   label="Select Property"
                   name="propertyId"
                   rules={[
-                    { required: true, message: "Please select a property" },
+                    {required: true, message: "Please select a property"},
                   ]}
                 >
                   <Select
@@ -1793,7 +1812,7 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
                   <Form.Item
                     name="propertyId"
                     initialValue={selectedProperty.id}
-                    style={{ display: "none" }}
+                    style={{display: "none"}}
                   >
                     <Input type="hidden" />
                   </Form.Item>
@@ -1801,10 +1820,10 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
 
                 <Card
                   size="small"
-                  style={{ marginBottom: 16 }}
+                  style={{marginBottom: 16}}
                   title="Select Kitchen"
                   extra={
-                    <span style={{ fontSize: "12px", color: "#888" }}>
+                    <span style={{fontSize: "12px", color: "#888"}}>
                       Available kitchens for the chosen property
                     </span>
                   }
@@ -1812,7 +1831,7 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
                   <Form.Item
                     name="kitchenId"
                     rules={[
-                      { required: true, message: "Please select a kitchen" },
+                      {required: true, message: "Please select a kitchen"},
                     ]}
                   >
                     <Select
@@ -1840,12 +1859,12 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
             {selectedCategory !== "Mess" && (
               <>
                 {!hasSelectedProperty && (
-                  <Card size="small" style={{ marginBottom: 16 }}>
+                  <Card size="small" style={{marginBottom: 16}}>
                     <Form.Item
                       label="Select Property"
                       name="propertyId"
                       rules={[
-                        { required: true, message: "Please select a property" },
+                        {required: true, message: "Please select a property"},
                       ]}
                     >
                       <Select
@@ -1871,7 +1890,7 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
                   <Form.Item
                     name="propertyId"
                     initialValue={selectedProperty.id}
-                    style={{ display: "none" }}
+                    style={{display: "none"}}
                   >
                     <Input type="hidden" />
                   </Form.Item>
@@ -1880,7 +1899,7 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
             )}
 
             {/* Category Type - Hidden */}
-            <Form.Item name="categoryType" style={{ display: "none" }}>
+            <Form.Item name="categoryType" style={{display: "none"}}>
               <Input type="hidden" />
             </Form.Item>
 
@@ -1891,7 +1910,7 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
                   name="title"
                   label="Expense Title"
                   rules={[
-                    { required: true, message: "Please enter expense title" },
+                    {required: true, message: "Please enter expense title"},
                   ]}
                 >
                   <Input
@@ -1904,7 +1923,7 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
                 <Form.Item
                   name="category"
                   label="Category"
-                  rules={[{ required: true, message: "Please select category" }]}
+                  rules={[{required: true, message: "Please select category"}]}
                 >
                   <Select
                     placeholder="Select or add category"
@@ -1915,10 +1934,10 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
                     dropdownRender={(menu) => (
                       <div>
                         {menu}
-                        <Divider style={{ margin: "8px 0" }} />
-                        <div style={{ padding: "8px" }}>
+                        <Divider style={{margin: "8px 0"}} />
+                        <div style={{padding: "8px"}}>
                           {showAddCategory ? (
-                            <Space.Compact style={{ width: "100%" }}>
+                            <Space.Compact style={{width: "100%"}}>
                               <Input
                                 placeholder="Enter new category"
                                 value={newCategory}
@@ -2012,10 +2031,10 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
                                       e.stopPropagation();
                                       handleDeleteCategory(
                                         currentCategoryType,
-                                        cat
+                                        cat,
                                       );
                                     }}
-                                    style={{ marginBottom: "4px" }}
+                                    style={{marginBottom: "4px"}}
                                   >
                                     {cat}
                                   </Tag>
@@ -2059,20 +2078,19 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
             <Row>
               <Col xs={24}>
                 <Form.Item label="Payment Status" required>
-                  <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
-                    {/* Paid Expense Card - Now GREEN */}
+                  <div style={{display: "flex", gap: "16px", flexWrap: "wrap"}}>
+                    {/* paid Card - Now GREEN */}
                     <div
                       onClick={() => {
-                        if (!isLoading) handleStatusChange("Paid Expense");
+                        if (!isLoading) handleStatusChange("paid");
                       }}
                       style={{
                         flex: "1 1 calc(50% - 8px)",
                         border:
-                          status === "Paid Expense"
+                          status === "paid"
                             ? "2px solid #52c41a"
                             : "1px solid #d9d9d9",
-                        backgroundColor:
-                          status === "Paid Expense" ? "#f6ffed" : "#fff",
+                        backgroundColor: status === "paid" ? "#f6ffed" : "#fff",
                         borderRadius: "8px",
                         padding: "16px",
                         cursor: isLoading ? "not-allowed" : "pointer",
@@ -2085,37 +2103,36 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
                     >
                       <FiCheckCircle
                         size={24}
-                        color={status === "Paid Expense" ? "#52c41a" : "#8c8c8c"}
+                        color={status === "paid" ? "#52c41a" : "#8c8c8c"}
                       />
                       <div>
                         <div
                           style={{
                             fontWeight: 600,
-                            color:
-                              status === "Paid Expense" ? "#52c41a" : "#000",
+                            color: status === "paid" ? "#52c41a" : "#000",
                           }}
                         >
                           Paid Expense
                         </div>
-                        <div style={{ fontSize: "12px", color: "#8c8c8c" }}>
+                        <div style={{fontSize: "12px", color: "#8c8c8c"}}>
                           Payment completed
                         </div>
                       </div>
                     </div>
 
-                    {/* Pending Expense Card - Yellow/Amber */}
+                    {/* pending Card - Yellow/Amber */}
                     <div
                       onClick={() => {
-                        if (!isLoading) handleStatusChange("Pending Expense");
+                        if (!isLoading) handleStatusChange("pending");
                       }}
                       style={{
                         flex: "1 1 calc(50% - 8px)",
                         border:
-                          status === "Pending Expense"
+                          status === "pending"
                             ? "2px solid #faad14"
                             : "1px solid #d9d9d9",
                         backgroundColor:
-                          status === "Pending Expense" ? "#fffbe6" : "#fff",
+                          status === "pending" ? "#fffbe6" : "#fff",
                         borderRadius: "8px",
                         padding: "16px",
                         cursor: isLoading ? "not-allowed" : "pointer",
@@ -2128,21 +2145,18 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
                     >
                       <FiClock
                         size={24}
-                        color={
-                          status === "Pending Expense" ? "#faad14" : "#8c8c8c"
-                        }
+                        color={status === "pending" ? "#faad14" : "#8c8c8c"}
                       />
                       <div>
                         <div
                           style={{
                             fontWeight: 600,
-                            color:
-                              status === "Pending Expense" ? "#faad14" : "#000",
+                            color: status === "pending" ? "#faad14" : "#000",
                           }}
                         >
                           Pending Expense
                         </div>
-                        <div style={{ fontSize: "12px", color: "#8c8c8c" }}>
+                        <div style={{fontSize: "12px", color: "#8c8c8c"}}>
                           To be paid later
                         </div>
                       </div>
@@ -2155,10 +2169,7 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
             {/* Vendor and Amount */}
             <Row gutter={[16, 16]}>
               <Col xs={24} sm={24} md={12}>
-                <Form.Item
-                  name="vendorId"
-                  label="Vendor (Optional)"
-                >
+                <Form.Item name="vendorId" label="Vendor (Optional)">
                   <Select
                     placeholder="Select vendor"
                     showSearch
@@ -2168,20 +2179,30 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
                     dropdownRender={(menu) => (
                       <div>
                         {menu}
-                        <Divider style={{ margin: "8px 0" }} />
-                        <div style={{ padding: "8px" }}>
+                        <Divider style={{margin: "8px 0"}} />
+                        <div style={{padding: "8px"}}>
                           {showAddVendor ? (
-                            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                            <div
+                              style={{
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: 6,
+                              }}
+                            >
                               <Input
                                 placeholder="Vendor name"
                                 value={newVendorName}
-                                onChange={(e) => setNewVendorName(e.target.value)}
+                                onChange={(e) =>
+                                  setNewVendorName(e.target.value)
+                                }
                                 size="small"
                               />
                               <Input
                                 placeholder="Mobile number"
                                 value={newVendorMobile}
-                                onChange={(e) => setNewVendorMobile(e.target.value)}
+                                onChange={(e) =>
+                                  setNewVendorMobile(e.target.value)
+                                }
                                 onPressEnter={handleAddVendorInline}
                                 size="small"
                               />
@@ -2189,12 +2210,14 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
                                 size="small"
                                 value={newVendorType}
                                 onChange={setNewVendorType}
-                                style={{ width: "100%" }}
+                                style={{width: "100%"}}
                                 placeholder="Vendor type"
                                 getPopupContainer={(t) => t.parentElement}
                               >
                                 {vendorTypes.map((vt) => (
-                                  <Option key={vt} value={vt}>{vt}</Option>
+                                  <Option key={vt} value={vt}>
+                                    {vt}
+                                  </Option>
                                 ))}
                               </Select>
                               <Space>
@@ -2208,7 +2231,10 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
                                 </Button>
                                 <Button
                                   size="small"
-                                  onClick={() => { setShowAddVendor(false); setNewVendorName(""); }}
+                                  onClick={() => {
+                                    setShowAddVendor(false);
+                                    setNewVendorName("");
+                                  }}
                                 >
                                   Cancel
                                 </Button>
@@ -2230,7 +2256,9 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
                     )}
                   >
                     {vendors.map((v) => (
-                      <Option key={v._id} value={v._id}>{v.vendorName}</Option>
+                      <Option key={v._id} value={v._id}>
+                        {v.vendorName}
+                      </Option>
                     ))}
                   </Select>
                 </Form.Item>
@@ -2240,10 +2268,10 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
                 <Form.Item
                   name="amount"
                   label="Amount"
-                  rules={[{ required: true, message: "Please enter amount" }]}
+                  rules={[{required: true, message: "Please enter amount"}]}
                 >
                   <InputNumber
-                    style={{ width: "100%" }}
+                    style={{width: "100%"}}
                     placeholder="Enter amount"
                     prefix="₹"
                     min={0}
@@ -2254,8 +2282,8 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
               </Col>
             </Row>
 
-            {/* Conditionally Render Payment Details ONLY if Paid Expense */}
-            {status === "Paid Expense" && (
+            {/* Conditionally Render Payment Details ONLY if paid */}
+            {status === "paid" && (
               <>
                 <Row gutter={[16, 16]}>
                   <Col xs={24}>
@@ -2292,7 +2320,7 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
                         name="handler"
                         label="Select Handler"
                         rules={[
-                          { required: true, message: "Please select handler" },
+                          {required: true, message: "Please select handler"},
                         ]}
                       >
                         <Select
@@ -2336,7 +2364,7 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
                           placeholder="Select spent via method"
                           disabled={isLoading}
                           onChange={() => {
-                            form.setFieldsValue({ transactionId: undefined });
+                            form.setFieldsValue({transactionId: undefined});
                           }}
                         >
                           <Option value="inHand">Cash (inHand)</Option>
@@ -2381,9 +2409,9 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
                 <Form.Item
                   name="date"
                   label="Date"
-                  rules={[{ required: true, message: "Please select date" }]}
+                  rules={[{required: true, message: "Please select date"}]}
                 >
-                  <DatePicker style={{ width: "100%" }} disabled={isLoading} />
+                  <DatePicker style={{width: "100%"}} disabled={isLoading} />
                 </Form.Item>
               </Col>
               <Col xs={24} sm={24} md={12}>
@@ -2418,9 +2446,9 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
                   {imagePreview && (
                     <Card
                       size="small"
-                      style={{ marginTop: "16px", maxWidth: 200 }}
+                      style={{marginTop: "16px", maxWidth: 200}}
                       cover={
-                        <div style={{ position: "relative" }}>
+                        <div style={{position: "relative"}}>
                           <img
                             alt="receipt preview"
                             src={imagePreview}
@@ -2435,7 +2463,7 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
                             danger
                             icon={<FiX />}
                             onClick={removeImage}
-                            style={{ position: "absolute", top: 4, right: 4 }}
+                            style={{position: "absolute", top: 4, right: 4}}
                             disabled={isLoading}
                           />
                         </div>
@@ -2449,7 +2477,7 @@ const AddExpenseModal = ({ visible, onCancel, selectedCategory }) => {
             {/* Actions */}
             <Row>
               <Col xs={24}>
-                <Form.Item style={{ marginBottom: 0, textAlign: "right" }}>
+                <Form.Item style={{marginBottom: 0, textAlign: "right"}}>
                   <Space>
                     <Button onClick={handleClose} disabled={isLoading}>
                       Cancel

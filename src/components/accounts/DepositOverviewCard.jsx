@@ -146,7 +146,7 @@ const DepositOverviewCard = ({depositData, loading = false}) => {
           ></span>
           Non-refundable: ₹
           {(depositData?.currentMonthNonRefundable || 0).toLocaleString(
-            "en-IN"
+            "en-IN",
           )}
         </span>
       </div>

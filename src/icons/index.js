@@ -117,6 +117,7 @@ export {
   LoginOutlined,
   LogoutOutlined,
   UploadOutlined,
+  ShopOutlined,
 } from "@ant-design/icons";
 
 export {GoArrowUpRight, GoPeople} from "react-icons/go";

@@ -9,7 +9,7 @@ import PettyCashModal from "../../modals/accounts/PettyCashModal";
 import CreateAgentModal from "../../modals/accounts/CreateAgentModal";
 import CommissionPaymentModal from "../../modals/accounts/CommissionPaymentModal";
 import CreateVoucherModal from "../../modals/accounts/CreateVoucherModal";
-import GSTExportComponent from "../../utils/GSTExportComponent"; // Import the combined component
+// import GSTExportComponent from "../../utils/GSTExportComponent";
 import AllocateUsersModal from "../../modals/accounts/AllocateUsersModal";
 
 const QuickActionsBar = () => {
@@ -302,7 +302,7 @@ const QuickActionsBar = () => {
           </Button>
 
           {/* Use the combined GST Export Component */}
-          <GSTExportComponent />
+          {/* <GSTExportComponent /> */}
         </div>
       </div>
 

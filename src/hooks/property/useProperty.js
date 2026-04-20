@@ -22,13 +22,13 @@ export const registerProperty = async (propertyData) => {
 
 export const getAllHeavensProperties = async (data) => {
   try {
-    const { propertyId, clientId } = data || {};
+    const {propertyId, clientId} = data || {};
     console.log("Fetching heavens property:", propertyId); // Debug log
 
     const response = await apiClient.get("/property/heavens-properties", {
       params: {
         clientId,
-        ...(propertyId && { propertyId }),
+        ...(propertyId && {propertyId}),
       }, // ✅ pass query only if provided
     });
 
@@ -96,7 +96,7 @@ export const getAllRooms = async (heavensRoomData) => {
 export const getAvailableRoomsByProperty = async (propertyId) => {
   try {
     const response = await apiClient.get("/property/room/availableRooms", {
-      params: { propertyId },
+      params: {propertyId},
     });
     console.log("Fetched available rooms:", response.data);
 
@@ -145,10 +145,10 @@ export const updateRooms = async (roomId, updatedData) => {
   }
 };
 
-export const deleteRooms = async ({ roomId, adminName }) => {
+export const deleteRooms = async ({roomId, adminName}) => {
   try {
     const response = await apiClient.delete(`/property/room/delete/${roomId}`, {
-      params: { adminName }, // Pass as query
+      params: {adminName}, // Pass as query
     });
     console.log("API Delete response data", response.data);
     return response.data; // or adapt based on API
@@ -268,7 +268,7 @@ export const getPropertyActivityLogs = async ({
 export const getDashboardStats = async (propertyId, clientId) => {
   try {
     const response = await apiClient.get(`/property/dashboard/stats`, {
-      params: propertyId ? { propertyId, clientId } : {},
+      params: propertyId ? {propertyId, clientId} : {},
     });
 
     console.log("response", response.data);
@@ -408,7 +408,7 @@ export const getAllCarousel = async (data) => {
     const response = await apiClient.get("/property/carousel/get", {
       params: {
         propertyId: data,
-      }
+      },
     });
     console.debug("Carousel successfully fetched:", response.data);
     return response.data;
@@ -428,7 +428,7 @@ export const getFloorsByPropertyId = async (propertyId) => {
   try {
     // Send propertyId as a query parameter
     const response = await apiClient.get(`/property/floor`, {
-      params: { propertyId },
+      params: {propertyId},
     });
 
     console.debug("Floors successfully fetched:", response.data);
@@ -459,7 +459,7 @@ export const getRoomsByFloorId = async (floorId) => {
 
   try {
     const response = await apiClient.get("/property/room/by-floor", {
-      params: { floorId },
+      params: {floorId},
     });
 
     console.debug("✅ Rooms by Floor fetched:", response.data);
@@ -672,7 +672,7 @@ export const getAllAssets = async (filters = {}) => {
     if (filters.categoryId) params.categoryId = filters.categoryId;
     if (filters.status) params.status = filters.status;
 
-    const response = await apiClient.get("/property/asset", { params });
+    const response = await apiClient.get("/property/asset", {params});
 
     console.debug("Assets fetched successfully:", response.data);
     return response.data;
@@ -692,9 +692,9 @@ export const getAllAssets = async (filters = {}) => {
 
 export const updateAssetStatus = async (data) => {
   try {
-    const { id, status, soldDetails } = data;
+    const {id, status, soldDetails} = data;
 
-    const payload = { status };
+    const payload = {status};
     if (status === "Sold" && soldDetails) {
       payload.soldDetails = soldDetails;
     }

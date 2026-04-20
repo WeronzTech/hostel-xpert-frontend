@@ -300,14 +300,13 @@ export const getPettyCashByManagerId = async (managerId) => {
 export const getAllPettyCashes = async (filters = {}) => {
   try {
     let params = {};
-
     // ✅ Backward compatibility
     if (typeof filters === "string") {
       params.propertyId = filters; // old usage: getAllPettyCashes("propertyId")
     } else if (typeof filters === "object" && filters !== null) {
-      const {propertyId, managerId} = filters;
+      const {propertyId, userType} = filters;
       if (propertyId) params.propertyId = propertyId;
-      if (managerId) params.managerId = managerId;
+      if (userType) params.userType = userType;
     }
 
     const res = await apiClient.get(`/client/pettyCash`, {params});
@@ -1624,7 +1623,7 @@ export const editPayrollSalary = async (data) => {
 // Vendor APIs
 export const getAllVendors = async (filters = {}) => {
   try {
-    const response = await apiClient.get("/vendor", { params: filters });
+    const response = await apiClient.get("/vendor", {params: filters});
     return response.data;
   } catch (error) {
     console.error("Fetching vendors failed:", error);
@@ -1665,7 +1664,10 @@ export const getVendorSummary = async (vendorId) => {
 // Expense API extensions
 export const payExpense = async ({expenseId, ...paymentData}) => {
   try {
-    const response = await apiClient.put(`/expense/pay/${expenseId}`, paymentData);
+    const response = await apiClient.put(
+      `/expense/pay/${expenseId}`,
+      paymentData,
+    );
     return response.data;
   } catch (error) {
     console.error("Paying expense failed:", error);

@@ -1,4 +1,4 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import {Link, useLocation, useNavigate} from "react-router-dom";
 import {
   FiUser,
   FiBell,
@@ -12,16 +12,15 @@ import {
   FiHome,
   MdAccountBalance,
   MdRestaurantMenu,
-  HiOutlineUserGroup,
   LuCircleArrowOutUpLeft,
   FaHistory,
 } from "../../icons/index.js";
-import { useState, useEffect, useMemo } from "react";
+import {useState, useEffect, useMemo} from "react";
 import ConfirmModal from "../../modals/common/ConfirmModal";
-import { logout } from "../../redux/authSlice.js";
-import { useDispatch, useSelector } from "react-redux";
-import { getAllHeavensProperties } from "../../hooks/property/useProperty.js";
-import { selectProperty, setProperties } from "../../redux/propertiesSlice.js";
+import {logout} from "../../redux/authSlice.js";
+import {useDispatch, useSelector} from "react-redux";
+import {getAllHeavensProperties} from "../../hooks/property/useProperty.js";
+import {selectProperty, setProperties} from "../../redux/propertiesSlice.js";
 import {
   Dropdown,
   Menu,
@@ -32,38 +31,40 @@ import {
   Badge,
   Drawer,
 } from "antd";
-import { useQuery } from "@tanstack/react-query";
-import { getRoleById } from "../../hooks/employee/useEmployee.js";
-import { FiSliders } from "react-icons/fi";
+import {useQuery} from "@tanstack/react-query";
+import {getRoleById} from "../../hooks/employee/useEmployee.js";
+import {FiSliders} from "react-icons/fi";
 import CarouselManagementModal from "../../modals/common/CarouselManagement.jsx";
 import RefferalSettingsModal from "../../modals/common/referralSettingsModal.jsx";
 import GameManagementModal from "../../modals/users/GameManagementModal.jsx";
-import MaintenanceCountBadge from "../../components/maintenance/MaintenanceCountBadge.jsx";
-import { useMaintenanceCount } from "../../hooks/maintenance/useMaintenanceCount.js";
-import { useRequestCount } from "../../hooks/offboarding/useRequestCount.js";
-import RequestCountBadge from "../../components/offboarding/RequestCountBadge.jsx";
-import { HiOutlineCalendarDays } from "react-icons/hi2";
-import { HiOutlineDocumentText } from "react-icons/hi";
-import { getKitchens } from "../../hooks/inventory/useInventory.js";
-import { selectKitchen, setKitchens } from "../../redux/kitchensSlice.js";
+import {useMaintenanceCount} from "../../hooks/maintenance/useMaintenanceCount.js";
+import {useRequestCount} from "../../hooks/offboarding/useRequestCount.js";
+import {HiOutlineCalendarDays} from "react-icons/hi2";
+import {HiOutlineDocumentText} from "react-icons/hi";
+import {getKitchens} from "../../hooks/inventory/useInventory.js";
+import {selectKitchen, setKitchens} from "../../redux/kitchensSlice.js";
 
-const { Header } = Layout;
-const { Text } = Typography;
+const {Header} = Layout;
+const {Text} = Typography;
 
 // Define kitchen-related routes - User requested ONLY messonly section (/food-only)
-const KITCHEN_ROUTES = ["/food-only"];
+const KITCHEN_ROUTES = [
+  "/food-only",
+  "/accounts/transactions/mess",
+  "/accounting/generalLedger/KITCHEN",
+  "/accounting/financial-reports/KITCHEN",
+];
 
 const Navbar = () => {
-  const { user } = useSelector((state) => state.auth);
-  const { properties, selectedProperty } = useSelector(
+  const {user} = useSelector((state) => state.auth);
+  const {properties, selectedProperty} = useSelector(
     (state) => state.properties,
   );
-  const { kitchens, selectedKitchen } = useSelector(
+  const {kitchens, selectedKitchen} = useSelector(
     (state) => state.kitchens || {},
   );
 
   const usersClient = user?.clientId || [];
-  const userAssignedProperties = user?.properties || [];
   const isSystemAdmin = user?.role?.name === "Admin";
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -86,12 +87,12 @@ const Navbar = () => {
 
   const roleId = useSelector((state) => state?.auth?.user?.role?.id);
 
-  const { data: role } = useQuery({
+  const {data: role} = useQuery({
     queryKey: ["get-role", roleId],
     queryFn: () => getRoleById(roleId),
   });
 
-  const { data: kitchensData, isLoading: kitchensLoading } = useQuery({
+  const {data: kitchensData, isLoading: kitchensLoading} = useQuery({
     queryKey: ["kitchens"],
     queryFn: () => getKitchens({}),
     enabled: true, // Always fetch kitchens
@@ -151,14 +152,14 @@ const Navbar = () => {
     isLogoutModalOpen,
   ]);
 
-  const handleNotificationMenuClick = ({ key }) => {
+  const handleNotificationMenuClick = ({key}) => {
     if (key === "1") navigate("/notification/push-notification");
     else if (key === "2") navigate("/notification/alert-notification");
     else if (key === "3") navigate("/notification/notification-logs");
     setMobileMenuOpen(false);
   };
 
-  const handleSettingsMenuClick = ({ key }) => {
+  const handleSettingsMenuClick = ({key}) => {
     if (key === "1") handleCarouselClick();
     else if (key === "2") handleRefferalClick();
     else if (key === "3") handleGameManagementClick();
@@ -208,10 +209,10 @@ const Navbar = () => {
   ].filter(Boolean);
 
   const userRoutes = [
-    { path: "/monthlyRent", label: "Monthly Rent", permission: "/monthlyRent" },
-    { path: "/dailyRent", label: "Daily Rent", permission: "/dailyRent" },
-    { path: "/food-only", label: "Mess Only", permission: "/food-only" },
-    { path: "/employees", label: "Employees", permission: "/employees" },
+    {path: "/monthlyRent", label: "Monthly Rent", permission: "/monthlyRent"},
+    {path: "/dailyRent", label: "Daily Rent", permission: "/dailyRent"},
+    {path: "/food-only", label: "Mess Only", permission: "/food-only"},
+    {path: "/employees", label: "Employees", permission: "/employees"},
   ];
 
   const timeOffRoutes = [
@@ -220,7 +221,7 @@ const Navbar = () => {
       label: "Attendance",
       canView: hasPermission("/attendance"),
     },
-    { path: "/leave", label: "Leave", canView: hasPermission("/leave") },
+    {path: "/leave", label: "Leave", canView: hasPermission("/leave")},
   ];
 
   const canViewAccounts =
@@ -239,15 +240,15 @@ const Navbar = () => {
     hasPermission("/stock-usage") && isModuleActive("kitchen");
 
   const propertyRoutes = [
-    { path: "/property", label: "Properties", canView: canViewProperties },
-    { path: "/floor", label: "Floors", canView: canViewFloors },
-    { path: "/rooms", label: "Rooms", canView: canViewRooms },
+    {path: "/property", label: "Properties", canView: canViewProperties},
+    {path: "/floor", label: "Floors", canView: canViewFloors},
+    {path: "/rooms", label: "Rooms", canView: canViewRooms},
   ];
 
   const kitchenRoutes = [
-    { path: "/mess", label: "Order Details", canView: canViewOrderDetails },
-    { path: "/kitchen", label: "Kitchen", canView: canViewKitchens },
-    { path: "/stock-usage", label: "Daily Usage", canView: canViewDailyUsage },
+    {path: "/mess", label: "Order Details", canView: canViewOrderDetails},
+    {path: "/kitchen", label: "Kitchen", canView: canViewKitchens},
+    {path: "/stock-usage", label: "Daily Usage", canView: canViewDailyUsage},
   ];
 
   const allowedKitchenRoutes = kitchenRoutes.filter((route) => route.canView);
@@ -263,8 +264,8 @@ const Navbar = () => {
     const fetchProperties = async () => {
       try {
         const params = !isSystemAdmin
-          ? { clientId: usersClient }
-          : { clientId: user.id };
+          ? {clientId: usersClient}
+          : {clientId: user.id};
         const data = await getAllHeavensProperties(params);
         let filteredData = data;
         if (!isSystemAdmin && user?.properties) {
@@ -296,7 +297,7 @@ const Navbar = () => {
       const hasAllOption = properties.some((p) => p.name === "All Properties");
       return hasAllOption
         ? properties
-        : [{ name: "All Properties", _id: "all" }, ...properties];
+        : [{name: "All Properties", _id: "all"}, ...properties];
     }
     return properties.filter((p) => user?.properties?.includes(p._id));
   }, [properties, user]);
@@ -312,7 +313,7 @@ const Navbar = () => {
     const hasAllOption = kitchens.some((k) => k.name === "All Kitchens");
     return hasAllOption
       ? kitchens
-      : [{ name: "All Kitchens", _id: "all" }, ...kitchens];
+      : [{name: "All Kitchens", _id: "all"}, ...kitchens];
   }, [kitchens]);
 
   const filteredKitchenList = kitchenList.filter((k) =>
@@ -338,19 +339,36 @@ const Navbar = () => {
     }
   }, [user, properties, selectedProperty, dispatch]);
 
+  // const handlePropertySelect = (property) => {
+  //   const selected =
+  //     property.name === "All Properties"
+  //       ? {name: "", id: null}
+  //       : {name: `${user.companyName} - ${property.name}`, id: property._id};
+  //   dispatch(selectProperty(selected));
+  // };
+
   const handlePropertySelect = (property) => {
-    const selected =
-      property.name === "All Properties"
-        ? { name: "", id: null }
-        : { name: `${user.companyName} - ${property.name}`, id: property._id };
+    let selected;
+
+    if (property.name === "All Properties") {
+      selected = {name: "", id: null};
+    } else {
+      // Store both the display name and the full name if needed
+      selected = {
+        name: property.name, // Store original name for display
+        displayName: `${user.companyName} - ${property.name}`, // For display elsewhere
+        id: property._id,
+      };
+    }
+
     dispatch(selectProperty(selected));
   };
 
   const handleKitchenSelect = (kitchen) => {
     const selected =
       kitchen.name === "All Kitchens"
-        ? { name: "All Kitchens", id: "all" }
-        : { name: kitchen.name, id: kitchen._id };
+        ? {name: "All Kitchens", id: "all"}
+        : {name: kitchen.name, id: kitchen._id};
     dispatch(selectKitchen(selected));
   };
 
@@ -392,12 +410,20 @@ const Navbar = () => {
   const propertyMenu = (
     <Menu
       className="property-dropdown-antd"
-      style={{ maxHeight: "400px", overflow: "auto", minWidth: "250px" }}
+      style={{maxHeight: "400px", overflow: "auto", minWidth: "250px"}}
     >
       {filteredPropertyList.map((property) => {
-        const isSelected =
-          (!selectedProperty?.id && property.name === "All Properties") ||
-          selectedProperty?.id === property._id;
+        // Fix: Properly determine if this property is selected
+        let isSelected = false;
+
+        if (property.name === "All Properties") {
+          // All Properties is selected when selectedProperty.id is null/undefined
+          isSelected = !selectedProperty?.id;
+        } else {
+          // Regular property is selected when IDs match
+          isSelected = selectedProperty?.id === property._id;
+        }
+
         return (
           <Menu.Item
             key={property._id || property.name}
@@ -408,24 +434,24 @@ const Navbar = () => {
               fontWeight: isSelected ? "600" : "normal",
             }}
           >
-            <Space style={{ justifyContent: "space-between", width: "100%" }}>
+            <Space style={{justifyContent: "space-between", width: "100%"}}>
               <span
                 style={{
                   whiteSpace: "nowrap",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
-                  fontWeight: isSelected ? "600" : "600",
+                  fontWeight: "600",
                 }}
               >
                 {property.name}
               </span>
-              {isSelected && <span style={{ color: "#059669" }}>✓</span>}
+              {isSelected && <span style={{color: "#059669"}}>✓</span>}
             </Space>
           </Menu.Item>
         );
       })}
       {filteredPropertyList.length === 0 && (
-        <Menu.Item disabled style={{ textAlign: "center", color: "#999" }}>
+        <Menu.Item disabled style={{textAlign: "center", color: "#999"}}>
           No properties found
         </Menu.Item>
       )}
@@ -436,7 +462,7 @@ const Navbar = () => {
   const kitchenMenu = (
     <Menu
       className="kitchen-dropdown-antd"
-      style={{ maxHeight: "400px", overflow: "auto", minWidth: "250px" }}
+      style={{maxHeight: "400px", overflow: "auto", minWidth: "250px"}}
     >
       {filteredKitchenList.map((kitchen) => {
         const isSelected =
@@ -452,7 +478,7 @@ const Navbar = () => {
               fontWeight: isSelected ? "600" : "normal",
             }}
           >
-            <Space style={{ justifyContent: "space-between", width: "100%" }}>
+            <Space style={{justifyContent: "space-between", width: "100%"}}>
               <span
                 style={{
                   whiteSpace: "nowrap",
@@ -463,13 +489,13 @@ const Navbar = () => {
               >
                 {kitchen.name}
               </span>
-              {isSelected && <span style={{ color: "#059669" }}>✓</span>}
+              {isSelected && <span style={{color: "#059669"}}>✓</span>}
             </Space>
           </Menu.Item>
         );
       })}
       {filteredKitchenList.length === 0 && (
-        <Menu.Item disabled style={{ textAlign: "center", color: "#999" }}>
+        <Menu.Item disabled style={{textAlign: "center", color: "#999"}}>
           No kitchens found
         </Menu.Item>
       )}
@@ -492,7 +518,7 @@ const Navbar = () => {
 
   // Desktop Navigation Items
   const renderDesktopNavItems = () => (
-    <Space size="middle" className="nav-items" style={{ gap: "0.5rem" }}>
+    <Space size="middle" className="nav-items" style={{gap: "0.5rem"}}>
       {hasPermission("/") && (
         <Link to="/">
           <Button
@@ -655,42 +681,6 @@ const Navbar = () => {
           )}
         </>
       )}
-      {/* {hasPermission("/attendance") && (
-        <Link to="/attendance">
-          <Button
-            type="text"
-            className={`nav-link ${isActive("/attendance") ? "active" : ""}`}
-            icon={<HiOutlineCalendarDays size={20} />}
-            style={getButtonStyle(isActive("/attendance"))}
-          >
-            <span>Attendance</span>
-          </Button>
-        </Link>
-      )}
-      {hasPermission("/leave") && (
-        <Link to="/leave">
-          <Button
-            type="text"
-            className={`nav-link ${isActive("/leave") ? "active" : ""}`}
-            icon={<HiOutlineDocumentText size={20} />}
-            style={getButtonStyle(isActive("/leave"))}
-          >
-            <span>Leave</span>
-          </Button>
-        </Link>
-      )}
-      {hasPermission("/employees") && (
-        <Link to="/employees">
-          <Button
-            type="text"
-            className={`nav-link ${isActive("/employees") ? "active" : ""}`}
-            icon={<HiOutlineUserGroup size={20} />}
-            style={getButtonStyle(isActive("/employees"))}
-          >
-            <span>Employees</span>
-          </Button>
-        </Link>
-      )} */}
 
       {allowedTimeOffRoutes.length > 0 && (
         <>
@@ -853,7 +843,7 @@ const Navbar = () => {
           <Badge
             count={maintenanceCount}
             offset={[-5, 5]}
-            style={{ backgroundColor: "#f5222d" }}
+            style={{backgroundColor: "#f5222d"}}
           >
             <Button
               type="text"
@@ -965,7 +955,7 @@ const Navbar = () => {
           <Badge
             count={requestCount}
             offset={[-5, 5]}
-            style={{ backgroundColor: "#f5222d" }}
+            style={{backgroundColor: "#f5222d"}}
           >
             <Button
               type="text"
@@ -1085,7 +1075,7 @@ const Navbar = () => {
 
   // Mobile Navigation Items
   const renderMobileNavItems = () => (
-    <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+    <div style={{display: "flex", flexDirection: "column", gap: "0.5rem"}}>
       {hasPermission("/") && (
         <Link to="/" onClick={() => setMobileMenuOpen(false)}>
           <Button
@@ -1100,7 +1090,7 @@ const Navbar = () => {
       )}
 
       {allowedPropertyRoutes.length > 0 && (
-        <div style={{ display: "flex", flexDirection: "column" }}>
+        <div style={{display: "flex", flexDirection: "column"}}>
           {allowedPropertyRoutes.length > 1 ? (
             <>
               <Button
@@ -1190,7 +1180,7 @@ const Navbar = () => {
       )}
 
       {allowedUserRoutes.length > 0 && (
-        <div style={{ display: "flex", flexDirection: "column" }}>
+        <div style={{display: "flex", flexDirection: "column"}}>
           {allowedUserRoutes.length > 1 ? (
             <>
               <Button
@@ -1318,7 +1308,7 @@ const Navbar = () => {
         </Link>
       )} */}
       {allowedTimeOffRoutes.length > 0 && (
-        <div style={{ display: "flex", flexDirection: "column" }}>
+        <div style={{display: "flex", flexDirection: "column"}}>
           {allowedTimeOffRoutes.length > 1 ? (
             <>
               <Button
@@ -1414,7 +1404,7 @@ const Navbar = () => {
       )}
 
       {allowedKitchenRoutes.length > 0 && (
-        <div style={{ display: "flex", flexDirection: "column" }}>
+        <div style={{display: "flex", flexDirection: "column"}}>
           {allowedKitchenRoutes.length > 1 ? (
             <>
               <Button
@@ -1505,7 +1495,7 @@ const Navbar = () => {
 
       {hasPermission("/maintenance") && isModuleActive("properties") && (
         <Link to="/maintenance" onClick={() => setMobileMenuOpen(false)}>
-          <div style={{ position: "relative", width: "100%" }}>
+          <div style={{position: "relative", width: "100%"}}>
             <Button
               type="text"
               className={`mobile-nav-link ${isActive("/maintenance") ? "active" : ""}`}
@@ -1537,7 +1527,7 @@ const Navbar = () => {
       )}
 
       {(canViewAccounts || canViewAccounting) && (
-        <div style={{ display: "flex", flexDirection: "column" }}>
+        <div style={{display: "flex", flexDirection: "column"}}>
           {canViewAccounts && canViewAccounting ? (
             <>
               <Button
@@ -1636,7 +1626,7 @@ const Navbar = () => {
 
       {hasPermission("/offboarding") && isModuleActive("users") && (
         <Link to="/offboarding" onClick={() => setMobileMenuOpen(false)}>
-          <div style={{ position: "relative", width: "100%" }}>
+          <div style={{position: "relative", width: "100%"}}>
             <Button
               type="text"
               className={`mobile-nav-link ${isActive("/offboarding") ? "active" : ""}`}
@@ -1668,7 +1658,7 @@ const Navbar = () => {
       )}
 
       {hasPermission("/activity-logs") && isModuleActive("users") && (
-        <div style={{ display: "flex", flexDirection: "column" }}>
+        <div style={{display: "flex", flexDirection: "column"}}>
           <Button
             type="text"
             onClick={() => setMoreDropdownOpen(!moreDropdownOpen)}
@@ -1758,8 +1748,8 @@ const Navbar = () => {
           borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+        <div style={{display: "flex", alignItems: "center", gap: "1rem"}}>
+          <div style={{display: "flex", alignItems: "center", gap: "1rem"}}>
             <Link
               to="/"
               style={{
@@ -1797,7 +1787,7 @@ const Navbar = () => {
               </Text>
             </Link>
 
-            <Text style={{ color: "white", opacity: 0.5 }}>|</Text>
+            <Text style={{color: "white", opacity: 0.5}}>|</Text>
 
             {/* Conditional Dropdown - Property or Kitchen based on route */}
             {isKitchenRoute ? (
@@ -1818,7 +1808,7 @@ const Navbar = () => {
                     fontWeight: 600,
                   }}
                 >
-                  <span style={{ whiteSpace: "nowrap" }}>
+                  <span style={{whiteSpace: "nowrap"}}>
                     {!selectedKitchen?.id || selectedKitchen.id === "all"
                       ? "All Kitchens"
                       : selectedKitchen?.name}
@@ -1833,8 +1823,8 @@ const Navbar = () => {
                       width: "16px",
                     }}
                   >
-                    <FiChevronUp size={10} style={{ marginBottom: "-2px" }} />
-                    <FiChevronDown size={10} style={{ marginTop: "-2px" }} />
+                    <FiChevronUp size={10} style={{marginBottom: "-2px"}} />
+                    <FiChevronDown size={10} style={{marginTop: "-2px"}} />
                   </span>
                 </Button>
               </Dropdown>
@@ -1856,7 +1846,7 @@ const Navbar = () => {
                     fontWeight: 600,
                   }}
                 >
-                  <span style={{ whiteSpace: "nowrap" }}>
+                  <span style={{whiteSpace: "nowrap"}}>
                     {!selectedProperty?.id ||
                     selectedProperty.id === "null" ||
                     selectedProperty?.name === ""
@@ -1876,8 +1866,8 @@ const Navbar = () => {
                       width: "16px",
                     }}
                   >
-                    <FiChevronUp size={10} style={{ marginBottom: "-2px" }} />
-                    <FiChevronDown size={10} style={{ marginTop: "-2px" }} />
+                    <FiChevronUp size={10} style={{marginBottom: "-2px"}} />
+                    <FiChevronDown size={10} style={{marginTop: "-2px"}} />
                   </span>
                 </Button>
               </Dropdown>
@@ -1885,7 +1875,7 @@ const Navbar = () => {
           </div>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+        <div style={{display: "flex", alignItems: "center", gap: "1rem"}}>
           {/* Mobile Menu Toggle */}
           {isMobile ? (
             <Badge
@@ -1904,20 +1894,20 @@ const Navbar = () => {
                 )
               }
               offset={[-6, 6]} // controls badge position
-              style={{ boxShadow: "none" }}
+              style={{boxShadow: "none"}}
             >
               <Button
                 type="text"
-                icon={<FiMenu size={24} style={{ color: "white" }} />}
+                icon={<FiMenu size={24} style={{color: "white"}} />}
                 onClick={toggleMobileMenu}
                 className="menu-toggle"
-                style={{ display: "flex", color: "white" }}
+                style={{display: "flex", color: "white"}}
               />
             </Badge>
           ) : null}
 
           {/* Desktop Icons */}
-          <Space size="middle" style={{ display: isMobile ? "none" : "flex" }}>
+          <Space size="middle" style={{display: isMobile ? "none" : "flex"}}>
             <Link
               to="/profile"
               // onClick={() => setMobileMenuOpen(false)}
@@ -1925,13 +1915,13 @@ const Navbar = () => {
               <Space size={4}>
                 <Button
                   type="text"
-                  icon={<FiUser size={20} style={{ color: "white" }} />}
+                  icon={<FiUser size={20} style={{color: "white"}} />}
                   className="icon-button"
-                  style={{ color: "white", padding: "0.5rem", height: "auto" }}
+                  style={{color: "white", padding: "0.5rem", height: "auto"}}
                 />
-                <div style={{ textAlign: "right" }}>
+                <div style={{textAlign: "right"}}>
                   <Space size={8}>
-                    <Text style={{ color: "white", fontWeight: 500 }}>
+                    <Text style={{color: "white", fontWeight: 500}}>
                       {user?.name}
                     </Text>
                     <Badge
@@ -1963,9 +1953,9 @@ const Navbar = () => {
               >
                 <Button
                   type="text"
-                  icon={<FiSliders size={20} style={{ color: "white" }} />}
+                  icon={<FiSliders size={20} style={{color: "white"}} />}
                   className="icon-button"
-                  style={{ color: "white", padding: "0.5rem", height: "auto" }}
+                  style={{color: "white", padding: "0.5rem", height: "auto"}}
                 />
               </Dropdown>
             )}
@@ -1981,19 +1971,19 @@ const Navbar = () => {
               >
                 <Button
                   type="text"
-                  icon={<FiBell size={20} style={{ color: "white" }} />}
+                  icon={<FiBell size={20} style={{color: "white"}} />}
                   className="icon-button"
-                  style={{ color: "white", padding: "0.5rem", height: "auto" }}
+                  style={{color: "white", padding: "0.5rem", height: "auto"}}
                 />
               </Dropdown>
             )}
 
             <Button
               type="text"
-              icon={<FiLogOut size={20} style={{ color: "white" }} />}
+              icon={<FiLogOut size={20} style={{color: "white"}} />}
               onClick={handleLogoutClick}
               className="icon-button"
-              style={{ color: "white", padding: "0.5rem", height: "auto" }}
+              style={{color: "white", padding: "0.5rem", height: "auto"}}
             />
           </Space>
         </div>
@@ -2018,10 +2008,10 @@ const Navbar = () => {
         onClose={toggleMobileMenu}
         open={mobileMenuOpen}
         width={320}
-        bodyStyle={{ padding: 0, backgroundColor: "#059669" }}
-        headerStyle={{ display: "none" }}
+        bodyStyle={{padding: 0, backgroundColor: "#059669"}}
+        headerStyle={{display: "none"}}
       >
-        <div style={{ padding: "1rem" }}>
+        <div style={{padding: "1rem"}}>
           <Space
             style={{
               display: "flex",
@@ -2033,9 +2023,9 @@ const Navbar = () => {
           >
             <Button
               type="text"
-              icon={<FiUser size={20} style={{ color: "white" }} />}
+              icon={<FiUser size={20} style={{color: "white"}} />}
               className="icon-button"
-              style={{ color: "white" }}
+              style={{color: "white"}}
             />
             {settingsItems.length > 0 && (
               <Dropdown
@@ -2048,9 +2038,9 @@ const Navbar = () => {
               >
                 <Button
                   type="text"
-                  icon={<FiSliders size={20} style={{ color: "white" }} />}
+                  icon={<FiSliders size={20} style={{color: "white"}} />}
                   className="icon-button"
-                  style={{ color: "white" }}
+                  style={{color: "white"}}
                 />
               </Dropdown>
             )}
@@ -2065,18 +2055,18 @@ const Navbar = () => {
               >
                 <Button
                   type="text"
-                  icon={<FiBell size={20} style={{ color: "white" }} />}
+                  icon={<FiBell size={20} style={{color: "white"}} />}
                   className="icon-button"
-                  style={{ color: "white" }}
+                  style={{color: "white"}}
                 />
               </Dropdown>
             )}
             <Button
               type="text"
-              icon={<FiLogOut size={20} style={{ color: "white" }} />}
+              icon={<FiLogOut size={20} style={{color: "white"}} />}
               onClick={handleLogoutClick}
               className="icon-button"
-              style={{ color: "white" }}
+              style={{color: "white"}}
             />
           </Space>
 
