@@ -34,6 +34,8 @@ const AddonFormModal = ({
   const [previewVisible, setPreviewVisible] = useState(false);
   const [previewImage, setPreviewImage] = useState("");
 
+  const isEdit = !!(initialValues && initialValues._id);
+
   // console.log(`Kitchen ID from the addon form modal: `, kitchenId); // debug log
 
   // Fetch all addons for the dropdown using tanstack query
@@ -46,35 +48,35 @@ const AddonFormModal = ({
   // console.log(`Fetch all recipes for the kitchen: `, recipeData); // debug log
   // console.log(`Fetch all recipes for the kitchen: `, initialValues); // debug log
 
-  // useEffect to populate form for editing
+  // Populate form fields if editing
   useEffect(() => {
-    // Only proceed if the modal is visible
-    if (visible) {
-      if (initialValues && recipeData) {
-        // 1. Set all form fields from the initialValues prop
-        form.setFieldsValue(initialValues);
+    if (visible && isEdit && recipeData) {
+      // 1. Set all form fields from the initialValues prop
+      form.setFieldsValue(initialValues);
 
-        // 2. Set the image for the Upload component from the URL
-        if (initialValues.itemImage) {
-          setFileList([
-            {
-              uid: initialValues._id || "-1", // Use a unique ID
-              name: "image.png",
-              status: "done",
-              url: initialValues.itemImage,
-            },
-          ]);
-        } else {
-          setFileList([]);
-        }
-      } else if (!initialValues) {
-        // 3. If creating a new item, ensure the form and file list are empty
-        form.resetFields();
+      // 2. Set the image for the Upload component from the URL
+      if (initialValues.itemImage) {
+        setFileList([
+          {
+            uid: initialValues._id || "-1", // Use a unique ID
+            name: "image.png",
+            status: "done",
+            url: initialValues.itemImage,
+          },
+        ]);
+      } else {
         setFileList([]);
       }
     }
-    // Wait for recipeData to be loaded before setting form values
-  }, [initialValues, form, visible, recipeData]);
+  }, [visible, isEdit, recipeData, initialValues, form]);
+
+  // Reset form and file list when opening to create a new item
+  useEffect(() => {
+    if (visible && !isEdit) {
+      form.resetFields();
+      setFileList([]);
+    }
+  }, [visible, isEdit, form]);
 
   // Format recipes for the Select component's `options` prop
   const recipeOptions = useMemo(() => {
@@ -146,10 +148,10 @@ const AddonFormModal = ({
   return (
     <Modal
       open={visible}
-      title={initialValues ? "Edit Addon" : "Add New Addon"}
+      title={isEdit ? "Edit Addon" : "Add New Addon"}
       onOk={handleOk}
       onCancel={handleCancel}
-      okText={initialValues ? "Edit" : "Add"}
+      okText={isEdit ? "Edit" : "Add"}
       width={650}
       confirmLoading={isSubmitting}
       preserve={false}

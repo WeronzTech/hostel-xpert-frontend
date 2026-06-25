@@ -36,6 +36,17 @@ function AddonPage() {
   const queryClient = useQueryClient();
 
   const [editingAddon, setEditingAddon] = useState(null);
+
+  const modalInitialValues = useMemo(() => {
+    if (editingAddon) {
+      return {
+        ...editingAddon,
+        itemId: editingAddon.itemId?._id, // normalize itemId
+      };
+    }
+    return { isAvailable: true }; // defaults for new
+  }, [editingAddon]);
+
   // Track the ID of the addon currently being updated
   const [updatingAddonId, setUpdatingAddonId] = useState(null);
 
@@ -354,14 +365,7 @@ function AddonPage() {
           }}
           onSubmit={handleFormSubmit}
           isSubmitting={isCreating || isUpdatingAddon}
-          initialValues={
-            editingAddon
-              ? {
-                  ...editingAddon,
-                  itemId: editingAddon.itemId?._id, // normalize itemId
-                }
-              : { isAvailable: true } // defaults for new
-          }
+          initialValues={modalInitialValues}
           kitchenId={selectedKitchenId}
         />
 
