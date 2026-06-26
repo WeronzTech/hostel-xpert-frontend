@@ -96,7 +96,7 @@ const Dashboard = () => {
 
       messageApi.success({
         content: `${data.message}`,
-        duration: 20,
+        duration: 3,
       });
     },
     onError: (error) => {
@@ -141,10 +141,11 @@ const Dashboard = () => {
     },
   });
   const { data: maintenanceNotifications = [] } = useQuery({
-    queryKey: ["maintenanceNotifications"],
-    queryFn: () => maintenanceApiService.getMaintenanceNotification(),
-    staleTime: 1000 * 60,
-  });
+  queryKey: ["maintenanceNotifications", user.clientId],
+  queryFn: () => maintenanceApiService.getMaintenanceNotification(),
+  enabled: !!user.clientId,
+  staleTime: 1000 * 60,
+});
 
   useEffect(() => {
     if (!Array.isArray(rentNotifications) || rentNotifications.length === 0) {
@@ -179,7 +180,7 @@ const Dashboard = () => {
           />
         ),
         placement: "topRight",
-        duration: 10,
+        duration: 5,
         style: {
           cursor: "pointer",
         },
@@ -234,7 +235,7 @@ const Dashboard = () => {
         ),
         icon,
         placement: "topRight",
-        duration: 10,
+        duration: 5,
         style: {
           cursor: "pointer",
         },
