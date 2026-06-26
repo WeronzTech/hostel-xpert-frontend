@@ -26,8 +26,13 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { getMonthlyIncomeExpenseSummary } from "../../hooks/accounts/useAccounts.js";
 import { useEffect, useState } from "react";
-import { Select, Popconfirm, Input, message, DatePicker } from "antd";
+import { Select, Popconfirm, Input, message, DatePicker, notification, } from "antd";
 import { completeReminder, snoozeReminder } from "../../hooks/users/useUser.js";
+import { getRentDueNotification } from "../../hooks/property/useProperty";
+import { ExclamationCircleFilled, ToolFilled, WarningFilled } from "@ant-design/icons";
+import { maintenanceApiService } from "../../hooks/maintenance/maintenanceApiService.js";
+
+
 
 dayjs.extend(relativeTime);
 
@@ -46,6 +51,9 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [messageApi, contextHolder] = message.useMessage();
+  const [notificationApi, notificationContextHolder] =
+    notification.useNotification();
+
   console.log("selectedProperty in Dashboard:", selectedProperty); // debug log
 
   const {
@@ -88,7 +96,7 @@ const Dashboard = () => {
 
       messageApi.success({
         content: `${data.message}`,
-        duration: 3,
+        duration: 20,
       });
     },
     onError: (error) => {
@@ -121,6 +129,122 @@ const Dashboard = () => {
       });
     },
   });
+  const {
+    data: rentNotifications = [],
+    isLoading: rentLoading,
+  } = useQuery({
+    queryKey: ["rentNotifications", user.clientId],
+    queryFn: () => getRentDueNotification(user.clientId),
+    staleTime: 1000 * 60,
+    onSuccess: (data) => {
+      console.log("Rent Notifications:", data);
+    },
+  });
+  const { data: maintenanceNotifications = [] } = useQuery({
+    queryKey: ["maintenanceNotifications"],
+    queryFn: () => maintenanceApiService.getMaintenanceNotification(),
+    staleTime: 1000 * 60,
+  });
+
+  useEffect(() => {
+    if (!Array.isArray(rentNotifications) || rentNotifications.length === 0) {
+      return;
+    }
+
+    rentNotifications.forEach((item) => {
+      notificationApi.warning({
+        key: item.id,
+        message: item.title,
+        description: (
+          <div
+            className="cursor-pointer"
+            onClick={() => {
+              notificationApi.destroy(item.id);
+              navigate(`/property/${item.propertyId}`);
+            }}
+          >
+            <p className="text-gray-700">{item.message}</p>
+
+            <p className="mt-2 text-blue-600 font-medium">
+              Click to view property →
+            </p>
+          </div>
+        ),
+        icon: (
+          <ExclamationCircleFilled
+            style={{
+              color: "#faad14",
+              fontSize: "20px",
+            }}
+          />
+        ),
+        placement: "topRight",
+        duration: 10,
+        style: {
+          cursor: "pointer",
+        },
+        onClick: () => {
+          notificationApi.destroy(item.id);
+          navigate(`/property/${item.propertyId}`);
+        },
+      });
+    });
+  }, [rentNotifications, notificationApi, navigate]);
+
+  useEffect(() => {
+    if (
+      !Array.isArray(maintenanceNotifications) ||
+      maintenanceNotifications.length === 0
+    ) {
+      return;
+    }
+
+    maintenanceNotifications.forEach((item) => {
+      let icon = <ToolFilled style={{ color: "#1677ff", fontSize: 20 }} />;
+      let type = "info";
+
+      if (item.severity === "HIGH") {
+        icon = <ExclamationCircleFilled style={{ color: "#faad14", fontSize: 20 }} />;
+        type = "warning";
+      }
+
+      if (item.severity === "CRITICAL") {
+        icon = <WarningFilled style={{ color: "#ff4d4f", fontSize: 20 }} />;
+        type = "error";
+      }
+
+      notificationApi[type]({
+        key: item.id,
+        message: item.title,
+        description: (
+          <div
+            className="cursor-pointer"
+            onClick={() => {
+              notificationApi.destroy(item.id);
+
+              navigate("/maintenance");
+            }}
+          >
+            <p className="text-gray-700">{item.message}</p>
+
+            <p className="text-blue-600 font-medium mt-2">
+              Click to view maintenance →
+            </p>
+          </div>
+        ),
+        icon,
+        placement: "topRight",
+        duration: 10,
+        style: {
+          cursor: "pointer",
+        },
+        onClick: () => {
+          notificationApi.destroy(item.id);
+          navigate("/maintenance");
+        },
+      });
+    });
+  }, [maintenanceNotifications, notificationApi, navigate]);
 
   useEffect(() => {
     if (summaryData?.availableYears?.length) {
@@ -262,8 +386,10 @@ const Dashboard = () => {
   }
 
   return (
+
     <div className="min-h-screen bg-gray-50 px-4 pt-4 pb-8 xl:px-12 lg:px-6">
       {contextHolder}
+
 
       {/* Header */}
       <PageHeader
@@ -335,7 +461,7 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
-
+      {notificationContextHolder}
         <div className="bg-white rounded-lg border border-gray-200 p-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Maintenance Issues - Left */}

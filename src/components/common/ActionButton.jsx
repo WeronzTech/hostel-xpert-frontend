@@ -1,6 +1,15 @@
-import {Button, ConfigProvider} from "antd";
+import { Button, ConfigProvider } from "antd";
 
-const ActionButton = ({customTheme, type = "primary", children, ...rest}) => {
+const ActionButton = ({
+  customTheme = {
+    token: {
+      colorPrimary: "#059669",
+    },
+  },
+  type = "primary",
+  children,
+  ...rest
+}) => {
   return (
     <ConfigProvider theme={customTheme}>
       <Button {...rest} type={type}>

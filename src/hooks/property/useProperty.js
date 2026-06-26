@@ -789,3 +789,13 @@ export const getRentHistory = async (propertyId) => {
   console.log("Rent History Response:", response.data); // Debug log
   return response.data?.data || [];
 };
+
+export const getRentDueNotification = async (clientId) => {
+  const response = await apiClient.get("property/rent/notifications", {
+    params: { clientId },
+  });
+
+  console.log("Rent Notification Response:", response.data);
+
+  return response.data?.data || [];
+};
