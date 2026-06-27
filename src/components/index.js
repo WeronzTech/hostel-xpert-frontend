@@ -20,6 +20,7 @@ import MaintenanceDetailModal from "./maintenance/MaintenanceDetailModal.jsx";
 import StatsGrid from "./common/StatsGrid.jsx";
 import ErrorState from "./common/ErrorState.jsx";
 import RequestResponseModal from "./offboarding/RequestResponseModal.jsx";
+import ReassignRoomModal from "./offboarding/ReassignRoomModal.jsx";
 import AlertNotficationModal from "./notification/AlertNotficationModal.jsx";
 import AlertNotificationTable from "./notification/AlertNotificationTable.jsx";
 import NotificationLogsTable from "./notification/NotificationLogsTable.jsx";
@@ -50,6 +51,7 @@ export {
   AccountsLogs,
   MaintenanceDetailModal,
   RequestResponseModal,
+  ReassignRoomModal,
   AlertNotficationModal,
   AlertNotificationTable,
   NotificationLogsTable,

@@ -48,6 +48,7 @@ import CookingRequirements from "./pages/mess/CookingRequirements.jsx";
 import Assets from "./pages/assets/Assets.jsx";
 import FloorManagement from "./pages/property/floor/FloorManagement.jsx";
 import FloorRoomsPage from "./pages/property/floor/FloorRoomPage.jsx";
+import BedManagement from "./pages/property/bed/BedManagement.jsx";
 import ResetPasswordPage from "./pages/auth/ResetPasswordPage.jsx";
 import WebsiteManagement from "./pages/home/website/WebsiteManagement.jsx";
 import AccountingDashboard from "./pages/accounts/AccountingDashboard.jsx";
@@ -132,6 +133,7 @@ const appRoutes = [
   {path: "active-reminders", element: <ReminderNotes />},
   {path: "/stock-usage", element: <CookingRequirements />},
   {path: "/floor", element: <FloorManagement />},
+  {path: "/beds", element: <BedManagement />},
   {path: "/floors/:floorId/rooms", element: <FloorRoomsPage />},
   {path: "/website-management", element: <WebsiteManagement />},
   {path: "/profile", element: <UserProfile />},

@@ -73,11 +73,13 @@ const RegistrationModal = ({visible, onCancel, rentType}) => {
   const [messageApi, contextHolder] = message.useMessage();
   const queryClient = useQueryClient();
 
+  const gender = useWatch("gender", form);
+
   const {data: availableRooms} = useQuery({
-    queryKey: ["availableRooms", selectedProperty?.id || currentProperty?._id],
+    queryKey: ["availableRooms", selectedProperty?.id || currentProperty?._id, gender],
     queryFn: ({queryKey}) => {
-      const [, propertyId] = queryKey;
-      return getAvailableRoomsByProperty(propertyId);
+      const [, propertyId, genderVal] = queryKey;
+      return getAvailableRoomsByProperty(propertyId, genderVal);
     },
     enabled:
       !!(selectedProperty?.id || currentProperty?._id) && rentType === "daily",

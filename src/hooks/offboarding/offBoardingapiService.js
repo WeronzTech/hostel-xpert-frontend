@@ -30,13 +30,47 @@ class OffboardingApiService {
     try {
       const params = {};
       if (propertyId) params.propertyId = propertyId;
-      if (type) params.type = type;
+      if (type && type !== "all" && type !== "room_change") params.type = type;
 
-      const response = await apiClient.get("/user/status-requests/pending", {
-        params,
+      let combinedData = [];
+
+      // Only fetch status-requests if type is not room_change
+      if (!type || type === "all" || type !== "room_change") {
+        const response = await apiClient.get("/user/status-requests/pending", {
+          params,
+        });
+        if (response.data?.data) {
+          combinedData = [...combinedData, ...response.data.data];
+        }
+      }
+
+      // Only fetch room-change-requests if type is all or room_change
+      if (!type || type === "all" || type === "room_change") {
+        try {
+          const paramsRoomChange = {};
+          if (propertyId) paramsRoomChange.propertyId = propertyId;
+          const responseRoomChange = await apiClient.get("/user/room-change-requests/pending", {
+            params: paramsRoomChange,
+          });
+          if (responseRoomChange.data?.data) {
+            combinedData = [...combinedData, ...responseRoomChange.data.data];
+          }
+        } catch (err) {
+          console.error("Failed to fetch room change requests:", err);
+        }
+      }
+
+      // Sort by requestedAt descending
+      combinedData.sort((a, b) => {
+        const dateA = new Date(a.request?.requestedAt || 0);
+        const dateB = new Date(b.request?.requestedAt || 0);
+        return dateB - dateA;
       });
-      //   console.log(`Response from Ofbboarding API Serivce:`, response); // debug log
-      return response.data;
+
+      return {
+        success: true,
+        data: combinedData,
+      };
     } catch (error) {
       throw this.#handleApiError(error);
     }
@@ -45,17 +79,17 @@ class OffboardingApiService {
    * Respond to a user status request (accept or reject)
    * @param {string} userId - ID of the user
    * @param {string} requestId - ID of the status request
+   * @param {Object} payload - Response data
+   * @param {boolean} [isRoomChange=false] - Whether it is a room change request
    * @returns {Promise<Object>} - Response data from the API
    */
 
-  async respondToUserRequest(userId, requestId, payload) {
-    // console.log(`Request to the api service: `, payload); // debug log
+  async respondToUserRequest(userId, requestId, payload, isRoomChange = false) {
     try {
-      const response = await apiClient.put(
-        `/user/${userId}/status-requests/${requestId}/respond`,
-        payload,
-      );
-
+      const endpoint = isRoomChange
+        ? `/user/${userId}/room-change-requests/${requestId}/respond`
+        : `/user/${userId}/status-requests/${requestId}/respond`;
+      const response = await apiClient.put(endpoint, payload);
       return response.data;
     } catch (error) {
       throw this.#handleApiError(error);

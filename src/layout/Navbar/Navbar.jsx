@@ -232,6 +232,7 @@ const Navbar = () => {
     hasPermission("/property") && isModuleActive("properties");
   const canViewRooms = hasPermission("/rooms") && isModuleActive("properties");
   const canViewFloors = hasPermission("/floor") && isModuleActive("properties");
+  const canViewBeds = hasPermission("/beds") && isModuleActive("properties");
   const canViewOrderDetails =
     hasPermission("/mess") && isModuleActive("kitchen");
   const canViewKitchens =
@@ -243,6 +244,7 @@ const Navbar = () => {
     {path: "/property", label: "Properties", canView: canViewProperties},
     {path: "/floor", label: "Floors", canView: canViewFloors},
     {path: "/rooms", label: "Rooms", canView: canViewRooms},
+    {path: "/beds", label: "Beds", canView: canViewBeds},
   ];
 
   const kitchenRoutes = [
@@ -963,7 +965,7 @@ const Navbar = () => {
               icon={<LuCircleArrowOutUpLeft size={18} />}
               style={getButtonStyle(isActive("/offboarding"))}
             >
-              <span>Off Boarding</span>
+              <span>Requests</span>
             </Button>
           </Badge>
         </Link>
@@ -1633,7 +1635,7 @@ const Navbar = () => {
               icon={<LuCircleArrowOutUpLeft size={18} />}
               style={getMobileButtonStyle(isActive("/offboarding"))}
             >
-              <span>Off Boarding</span>
+              <span>Requests</span>
             </Button>
             {requestCount > 0 && (
               <span

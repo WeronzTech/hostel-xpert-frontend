@@ -19,6 +19,7 @@ const ROUTE_MODULE_MAP = {
   "/property": "properties",
   "/floor": "properties",
   "/rooms": "properties",
+  "/beds": "properties",
   "/monthlyRent": "users",
   "/dailyRent": "users",
   "/food-only": "users",
