@@ -1,8 +1,11 @@
-import {useEffect, useState} from "react";
+import {useEffect, useState, useMemo} from "react";
 import {useLocation, useNavigate, useParams} from "react-router-dom";
 import {useSelector} from "react-redux";
 import {useQuery, useMutation, useQueryClient} from "@tanstack/react-query";
-import {getAvailableRoomsByProperty} from "../../hooks/property/useProperty.js";
+import {
+  getAvailableRoomsByProperty,
+  getAvailableBedsByRoom,
+} from "../../hooks/property/useProperty.js";
 import {
   getResidentById,
   approveResident,
@@ -113,6 +116,7 @@ const OnboardingApprovalPage = () => {
                 sharingType: stayDetails.sharingType || "",
                 roomId: stayDetails.roomId || "",
                 roomNumber: stayDetails.roomNumber || "",
+                bedId: stayDetails.bedId || "",
                 stayDetails: {
                   dailyRent: stayDetails.dailyRent || 0,
                   checkInDate:
@@ -132,6 +136,7 @@ const OnboardingApprovalPage = () => {
                 sharingType: stayDetails.sharingType || "",
                 roomId: stayDetails.roomId || "",
                 roomNumber: stayDetails.roomNumber || "",
+                bedId: stayDetails.bedId || "",
                 rentAmount: stayDetails.rent || 0,
                 joinDate: stayDetails.joinDate
                   ? new Date(stayDetails.joinDate).toISOString().split("T")[0]
@@ -205,12 +210,37 @@ const OnboardingApprovalPage = () => {
     },
   });
 
+  // Fetch available beds when room is selected in onboarding
+  const {data: availableBedsData = []} = useQuery({
+    queryKey: ["available-beds", formData.roomId],
+    queryFn: async () => {
+      if (!formData.roomId) return [];
+      const response = await getAvailableBedsByRoom(formData.roomId);
+      return Array.isArray(response) ? response : response?.data || [];
+    },
+    enabled: !!formData.roomId && !isMessOnly,
+  });
+
+  const availableBeds = useMemo(() => {
+    const options = [...availableBedsData];
+    const currentBedId = residentData?.stayDetails?.bedId;
+    const currentBedName = residentData?.stayDetails?.bedName;
+    if (currentBedId && !options.some((b) => b._id === currentBedId)) {
+      options.unshift({
+        _id: currentBedId,
+        name: currentBedName || "Current Bed",
+      });
+    }
+    return options;
+  }, [availableBedsData, residentData]);
+
   const fetchRoomsAndPricing = async (
     propertyId,
     preferredSharingType = "",
   ) => {
     try {
-      const {rooms, pricing} = await getAvailableRoomsByProperty(propertyId);
+      const gender = residentData?.personalDetails?.gender;
+      const {rooms, pricing} = await getAvailableRoomsByProperty(propertyId, gender);
       const formattedRooms = rooms.map((room) => ({
         ...room,
         _id: room._id || room.id,
@@ -287,6 +317,7 @@ const OnboardingApprovalPage = () => {
       sharingType,
       roomId: "",
       roomNumber: "",
+      bedId: "",
       rentAmount: pricing?.sharingPrices?.[sharingType] || 0,
     }));
   };
@@ -309,6 +340,7 @@ const OnboardingApprovalPage = () => {
         ...prev,
         roomId: value,
         roomNumber: selectedRoom?.roomNo || "",
+        bedId: "",
       }));
     } else {
       setFormData((prev) => ({...prev, [name]: value}));
@@ -368,8 +400,12 @@ const OnboardingApprovalPage = () => {
           ...approvalData,
           propertyId: formData.propertyId,
           roomId: formData.roomId,
+          bedId: formData.bedId,
           propertyName: formData.property,
-          stayDetails: formData.stayDetails,
+          stayDetails: {
+            ...formData.stayDetails,
+            bedId: formData.bedId,
+          },
           financialDetails: formData.financialDetails,
         };
       } else {
@@ -386,6 +422,7 @@ const OnboardingApprovalPage = () => {
           propertyId: formData.propertyId,
           propertyName: formData.property,
           roomId: formData.roomId,
+          bedId: formData.bedId,
           monthlyRent: formData.rentAmount,
           joinDate: formData.joinDate,
         };
@@ -513,6 +550,7 @@ const OnboardingApprovalPage = () => {
                 formData={formData}
                 sharingTypes={sharingTypes}
                 filteredRooms={filteredRooms}
+                availableBeds={availableBeds}
                 handleSharingTypeChange={handleSharingTypeChange}
                 handleChange={handleChange}
                 handleReject={handleReject}

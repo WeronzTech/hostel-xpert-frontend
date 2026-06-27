@@ -34,6 +34,7 @@ import {
   ActionButton,
   ErrorState,
   RequestResponseModal,
+  ReassignRoomModal,
 } from "../../components/index.js";
 import { greenButton, redButton } from "../../data/common/color.js";
 import { offboardingApiService } from "../../hooks/offboarding/offBoardingapiService.js";
@@ -56,6 +57,8 @@ const getRequestTypeDetails = (type) => {
       return { icon: <LogoutOutlined />, color: "red", label: "Check Out" };
     case "on_leave":
       return { icon: <ArrowRightOutlined />, color: "orange", label: "Leave" };
+    case "room_change":
+      return { icon: <ArrowRightOutlined />, color: "purple", label: "Room Change" };
     default:
       return { icon: <UserOutlined />, color: "default", label: "Unknown" };
   }
@@ -77,6 +80,7 @@ const RequestsTab = () => {
 
   const [modalOpen, setModalOpen] = useState(false);
   const [modalAction, setModalAction] = useState(null);
+  const [reassignModalOpen, setReassignModalOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
 
   // Currently selected Property ID from Redux
@@ -90,6 +94,47 @@ const RequestsTab = () => {
     setModalOpen(true);
     setModalAction(action); // "approved" or "rejected"
     setSelectedRequest(request);
+  };
+  
+  // Function to handle open reassign modal
+  const openReassignModal = (e, request) => {
+    e?.stopPropagation();
+    setReassignModalOpen(true);
+    setSelectedRequest(request);
+  };
+
+  // Function to handle reassign submit
+  const handleReassignSubmit = async ({ comment, reassignedRoomId }) => {
+    if (!selectedRequest) return;
+
+    try {
+      const response = await offboardingApiService.respondToUserRequest(
+        selectedRequest._id,
+        selectedRequest.request._id,
+        {
+          status: "reassigned",
+          comment,
+          reassignedRoomId,
+          adminName: user.name,
+        },
+        true // isRoomChange = true
+      );
+
+      messageApi.success("Room reassigned successfully");
+      setReassignModalOpen(false);
+      setSelectedRequest(null);
+      refetch();
+      queryClient.invalidateQueries(["pendingRequests"]);
+      queryClient.invalidateQueries(["requestCount"]);
+    } catch (err) {
+      const errorMessage =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        err?.message ||
+        "Something went wrong";
+
+      messageApi.error(errorMessage);
+    }
   };
 
   // Function to handle modal submit
@@ -105,6 +150,7 @@ const RequestsTab = () => {
           comment,
           adminName: user.name,
         },
+        selectedRequest.request.type === "room_change"
       );
       const successMessage =
         response?.data?.message ||
@@ -170,6 +216,7 @@ const RequestsTab = () => {
             <Radio value="checked_in">Check In</Radio>
             <Radio value="checked_out">Check Out</Radio>
             <Radio value="on_leave">Leave</Radio>
+            <Radio value="room_change">Room Change</Radio>
           </Space>
         </Radio.Group>
       </div>
@@ -345,6 +392,27 @@ const RequestsTab = () => {
         simplifiedExtraInfo = "— Leave Request";
       }
     }
+    // Handle Room Change requests
+    else if (req.type === "room_change") {
+      if (req.requestedAt) {
+        const requestDate = new Date(req.requestedAt);
+        const formattedDate = requestDate.toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        });
+        const formattedTime = requestDate.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        });
+        extraInfo = `— Requested on ${formattedDate} at ${formattedTime}`;
+        simplifiedExtraInfo = `— Requested on ${formattedDate} at ${formattedTime}`;
+      } else {
+        extraInfo = "— Room Change Request";
+        simplifiedExtraInfo = "— Room Change Request";
+      }
+    }
 
     // Use simplified text for mobile, full text for desktop
     const displayExtraInfo = screens.md ? extraInfo : simplifiedExtraInfo;
@@ -379,6 +447,16 @@ const RequestsTab = () => {
                 onClick={(e) => handleViewDetails(e, request)}
               />
             </Tooltip>
+            {req.type === "room_change" && (
+              <Tooltip title="Reassign">
+                <ActionButton
+                  type="default"
+                  shape="circle"
+                  icon={<ArrowRightOutlined />}
+                  onClick={(e) => openReassignModal(e, request)}
+                />
+              </Tooltip>
+            )}
             <Tooltip title="Accept">
               <ActionButton
                 customTheme={greenButton}
@@ -404,36 +482,48 @@ const RequestsTab = () => {
   };
 
   // Render mobile action buttons inside collapse content
-  const renderMobileActions = (request) => (
-    <div className="mt-4 pt-4 border-t border-gray-200">
-      <Flex justify="space-between" gap="small">
-        <Button
-          icon={<EyeOutlined />}
-          onClick={() => handleViewDetails(null, request)}
-          block
-        >
-          View Details
-        </Button>
-        <Button
-          type="primary"
-          icon={<CheckCircleOutlined />}
-          onClick={() => openModal(null, "approved", request)}
-          className="bg-green-500 hover:!bg-green-600 border-green-500"
-          block
-        >
-          Accept
-        </Button>
-        <Button
-          danger
-          icon={<CloseCircleOutlined />}
-          onClick={() => openModal(null, "rejected", request)}
-          block
-        >
-          Reject
-        </Button>
-      </Flex>
-    </div>
-  );
+  const renderMobileActions = (request) => {
+    const isRoomChange = request.request?.type === "room_change";
+    return (
+      <div className="mt-4 pt-4 border-t border-gray-200">
+        <Flex justify="space-between" gap="small" wrap="wrap">
+          <Button
+            icon={<EyeOutlined />}
+            onClick={() => handleViewDetails(null, request)}
+            style={{ flex: 1, minWidth: "80px" }}
+          >
+            Details
+          </Button>
+          {isRoomChange && (
+            <Button
+              icon={<ArrowRightOutlined />}
+              onClick={() => openReassignModal(null, request)}
+              style={{ flex: 1, minWidth: "80px" }}
+            >
+              Reassign
+            </Button>
+          )}
+          <Button
+            type="primary"
+            icon={<CheckCircleOutlined />}
+            onClick={() => openModal(null, "approved", request)}
+            className="bg-green-500 hover:!bg-green-600 border-green-500"
+            style={{ flex: 1, minWidth: "80px" }}
+          >
+            Accept
+          </Button>
+          <Button
+            danger
+            icon={<CloseCircleOutlined />}
+            onClick={() => openModal(null, "rejected", request)}
+            style={{ flex: 1, minWidth: "80px" }}
+          >
+            Reject
+          </Button>
+        </Flex>
+      </div>
+    );
+  };
 
   return (
     <>
@@ -508,26 +598,43 @@ const RequestsTab = () => {
                         {formatDate(req.request?.requestedAt)}
                       </Descriptions.Item>
 
-                      {/* Refund Eligibility Information */}
-                      {isCheckoutRequest && (
-                        <Descriptions.Item label="Refund Eligibility">
-                          {isInstantCheckout ? (
-                            <Tag color="red">Not Eligible for Refund</Tag>
-                          ) : refundEligible ? (
-                            <Tag color="green">Eligible for Refund</Tag>
-                          ) : (
-                            <Tag color="orange">
-                              Eligible after
-                              <strong> {formatDate(effectiveDate)}</strong>
-                            </Tag>
+                      {req.request?.type === "room_change" ? (
+                        <>
+                          <Descriptions.Item label="Current Room">
+                            Room {req.roomNumber}
+                          </Descriptions.Item>
+                          <Descriptions.Item label="Requested Room">
+                            Room {req.request?.requestedRoomNumber}
+                          </Descriptions.Item>
+                          <Descriptions.Item label="Sharing Type">
+                            {req.sharingType}
+                          </Descriptions.Item>
+                        </>
+                      ) : (
+                        <>
+                          {/* Refund Eligibility Information */}
+                          {isCheckoutRequest && (
+                            <Descriptions.Item label="Refund Eligibility">
+                              {isInstantCheckout ? (
+                                <Tag color="red">Not Eligible for Refund</Tag>
+                              ) : refundEligible ? (
+                                <Tag color="green">Eligible for Refund</Tag>
+                              ) : (
+                                <Tag color="orange">
+                                  Eligible after
+                                  <strong> {formatDate(effectiveDate)}</strong>
+                                </Tag>
+                              )}
+                            </Descriptions.Item>
                           )}
-                        </Descriptions.Item>
+                          <Descriptions.Item label="Payment Due">
+                            <Tag color={req.paymentDue ? "volcano" : "success"}>
+                              {req.paymentDue ? "Yes" : "No"}
+                            </Tag>
+                          </Descriptions.Item>
+                        </>
                       )}
-                      <Descriptions.Item label="Payment Due">
-                        <Tag color={req.paymentDue ? "volcano" : "success"}>
-                          {req.paymentDue ? "Yes" : "No"}
-                        </Tag>
-                      </Descriptions.Item>
+
                       <Descriptions.Item label="Reason">
                         {req.request.reason}
                       </Descriptions.Item>
@@ -567,6 +674,13 @@ const RequestsTab = () => {
           onClose={() => setModalOpen(false)}
           onSubmit={handleModalSubmit}
           action={modalAction}
+          request={selectedRequest}
+        />
+
+        <ReassignRoomModal
+          open={reassignModalOpen}
+          onClose={() => setReassignModalOpen(false)}
+          onSubmit={handleReassignSubmit}
           request={selectedRequest}
         />
       </div>

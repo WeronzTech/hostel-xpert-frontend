@@ -93,10 +93,10 @@ export const getAllRooms = async (heavensRoomData) => {
   }
 };
 
-export const getAvailableRoomsByProperty = async (propertyId) => {
+export const getAvailableRoomsByProperty = async (propertyId, gender) => {
   try {
     const response = await apiClient.get("/property/room/availableRooms", {
-      params: {propertyId},
+      params: {propertyId, gender},
     });
     console.log("Fetched available rooms:", response.data);
 
@@ -789,3 +789,90 @@ export const getRentHistory = async (propertyId) => {
   console.log("Rent History Response:", response.data); // Debug log
   return response.data?.data || [];
 };
+
+export const getBedsByRoom = async (roomId) => {
+  try {
+    const response = await apiClient.get(`/property/bed/room/${roomId}`);
+    console.debug("Beds successfully fetched:", response.data);
+    return response.data?.data || [];
+  } catch (error) {
+    console.error("Fetching beds failed:", error);
+    throw {
+      message: error.response?.data?.message || "Failed to fetch beds",
+      details: error.response?.data?.errors || error.message,
+      status: error.response?.status,
+    };
+  }
+};
+
+export const getAvailableBedsByRoom = async (roomId) => {
+  try {
+    const response = await apiClient.get(`/property/bed/available/${roomId}`);
+    console.debug("Available beds successfully fetched:", response.data);
+    return response.data?.data || [];
+  } catch (error) {
+    console.error("Fetching available beds failed:", error);
+    throw {
+      message: error.response?.data?.message || "Failed to fetch available beds",
+      details: error.response?.data?.errors || error.message,
+      status: error.response?.status,
+    };
+  }
+};
+
+export const createBed = async (bedData) => {
+  try {
+    const response = await apiClient.post("/property/bed", bedData);
+    return response.data;
+  } catch (error) {
+    console.error("Create bed failed:", error);
+    throw {
+      message: error.response?.data?.message || "Failed to create bed",
+      details: error.response?.data?.errors || error.message,
+      status: error.response?.status,
+    };
+  }
+};
+
+export const updateBed = async (bedData, bedId) => {
+  try {
+    const response = await apiClient.put(`/property/bed/${bedId}`, bedData);
+    return response.data;
+  } catch (error) {
+    console.error("Update bed failed:", error);
+    throw {
+      message: error.response?.data?.message || "Failed to update bed",
+      details: error.response?.data?.errors || error.message,
+      status: error.response?.status,
+    };
+  }
+};
+
+export const deleteBed = async (bedId) => {
+  try {
+    const response = await apiClient.delete(`/property/bed/${bedId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Delete bed failed:", error);
+    throw {
+      message: error.response?.data?.message || "Failed to delete bed",
+      details: error.response?.data?.errors || error.message,
+      status: error.response?.status,
+    };
+  }
+};
+
+export const convertBedsToAssets = async (data) => {
+  try {
+    const response = await apiClient.post("/property/bed/convert-to-assets", data);
+    return response.data;
+  } catch (error) {
+    console.error("Convert beds failed:", error);
+    throw {
+      message: error.response?.data?.message || "Failed to convert beds to assets",
+      details: error.response?.data?.errors || error.message,
+      status: error.response?.status,
+    };
+  }
+};
+

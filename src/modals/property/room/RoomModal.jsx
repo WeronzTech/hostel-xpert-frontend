@@ -385,8 +385,8 @@ const RoomModal = ({
                 type="number"
                 min="1"
                 placeholder="Room Capacity"
-                readOnly={isColiving}
-                className={isColiving ? "bg-gray-100" : ""}
+                readOnly={true}
+                className="bg-gray-100"
               />
             </Form.Item>
           </div>
