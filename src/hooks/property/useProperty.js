@@ -876,3 +876,12 @@ export const convertBedsToAssets = async (data) => {
   }
 };
 
+export const getRentDueNotification = async (clientId) => {
+  const response = await apiClient.get("property/rent/notifications", {
+    params: { clientId },
+  });
+
+  console.log("Rent Notification Response:", response.data);
+
+  return response.data?.data || [];
+};

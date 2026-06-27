@@ -63,6 +63,19 @@ class MaintenanceApiService {
       throw this.#handleApiError(error);
     }
   }
+
+
+async getMaintenanceNotification() {
+  try {
+    const response = await apiClient.get(
+      "/property/maintenance/main/notifications"
+    );
+
+    return response.data?.data || [];
+  } catch (error) {
+    throw this.#handleApiError(error);
+  }
+}
 }
 
 export const maintenanceApiService = new MaintenanceApiService();
