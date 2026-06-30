@@ -1674,3 +1674,33 @@ export const payExpense = async ({expenseId, ...paymentData}) => {
     throw error.response?.data?.message || "Failed to pay expense";
   }
 };
+
+export const updateFeePayment = async (paymentId, data) => {
+  try {
+    const response = await apiClient.put(`/feePayments/update/${paymentId}`, data);
+    return response.data;
+  } catch (error) {
+    console.error("Updating fee payment failed:", error);
+    throw new Error(error.response?.data?.message || "Failed to update payment");
+  }
+};
+
+export const updatePettyCashTransaction = async (transactionId, data) => {
+  try {
+    const response = await apiClient.put(`/client/pettyCash/transaction/${transactionId}`, data);
+    return response.data;
+  } catch (error) {
+    console.error("Updating petty cash transaction failed:", error);
+    throw new Error(error.response?.data?.message || "Failed to update petty cash transaction");
+  }
+};
+
+export const updateSalaryRecord = async (salaryId, data) => {
+  try {
+    const response = await apiClient.put(`/staff-salary/${salaryId}`, data);
+    return response.data;
+  } catch (error) {
+    console.error("Updating salary record failed:", error);
+    throw new Error(error.response?.data?.message || "Failed to update salary record");
+  }
+};

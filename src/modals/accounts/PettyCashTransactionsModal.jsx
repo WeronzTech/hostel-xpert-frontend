@@ -11,11 +11,12 @@ import {
   Statistic,
   Button,
 } from "antd";
-import {FiFilter, FiDownload} from "react-icons/fi";
+import {FiFilter, FiDownload, FiEdit} from "react-icons/fi";
 import dayjs from "dayjs";
 import {useQuery} from "@tanstack/react-query";
 import {getPettyCashTransactionsByManagerId} from "../../hooks/accounts/useAccounts";
 import ExportButtons from "../../components/common/ExportButtons";
+import EditPettyCashModal from "./EditPettyCashModal";
 import {downloadFile} from "../../utils/downloadHelper";
 
 const {RangePicker} = DatePicker;
@@ -28,6 +29,8 @@ const PettyCashTransactionsModal = ({
   managerId,
   managerName,
 }) => {
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [selectedTxn, setSelectedTxn] = useState(null);
   const [filters, setFilters] = useState({
     dateRange: null,
     paymentMode: null,
@@ -247,6 +250,23 @@ const PettyCashTransactionsModal = ({
       width: 200,
       align: "center",
     },
+    {
+      title: "Actions",
+      key: "actions",
+      width: 80,
+      align: "center",
+      render: (record) => (
+        <a
+          onClick={() => {
+            setSelectedTxn(record);
+            setEditModalOpen(true);
+          }}
+          style={{color: "#1890ff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "16px"}}
+        >
+          <FiEdit />
+        </a>
+      ),
+    },
   ];
 
   // Handle table change
@@ -465,6 +485,12 @@ const PettyCashTransactionsModal = ({
             </div>
           ),
         }}
+      />
+      <EditPettyCashModal
+        visible={editModalOpen}
+        onCancel={() => setEditModalOpen(false)}
+        transaction={selectedTxn}
+        managerId={managerId}
       />
     </Modal>
   );

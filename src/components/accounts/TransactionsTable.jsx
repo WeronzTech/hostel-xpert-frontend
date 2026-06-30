@@ -1,5 +1,6 @@
 import {useState, useEffect, useMemo, useRef, useCallback} from "react";
 import {Table, Tag, Tooltip, Spin} from "antd";
+import {FiEdit} from "react-icons/fi";
 
 const TransactionsTable = ({
   data,
@@ -9,6 +10,7 @@ const TransactionsTable = ({
   onPaginationChange,
   type = "received",
   transactionType,
+  onEdit,
 }) => {
   const [allTransactions, setAllTransactions] = useState([]);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -411,12 +413,33 @@ const TransactionsTable = ({
     },
   ];
 
+  const actionsColumn = {
+    title: "Actions",
+    key: "actions",
+    align: "center",
+    width: 60,
+    render: (_, record) => {
+      if (record.paymentMethod === "Razorpay") return null;
+      return (
+        <a
+          onClick={() => onEdit?.(record)}
+          style={{color: "#059669", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: "16px"}}
+        >
+          <FiEdit />
+        </a>
+      );
+    },
+  };
+
   // Combine columns based on type
   const columns = useMemo(() => {
-    return type === "pending"
-      ? [...baseColumns, ...pendingColumns]
+    if (type === "pending") {
+      return [...baseColumns, ...pendingColumns];
+    }
+    return onEdit
+      ? [...baseColumns, ...receivedColumns, actionsColumn]
       : [...baseColumns, ...receivedColumns];
-  }, [type]);
+  }, [type, onEdit]);
 
   return (
     <div ref={tableContainerRef}>

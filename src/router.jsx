@@ -1,5 +1,5 @@
-import {createBrowserRouter, Outlet} from "react-router-dom";
-import {lazy, Suspense} from "react";
+import { createBrowserRouter, Outlet } from "react-router-dom";
+import { lazy, Suspense } from "react";
 
 // --- Actual Component Imports ---
 import Layout from "./layout/Layout.jsx";
@@ -58,6 +58,7 @@ import LeaveGatePassManagement from "./pages/leave/LeaveGatePassManagement.jsx";
 import FinancialReports from "./pages/accounts/FinancialReports.jsx";
 import UserProfile from "./pages/profile/UserProfile.jsx";
 import VendorDashboard from "./pages/accounts/VendorDashboard.jsx";
+import RouteErrorBoundary from "./components/common/RouteErrorBoundary.jsx";
 
 const Dashboard = lazy(() => import("./pages/home/Dashboard.jsx"));
 const AccountsDashboard = lazy(
@@ -69,11 +70,11 @@ const PropertyDashboard = lazy(
 
 // --- Define all application routes in a single array ---
 const appRoutes = [
-  {index: true, element: <Dashboard />, path: "/"},
-  {path: "onboarding/:id", element: <OnboardingApprovalPage />},
-  {path: "onboarding/rejoin/:id", element: <OnboardingApprovalPage />},
-  {path: "accounts", element: <AccountsDashboard />},
-  {path: "accounting", element: <AccountingDashboard />},
+  { index: true, element: <Dashboard />, path: "/" },
+  { path: "onboarding/:id", element: <OnboardingApprovalPage /> },
+  { path: "onboarding/rejoin/:id", element: <OnboardingApprovalPage /> },
+  { path: "accounts", element: <AccountsDashboard /> },
+  { path: "accounting", element: <AccountingDashboard /> },
   {
     path: "accounting/generalLedger/:entityType",
     element: <GeneralLedger />,
@@ -86,36 +87,36 @@ const appRoutes = [
     path: "accounts/transactions/deposits",
     element: <DepositDetailsPage />,
   },
-  {path: "accounts/transactions/:type", element: <FinancialDetailsPage />},
-  {path: "accounts/transactions/expenses", element: <ExpenseDetailsPage />},
-  {path: "accounts/vendors", element: <VendorDashboard />},
-  {path: "monthlyRent", element: <MonthlyRentManagement />},
-  {path: "resident/:id", element: <ResidentDetails />},
-  {path: "resident/:id/edit", element: <EditResident />},
-  {path: "dailyRent", element: <DailyRentManagement />},
-  {path: "food-only", element: <MessOnlyRentManagement />},
-  {path: "property", element: <PropertyDashboard />},
-  {path: "rooms", element: <RoomAllocation />},
-  {path: "maintenance", element: <MaintenanceDashboard />},
-  {path: "attendance", element: <AttendanceManagement />},
-  {path: "leave", element: <LeaveGatePassManagement />},
-  {path: "/employees", element: <EmployeePage />},
-  {path: "/employees/:type", element: <EmployeePage />},
-  {path: "employees/:id", element: <EmployeeDetail />},
-  {path: "add-property", element: <AddProperty />},
-  {path: "property/edit/:id", element: <AddProperty isEdit />},
-  {path: "mess", element: <OrderDetails />},
-  {path: "mess/create", element: <MessMenuPage />},
-  {path: "mess/create/menu", element: <AddMessMenuPage />},
-  {path: "mess/edit", element: <EditMessMenuPage />},
-  {path: "addons", element: <AddonOrderDetailsPage />},
-  {path: "addons/create", element: <AddonPage />},
-  {path: "inventory", element: <InventoryDetailPage />},
-  {path: "kitchen", element: <KitchenPage />},
-  {path: "kitchen/:kitchenId", element: <KitchenDetailPage />},
-  {path: "kitchen/dead-stock", element: <DeadStockLogPage />},
-  {path: "kitchen/recipe/:recipeCategoryId", element: <RecipePage />},
-  {path: "property/:id", element: <PropertyDetails />},
+  { path: "accounts/transactions/:type", element: <FinancialDetailsPage /> },
+  { path: "accounts/transactions/expenses", element: <ExpenseDetailsPage /> },
+  { path: "accounts/vendors", element: <VendorDashboard /> },
+  { path: "monthlyRent", element: <MonthlyRentManagement /> },
+  { path: "resident/:id", element: <ResidentDetails /> },
+  { path: "resident/:id/edit", element: <EditResident /> },
+  { path: "dailyRent", element: <DailyRentManagement /> },
+  { path: "food-only", element: <MessOnlyRentManagement /> },
+  { path: "property", element: <PropertyDashboard /> },
+  { path: "rooms", element: <RoomAllocation /> },
+  { path: "maintenance", element: <MaintenanceDashboard /> },
+  { path: "attendance", element: <AttendanceManagement /> },
+  { path: "leave", element: <LeaveGatePassManagement /> },
+  { path: "/employees", element: <EmployeePage /> },
+  { path: "/employees/:type", element: <EmployeePage /> },
+  { path: "employees/:id", element: <EmployeeDetail /> },
+  { path: "add-property", element: <AddProperty /> },
+  { path: "property/edit/:id", element: <AddProperty isEdit /> },
+  { path: "mess", element: <OrderDetails /> },
+  { path: "mess/create", element: <MessMenuPage /> },
+  { path: "mess/create/menu", element: <AddMessMenuPage /> },
+  { path: "mess/edit", element: <EditMessMenuPage /> },
+  { path: "addons", element: <AddonOrderDetailsPage /> },
+  { path: "addons/create", element: <AddonPage /> },
+  { path: "inventory", element: <InventoryDetailPage /> },
+  { path: "kitchen", element: <KitchenPage /> },
+  { path: "kitchen/:kitchenId", element: <KitchenDetailPage /> },
+  { path: "kitchen/dead-stock", element: <DeadStockLogPage /> },
+  { path: "kitchen/recipe/:recipeCategoryId", element: <RecipePage /> },
+  { path: "property/:id", element: <PropertyDetails /> },
   {
     path: "/notification/push-notification",
     element: <PushNotificationPage />,
@@ -124,19 +125,19 @@ const appRoutes = [
     path: "notification/alert-notification",
     element: <AlertNotificationPage />,
   },
-  {path: "notification/notification-logs", element: <NotificationLogsPage />},
-  {path: "offboarding", element: <OffboardingPage />},
-  {path: "assets", element: <Assets />},
-  {path: "activity-logs", element: <LogsPage />},
-  {path: "onboarding", element: <OnboardingPage />},
-  {path: "todays-checkout", element: <TodaysCheckoutPage />},
-  {path: "active-reminders", element: <ReminderNotes />},
-  {path: "/stock-usage", element: <CookingRequirements />},
-  {path: "/floor", element: <FloorManagement />},
-  {path: "/beds", element: <BedManagement />},
-  {path: "/floors/:floorId/rooms", element: <FloorRoomsPage />},
-  {path: "/website-management", element: <WebsiteManagement />},
-  {path: "/profile", element: <UserProfile />},
+  { path: "notification/notification-logs", element: <NotificationLogsPage /> },
+  { path: "offboarding", element: <OffboardingPage /> },
+  { path: "assets", element: <Assets /> },
+  { path: "activity-logs", element: <LogsPage /> },
+  { path: "onboarding", element: <OnboardingPage /> },
+  { path: "todays-checkout", element: <TodaysCheckoutPage /> },
+  { path: "active-reminders", element: <ReminderNotes /> },
+  { path: "/stock-usage", element: <CookingRequirements /> },
+  { path: "/floor", element: <FloorManagement /> },
+  { path: "/beds", element: <BedManagement /> },
+  { path: "/floors/:floorId/rooms", element: <FloorRoomsPage /> },
+  { path: "/website-management", element: <WebsiteManagement /> },
+  { path: "/profile", element: <UserProfile /> },
   {
     path: "unauthorized",
     element: (
@@ -170,7 +171,7 @@ const appRoutes = [
       </div>
     ),
   },
-  {path: "accounts/recent-transactions", element: <AllTransactionsPage />},
+  { path: "accounts/recent-transactions", element: <AllTransactionsPage /> },
 ];
 
 // --- Helper component to protect individual routes based on permissions ---
@@ -190,6 +191,7 @@ const router = createBrowserRouter([
         </AuthRouteValidator>
       </ProtectedRoute>
     ),
+    errorElement: <RouteErrorBoundary />,
     // Map over appRoutes to wrap each one with the permission checker
     children: appRoutes.map((route) => ({
       ...route,
@@ -200,10 +202,22 @@ const router = createBrowserRouter([
       ),
     })),
   },
-  {path: "/register", element: <AdminRegistration />},
-  {path: "/login", element: <AdminLogin />},
-  {path: "/reset-password", element: <ResetPasswordPage />},
-  {path: "*", element: <div>404 Not Found</div>},
+  {
+    path: "/register",
+    element: <AdminRegistration />,
+    errorElement: <RouteErrorBoundary />,
+  },
+  {
+    path: "/login",
+    element: <AdminLogin />,
+    errorElement: <RouteErrorBoundary />,
+  },
+  {
+    path: "/reset-password",
+    element: <ResetPasswordPage />,
+    errorElement: <RouteErrorBoundary />,
+  },
+  { path: "*", element: <div>404 Not Found</div> },
 ]);
 
 export default router;

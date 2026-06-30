@@ -1918,9 +1918,9 @@ const ExpenseTable = ({
       ),
     };
 
-    // For salary type, don't include the action column as we have status dropdown
+    // For salary type, include action column to support manual edits
     if (type === "salary") {
-      return baseColumns[type] || [];
+      return [...(baseColumns[type] || []), actionColumn];
     }
 
     if (type === "waiveoffs" || type === "vouchers" || type === "commissions") {

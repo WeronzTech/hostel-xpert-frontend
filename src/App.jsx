@@ -12,6 +12,8 @@ function App() {
 
   useEffect(() => {
     dispatch(initializeAuth());
+    // Clear chunk failure reload flag on successful load
+    sessionStorage.removeItem("chunk-failed-reload");
   }, [dispatch]);
 
   return (

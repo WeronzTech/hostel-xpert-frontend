@@ -3,6 +3,7 @@ import {useParams} from "react-router-dom";
 import {Tabs, DatePicker, Card, Row, Col, Select, message, Input} from "antd";
 import {FiCheckCircle, FiClock} from "react-icons/fi";
 import TransactionsTable from "../../components/accounts/TransactionsTable";
+import EditFeePaymentModal from "../../modals/accounts/EditFeePaymentModal";
 import {PageHeader, StatsGrid} from "../../components";
 import {
   getAllFeePayments,
@@ -21,6 +22,9 @@ const {TabPane} = Tabs;
 const FinancialDetailsPage = () => {
   const {type} = useParams();
   const {selectedProperty} = useSelector((state) => state.properties);
+
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState(null);
 
   // Use regular state for activeTab to avoid navigation issues
   const [activeTab, setActiveTab] = useState("received");
@@ -461,6 +465,10 @@ const FinancialDetailsPage = () => {
             total={feeData?.pagination?.total || 0}
             onPaginationChange={handlePaginationChange}
             transactionType={type}
+            onEdit={(record) => {
+              setSelectedPayment(record);
+              setEditModalOpen(true);
+            }}
           />
         </TabPane>
 
@@ -486,6 +494,12 @@ const FinancialDetailsPage = () => {
           />
         </TabPane>
       </Tabs>
+
+      <EditFeePaymentModal
+        visible={editModalOpen}
+        onCancel={() => setEditModalOpen(false)}
+        payment={selectedPayment}
+      />
     </div>
   );
 };
