@@ -141,9 +141,9 @@ const StaffForm = ({loadingProperties, onSubmit, clientId, isSubmitting}) => {
     });
 
     // Debug: Log what we're sending
-    console.log("Submitting form data:");
+    undefined /* console.log("Submitting form data:"); */
     for (let [key, value] of formDataToSend.entries()) {
-      console.log(key, value);
+      undefined /* console.log(key, value); */
     }
 
     await onSubmit(formDataToSend);

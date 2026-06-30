@@ -62,7 +62,7 @@ const RecipePage = () => {
   }, [recipeCategoryId, kitchenId]);
 
   const renderContent = () => {
-    console.log("Recipes", recipes);
+    undefined /* console.log("Recipes", recipes); */
     if (recipesLoading) {
       return (
         <div className="flex justify-center items-center h-64">

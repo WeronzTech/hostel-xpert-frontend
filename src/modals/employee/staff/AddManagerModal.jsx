@@ -137,7 +137,7 @@ const AddManagerModal = ({kitchens, open, onClose}) => {
 
       handleAddManager.mutate(formData);
     } catch (info) {
-      console.log("Validate Failed:", info);
+      undefined /* console.log("Validate Failed:", info); */
     }
   };
 

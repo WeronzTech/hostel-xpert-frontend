@@ -48,7 +48,7 @@ const EditEventModal = ({ open, onClose, eventPermission }) => {
       const values = await form.validateFields();
       handleEditEvent.mutate(values);
     } catch (info) {
-      console.log("Validate Failed:", info);
+      undefined /* console.log("Validate Failed:", info); */
     }
   };
 

@@ -54,7 +54,7 @@ const Dashboard = () => {
   const [notificationApi, notificationContextHolder] =
     notification.useNotification();
 
-  console.log("selectedProperty in Dashboard:", selectedProperty); // debug log
+  undefined /* console.log("selectedProperty in Dashboard:", selectedProperty); */ // debug log
 
   const {
     data: dashboardData,
@@ -137,7 +137,7 @@ const Dashboard = () => {
     queryFn: () => getRentDueNotification(user.clientId),
     staleTime: 1000 * 60,
     onSuccess: (data) => {
-      console.log("Rent Notifications:", data);
+      undefined /* console.log("Rent Notifications:", data); */
     },
   });
   const { data: maintenanceNotifications = [] } = useQuery({
@@ -347,13 +347,13 @@ const Dashboard = () => {
   ];
 
   const handleVacate = (resident) => {
-    console.log("Checkout processing for:", resident);
+    undefined /* console.log("Checkout processing for:", resident); */
     // Navigate or show modal if needed
   };
 
   const handleProcessOnboarding = (requestId) => {
     navigate(`/onboarding/${requestId}`);
-    console.log("Processing onboarding for:", requestId);
+    undefined /* console.log("Processing onboarding for:", requestId); */
   };
 
   if (isLoading || summaryLoading) {

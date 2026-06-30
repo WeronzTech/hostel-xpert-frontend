@@ -1,7 +1,7 @@
 import apiClient from "../../utils/apiClient";
 
 export const addStaff = async (staffData) => {
-  console.log(staffData);
+  undefined /* console.log(staffData); */
   try {
     const res = await apiClient.post(`/staff/add`, staffData);
     return res.data;
@@ -13,7 +13,7 @@ export const addStaff = async (staffData) => {
 
 export const editStaff = async (staffId, updatedStaffData) => {
   try {
-    console.log("updatedStaffData", updatedStaffData);
+    undefined /* console.log("updatedStaffData", updatedStaffData); */
     const res = await apiClient.put(
       `/staff/update/${staffId}`,
       updatedStaffData,
@@ -55,7 +55,7 @@ export const getStaffById = async (staffId) => {
 };
 
 export const addManager = async (managerData) => {
-  console.log(managerData);
+  undefined /* console.log(managerData); */
   try {
     const res = await apiClient.post(`/client/manager/register`, managerData);
     return res.data;
@@ -67,7 +67,7 @@ export const addManager = async (managerData) => {
 
 export const editManager = async (managerId, managerData) => {
   try {
-    console.log(managerData);
+    undefined /* console.log(managerData); */
     const res = await apiClient.put(
       `/client/manager/edit/${managerId}`,
       managerData,
@@ -100,7 +100,7 @@ export const getManagerById = async (managerId) => {
 
 export const getAllManagers = async (propertyId) => {
   try {
-    console.log(propertyId);
+    undefined /* console.log(propertyId); */
     const res = await apiClient.get(`/client/manager`, {
       params: propertyId ? {propertyId} : {},
     });
@@ -126,7 +126,7 @@ export const changeManagerStatus = async (managerId) => {
 export const getAllRoles = async () => {
   try {
     const res = await apiClient.get(`/auth/role`);
-    console.log("data", res.data.data);
+    undefined /* console.log("data", res.data.data); */
     return res.data.data;
   } catch (err) {
     console.error(`Error fetching roles:`, err);
@@ -137,7 +137,7 @@ export const getAllRoles = async () => {
 export const getRoleById = async (roleId) => {
   try {
     const res = await apiClient.get(`/auth/role/${roleId}`);
-    console.log("data", res.data.data);
+    undefined /* console.log("data", res.data.data); */
     return res.data.data;
   } catch (err) {
     console.error(`Error fetching roles:`, err);
@@ -168,7 +168,7 @@ export const editRoles = async (roleId, updatedRoleData) => {
 export const deleteRoles = async (roleId) => {
   try {
     const res = await apiClient.delete(`/auth/role/${roleId}`);
-    console.log("data", res.data);
+    undefined /* console.log("data", res.data); */
     return res.data;
   } catch (err) {
     console.error(`Error deleting roles:`, err);
@@ -179,7 +179,7 @@ export const deleteRoles = async (roleId) => {
 export const getAllEventPermissions = async () => {
   try {
     const res = await apiClient.get(`/internalSocket`);
-    console.log("data", res.data);
+    undefined /* console.log("data", res.data); */
     return res.data.data;
   } catch (err) {
     console.error(`Error fetching event permissions:`, err);
@@ -191,7 +191,7 @@ export const getAllEventPermissions = async () => {
 export const addEventPermissions = async (eventData) => {
   try {
     const res = await apiClient.post(`/internalSocket`, eventData);
-    console.log("data", res.data);
+    undefined /* console.log("data", res.data); */
     return res.data;
   } catch (err) {
     console.error(`Error adding event permissions:`, err);
@@ -203,7 +203,7 @@ export const addEventPermissions = async (eventData) => {
 export const getEventPermissionsById = async (eventId) => {
   try {
     const res = await apiClient.get(`/internalSocket/${eventId}`);
-    console.log("data", res.data);
+    undefined /* console.log("data", res.data); */
     return res.data;
   } catch (err) {
     console.error(`Error fetching event permissions:`, err);
@@ -215,7 +215,7 @@ export const getEventPermissionsById = async (eventId) => {
 export const editEventPermissions = async (eventId, eventData) => {
   try {
     const res = await apiClient.put(`/internalSocket/${eventId}`, eventData);
-    console.log("data", res.data);
+    undefined /* console.log("data", res.data); */
     return res.data;
   } catch (err) {
     console.error(`Error editing event permissions:`, err);
@@ -227,7 +227,7 @@ export const editEventPermissions = async (eventId, eventData) => {
 export const deleteEventPermissions = async (eventId) => {
   try {
     const res = await apiClient.delete(`/internalSocket/${eventId}`);
-    console.log("data", res.data);
+    undefined /* console.log("data", res.data); */
     return res.data;
   } catch (err) {
     console.error(`Error deleting event permissions:`, err);

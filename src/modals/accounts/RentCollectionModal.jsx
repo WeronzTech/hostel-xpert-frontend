@@ -42,9 +42,9 @@ const RentCollectionModal = ({
   preSelectedKitchen = null,
   onSuccess,
 }) => {
-  console.log(preSelectedUser);
-  console.log(preSelectedProperty);
-  console.log(selectedOption);
+  undefined /* console.log(preSelectedUser); */
+  undefined /* console.log(preSelectedProperty); */
+  undefined /* console.log(selectedOption); */
 
   const {properties, selectedProperty} = useSelector(
     (state) => state.properties,
@@ -317,7 +317,7 @@ const RentCollectionModal = ({
 
   const handleUserSelect = (userId) => {
     const user = users.find((u) => u._id === userId);
-    console.log("Selected User:", user);
+    undefined /* console.log("Selected User:", user); */
     setSelectedUser(user);
     setRemainingAmount(user?.pendingRent || user?.pendingAmount || 0);
     setWaiveOffAmount(0);
@@ -353,7 +353,7 @@ const RentCollectionModal = ({
     };
   }, [selectedUser, latestPayment]);
 
-  console.log(userWithPayment);
+  undefined /* console.log(userWithPayment); */
 
   const handleWaiveOffToggle = (checked) => {
     setEnableWaiveOff(checked);
@@ -421,7 +421,7 @@ const RentCollectionModal = ({
       remarks: values.remarks || "",
     };
     recordFeePayment(paymentData);
-    console.log("Payment submitted:", paymentData);
+    undefined /* console.log("Payment submitted:", paymentData); */
   };
 
   const handleDepositPaymentSubmit = (values) => {

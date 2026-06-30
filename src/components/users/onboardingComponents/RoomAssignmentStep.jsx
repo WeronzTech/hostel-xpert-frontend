@@ -18,8 +18,8 @@ export const RoomAssignmentStep = ({
   const selectedRoom = filteredRooms.find(
     (room) => room._id === formData.roomId
   );
-  console.log(filteredRooms);
-  console.log(selectedRoom);
+  undefined /* console.log(filteredRooms); */
+  undefined /* console.log(selectedRoom); */
   return (
     <Card>
       <div

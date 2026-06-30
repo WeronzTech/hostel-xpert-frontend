@@ -210,7 +210,7 @@ const AttendanceManagement = () => {
 
   // Handle bulk mark attendance for a specific room (only for Present)
   const handleBulkMarkAttendance = (status, roomId, roomNumber) => {
-    console.log("Mark Present clicked for:", {status, roomId, roomNumber});
+    undefined /* console.log("Mark Present clicked for:", {status, roomId, roomNumber}); */
 
     if (!attendanceData?.data || !roomId) return;
 

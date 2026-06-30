@@ -95,7 +95,7 @@ const FloorModal = ({
       }
     } catch (errorInfo) {
       // Validation failed
-      console.log("Validation failed:", errorInfo);
+      undefined /* console.log("Validation failed:", errorInfo); */
     }
   };
 

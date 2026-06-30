@@ -24,12 +24,12 @@ export default function OnboardingCard({
   type,
   isColiving,
 }) {
-  console.log(name, residentId);
+  undefined /* console.log(name, residentId); */
   const navigate = useNavigate();
 
   const handleProcessOnboarding = (residentId) => {
     navigate(`/onboarding/${residentId}`);
-    console.log("Processing onboarding for:", residentId);
+    undefined /* console.log("Processing onboarding for:", residentId); */
   };
 
   return (

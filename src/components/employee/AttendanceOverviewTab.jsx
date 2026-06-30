@@ -36,7 +36,7 @@ const AttendanceOverviewTab = ({
   const [editForm] = Form.useForm();
   const [updateLoading, setUpdateLoading] = useState(false);
   const [selectedDateStatus, setSelectedDateStatus] = useState(null);
-  console.log(attendanceSummary);
+  undefined /* console.log(attendanceSummary); */
   const {data: attendanceDates, isLoading: attendanceLoading} = useQuery({
     queryKey: ["attendance-dates", employeeId],
     queryFn: () => getAvailableAttendanceDates(employeeId),

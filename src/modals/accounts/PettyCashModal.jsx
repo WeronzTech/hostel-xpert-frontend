@@ -174,7 +174,7 @@ const PettyCashModal = ({visible, onCancel, selectedEmployeeId}) => {
       requestData.transactionId = transactionId || null;
     }
 
-    console.log("Adding Petty Cash:", requestData);
+    undefined /* console.log("Adding Petty Cash:", requestData); */
 
     // ✅ Call the mutation
     addPettyCashMutation.mutate(requestData);

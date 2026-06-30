@@ -158,7 +158,7 @@ function AddonPage() {
   // Addon form submission logic (for adding and editing)
   const handleFormSubmit = (values) => {
     const formData = new FormData();
-    console.log(values); // debug logs
+    undefined /* console.log(values); */ // debug logs
     // Append all fields except imageUpload
     // Object.entries(values).forEach(([key, value]) => {
     //   if (key === "imageUpload" || key === "imageFile") return; // skip imageUpload and imageFile
@@ -207,7 +207,7 @@ function AddonPage() {
       updateAddon({ addonId: editingAddon._id, data: formData });
     } else {
       formData.append("kitchenId", selectedKitchenId);
-      console.log("Final FormData payload:", [...formData.entries()]); // debug log
+      undefined /* console.log("Final FormData payload:", [...formData.entries()]); */ // debug log
       createAddon(formData);
     }
   };

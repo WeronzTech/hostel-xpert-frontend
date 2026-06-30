@@ -11,7 +11,7 @@ export const PropertySelectionStep = ({
   isRejoin,
 }) => {
   const navigate = useNavigate();
-  console.log(formData);
+  undefined /* console.log(formData); */
 
   return (
     <Card>

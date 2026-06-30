@@ -17,7 +17,7 @@ export const SocketProvider = ({ children }) => {
   const [token, setToken] = useState(encryptedStorage.getItem("token") || null);
 
   const [socket, setSocket] = useState(null);
-  console.log("userId", userId, API_SOCKET_BASE_URL);
+  undefined /* console.log("userId", userId, API_SOCKET_BASE_URL); */
 
   const updateFcmToken = (token) => {
     encryptedStorage.setItem("token", token);
@@ -43,7 +43,7 @@ export const SocketProvider = ({ children }) => {
       });
       setSocket(newSocket);
       newSocket.on("connect", () => {
-        console.log("Connected to server via websocket");
+        undefined /* console.log("Connected to server via websocket"); */
       });
       newSocket.on("connect_error", (err) => {
         console.error("Socket Connection Error:", err.message);

@@ -138,7 +138,7 @@ const GeneralLedger = () => {
     ],
     queryFn: () => {
       const params = getQueryParams();
-      console.log("Fetching with params:", params); // Debug log
+      undefined /* console.log("Fetching with params:", params); */ // Debug log
       if (!params) return Promise.resolve(null);
       return getJournalEntries(params);
     },
@@ -203,7 +203,7 @@ const GeneralLedger = () => {
 
   // Handle pagination change
   const handlePaginationChange = (page, pageSize) => {
-    console.log("Pagination changed:", page, pageSize); // Debug log
+    undefined /* console.log("Pagination changed:", page, pageSize); */ // Debug log
     setFilters((prev) => ({
       ...prev,
       pagination: {
@@ -231,7 +231,7 @@ const GeneralLedger = () => {
 
   // Debug: Log current pagination state
   useEffect(() => {
-    console.log("Current pagination state:", filters.pagination);
+    undefined /* console.log("Current pagination state:", filters.pagination); */
   }, [filters.pagination]);
 
   // ========== EXPORT MUTATION ==========

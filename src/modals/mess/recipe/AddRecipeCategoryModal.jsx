@@ -31,7 +31,7 @@ const AddRecipeCategoryModal = ({ open, onClose, kitchenId }) => {
       const data = { ...values, kitchenId };
       handleAddRecipeCategory.mutate(data);
     } catch (info) {
-      console.log("Validate Failed:", info);
+      undefined /* console.log("Validate Failed:", info); */
     }
   };
 

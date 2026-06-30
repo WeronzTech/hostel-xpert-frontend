@@ -3,7 +3,7 @@ import apiClient from "../../utils/apiClient";
 export const createWebsitePropertyContent = async (formData) => {
   try {
     for (let [key, value] of formData.entries()) {
-      console.log(key, value);
+      undefined /* console.log(key, value); */
     }
 
     const response = await apiClient.post(`/website`, formData);
@@ -27,10 +27,10 @@ export const createWebsitePropertyContent = async (formData) => {
 export const getAllWebsitePropertyContents = async () => {
   try {
     const response = await apiClient.get(`/website`);
-    console.log(
+    undefined /* console.log(
       "getAllWebsitePropertyContents fetched successfully:",
       response.data
-    );
+    ); */
     return response?.data?.data;
   } catch (error) {
     console.error("Fetching getAllWebsitePropertyContents failed:", error);
@@ -52,7 +52,7 @@ export const updateWebsitePropertyContent = async (contentId, formData) => {
   try {
     // Debugging: log FormData key-value pairs
     for (let [key, value] of formData.entries()) {
-      console.log(key, value);
+      undefined /* console.log(key, value); */
     }
 
     const response = await apiClient.put(`/website/${contentId}`, formData);
@@ -76,10 +76,10 @@ export const updateWebsitePropertyContent = async (contentId, formData) => {
 export const getWebsitePropertyContentById = async (id) => {
   try {
     const response = await apiClient.get(`/website/${id}`);
-    console.log(
+    undefined /* console.log(
       "getWebsitePropertyContentById fetched successfully:",
       response.data
-    );
+    ); */
     return response?.data?.data;
   } catch (error) {
     console.error("Fetching getWebsitePropertyContentById failed:", error);
@@ -100,12 +100,12 @@ export const getWebsitePropertyContentById = async (id) => {
 export const addCommonMediaContent = async (formData) => {
   try {
     // Debug: Log FormData contents
-    console.log("FormData contents:");
+    undefined /* console.log("FormData contents:"); */
     for (let [key, value] of formData.entries()) {
       if (value instanceof File) {
-        console.log(key, value.name, value.type, value.size);
+        undefined /* console.log(key, value.name, value.type, value.size); */
       } else {
-        console.log(key, value);
+        undefined /* console.log(key, value); */
       }
     }
 
@@ -135,7 +135,7 @@ export const addCommonMediaContent = async (formData) => {
 export const getAllCommonMedia = async () => {
   try {
     const response = await apiClient.get(`/website/common`);
-    console.log("getAllCommonMedia fetched successfully:", response.data);
+    undefined /* console.log("getAllCommonMedia fetched successfully:", response.data); */
     return response?.data?.data;
   } catch (error) {
     console.error("Fetching getAllCommonMedia failed:", error);
@@ -155,7 +155,7 @@ export const getAllCommonMedia = async () => {
 export const getCommonMediaById = async (id) => {
   try {
     const response = await apiClient.get(`/website/common/${id}`);
-    console.log("getCommonMediaById fetched successfully:", response.data);
+    undefined /* console.log("getCommonMediaById fetched successfully:", response.data); */
     return response?.data?.data;
   } catch (error) {
     console.error("Fetching getCommonMediaById failed:", error);
@@ -174,7 +174,7 @@ export const getCommonMediaById = async (id) => {
 
 export const deleteCommonMediaItems = async (id, payload) => {
   try {
-    console.log("🗑️ Deleting Common Media Items:", {id, payload});
+    undefined /* console.log("🗑️ Deleting Common Media Items:", {id, payload}); */
 
     const response = await apiClient.delete(`/website/common/${id}`, {
       data: payload,

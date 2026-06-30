@@ -9,7 +9,7 @@ import useTableSearch from "../../hooks/common/useTableSearch.jsx";
 function OffboardedMessOnlyTable({data, pagination, loading, onPageChange}) {
   const {getColumnSearchProps} = useTableSearch();
   const navigate = useNavigate();
-  console.log(data);
+  undefined /* console.log(data); */
   // Column defined for the offboarded mess only people
   const columns = [
     {

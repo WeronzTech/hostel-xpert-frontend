@@ -3,7 +3,7 @@ import {FiCheck, FiX, FiClock, FiCalendar} from "react-icons/fi";
 import dayjs from "dayjs";
 
 const AttendanceTable = ({attendanceRecords, loading, onQuickAttendance}) => {
-  console.log(attendanceRecords);
+  undefined /* console.log(attendanceRecords); */
   const handleQuickStatusChange = (record, status) => {
     const attendanceData = {
       employeeId: record._id,
@@ -307,7 +307,7 @@ const AttendanceTable = ({attendanceRecords, loading, onQuickAttendance}) => {
 
         // ✅ If already marked for today, show static status button
         if (isTodayMarked) {
-          console.log("isTodayMarked");
+          undefined /* console.log("isTodayMarked"); */
           return (
             <Button
               size="small"

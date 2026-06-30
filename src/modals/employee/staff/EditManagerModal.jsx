@@ -211,7 +211,7 @@ const EditManagerModal = ({kitchens, open, onClose, manager}) => {
 
       handleEditManager.mutate({id: manager._id, data: formData});
     } catch (info) {
-      console.log("Validate Failed:", info);
+      undefined /* console.log("Validate Failed:", info); */
     }
   };
 

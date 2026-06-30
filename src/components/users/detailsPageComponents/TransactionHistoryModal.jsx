@@ -212,7 +212,7 @@ const TransactionHistoryModal = ({userId, visible, onClose}) => {
     const paymentMethod =
       paymentMethodConfig[transaction.paymentMethod] ||
       paymentMethodConfig.default;
-    console.log(transaction);
+    undefined /* console.log(transaction); */
     return (
       <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-3">
         <div className="flex justify-between items-start">

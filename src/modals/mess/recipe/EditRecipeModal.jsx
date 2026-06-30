@@ -70,7 +70,7 @@ const EditRecipeModal = ({ open, onClose, recipe, kitchenId }) => {
       const values = await form.validateFields();
       mutate(values);
     } catch (info) {
-      console.log("Validate Failed:", info);
+      undefined /* console.log("Validate Failed:", info); */
     }
   };
 

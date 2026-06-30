@@ -275,7 +275,7 @@ export const deleteCategory = async (categoryId) => {
 // PettyCash Apis
 
 export const addPettyCash = async (data) => {
-  console.log(data);
+  undefined /* console.log(data); */
   try {
     const res = await apiClient.post(`/client/pettyCash/add`, data);
     return res.data;
@@ -359,7 +359,7 @@ export const getAllAgencies = async () => {
 
 export const getUsersByAgencyId = async (agencyId) => {
   try {
-    console.log(agencyId);
+    undefined /* console.log(agencyId); */
 
     const res = await apiClient.get(`/user/byAgency`, {
       params: {agent: agencyId},
@@ -516,7 +516,7 @@ export const getVoucherData = async (filters = {}) => {
 
 export const makeFeePayment = async (data) => {
   try {
-    console.log("Adding fee payment :", data);
+    undefined /* console.log("Adding fee payment :", data); */
 
     const response = await apiClient.post("/feePayments/record-manual", data);
 
@@ -562,7 +562,7 @@ export const getPendingFees = async (filters = {}) => {
     const response = await apiClient.get("/user/pending-payments", {
       params: filters,
     });
-    console.log(response.data);
+    undefined /* console.log(response.data); */
     return response.data;
   } catch (error) {
     console.error("Fetching failed:", error);
@@ -608,7 +608,7 @@ export const getPaymentAnalytics = async (propertyId, rentType, year) => {
 
 export const makeDepositPayment = async (data) => {
   try {
-    console.log("Adding deposit payment :", data);
+    undefined /* console.log("Adding deposit payment :", data); */
 
     const response = await apiClient.post(
       "/depositPayments/record-manual",
@@ -675,7 +675,7 @@ export const getPendingDeposits = async (filters = {}) => {
 
 export const makeRefundPayment = async (data) => {
   try {
-    console.log("Adding refund payment :", data);
+    undefined /* console.log("Adding refund payment :", data); */
 
     const response = await apiClient.post(
       "/depositPayments/record-refund",
@@ -762,7 +762,7 @@ export const getStaffSalaryData = async (filters = {}) => {
       params: filters,
     });
 
-    console.log("Salary Records:", res.data?.data);
+    undefined /* console.log("Salary Records:", res.data?.data); */
 
     return res.data || [];
   } catch (error) {
@@ -795,7 +795,7 @@ export const getGstReport = async ({format, month, year} = {}) => {
     });
 
     // Log for debugging
-    console.log("GST Report Response:", res.data);
+    undefined /* console.log("GST Report Response:", res.data); */
 
     return res.data?.data || [];
   } catch (error) {
@@ -813,7 +813,7 @@ export const getAccountsLogData = async (filter) => {
     });
 
     // Log the records if you want to inspect
-    console.log("Accounts Log Records:", res.data?.data);
+    undefined /* console.log("Accounts Log Records:", res.data?.data); */
 
     // Return only the array of salary records
     return res.data || [];
@@ -827,7 +827,7 @@ export const getAccountsLogData = async (filter) => {
 
 export const staffManualPayment = async (data) => {
   try {
-    console.log("Adding staff payment :", data);
+    undefined /* console.log("Adding staff payment :", data); */
 
     const response = await apiClient.post("/staff-salary", data);
 
@@ -902,7 +902,7 @@ export const getJournalEntries = async (filters = {}) => {
       params.toDate = filters.toDate;
     }
 
-    console.log("📤 Sending GET /accounting with params:", params);
+    undefined /* console.log("📤 Sending GET /accounting with params:", params); */
     const res = await apiClient.get("/accounting/ledger-report", {params});
     return res.data || [];
   } catch (error) {
@@ -915,7 +915,7 @@ export const getJournalEntries = async (filters = {}) => {
 
 export const updateSalaryStatus = async (salaryId, data) => {
   try {
-    console.log("Updating salary status:", {salaryId, data});
+    undefined /* console.log("Updating salary status:", {salaryId, data}); */
 
     const response = await apiClient.patch(
       `/staff-salary/${salaryId}/status`,
@@ -941,7 +941,7 @@ export const updateSalaryStatus = async (salaryId, data) => {
 
 export const createChartOfAccount = async (data) => {
   try {
-    console.log("Adding account :", data);
+    undefined /* console.log("Adding account :", data); */
 
     const response = await apiClient.post("/chart-of-accounts/account", data);
 
@@ -985,7 +985,7 @@ export const createDefaultPrimaryHeads = async () => {
 
 export const createAccountCategory = async (data) => {
   try {
-    console.log("Adding category :", data);
+    undefined /* console.log("Adding category :", data); */
 
     const response = await apiClient.post("/chart-of-accounts/category", data);
 
@@ -1012,7 +1012,7 @@ export const getAccountCategories = async (filters = {}) => {
     });
 
     // Log the records if you want to inspect
-    console.log("Accounts category records:", res.data);
+    undefined /* console.log("Accounts category records:", res.data); */
 
     // Return only the array of salary records
     return res.data || [];
@@ -1027,7 +1027,7 @@ export const getAccountCategories = async (filters = {}) => {
 
 export const createManualJournalEntry = async (data) => {
   try {
-    console.log("Adding JournalEntry:", data);
+    undefined /* console.log("Adding JournalEntry:", data); */
 
     const response = await apiClient.post("/accounting/journal-entry", data);
 
@@ -1052,7 +1052,7 @@ export const getTransactionDetails = async (ledgerId) => {
     const res = await apiClient.get(`/accounting/${ledgerId}`);
 
     // Log the records if you want to inspect
-    console.log("ledger details:", res.data);
+    undefined /* console.log("ledger details:", res.data); */
 
     // Return only the array of salary records
     return res.data || [];
@@ -1076,7 +1076,7 @@ export const getSystemNames = async () => {
 
 export const setAccountMapping = async (data) => {
   try {
-    console.log("Adding settings:", data);
+    undefined /* console.log("Adding settings:", data); */
 
     const response = await apiClient.post("/account-settings", data);
 
@@ -1100,7 +1100,7 @@ export const getAccountMappings = async () => {
   try {
     const response = await apiClient.get("/account-settings");
 
-    console.log("settings connection:", response.data);
+    undefined /* console.log("settings connection:", response.data); */
     return response.data;
   } catch (error) {
     console.error("get connection failed:", error);
@@ -1121,7 +1121,7 @@ export const getAccountMappings = async () => {
 
 export const makeBusFeePayment = async (data) => {
   try {
-    console.log("Adding bus payment :", data);
+    undefined /* console.log("Adding bus payment :", data); */
 
     const response = await apiClient.post("/busPayments/record-manual", data);
 
@@ -1143,7 +1143,7 @@ export const makeBusFeePayment = async (data) => {
 
 export const deleteExpense = async (expenseId) => {
   try {
-    console.log("Deleting expense with ID:", expenseId);
+    undefined /* console.log("Deleting expense with ID:", expenseId); */
 
     const response = await apiClient.delete(`/expense/delete/${expenseId}`);
 
@@ -1165,7 +1165,7 @@ export const deleteExpense = async (expenseId) => {
 
 export const updateExpense = async (expenseData) => {
   try {
-    console.log("Updating expense with data:", expenseData);
+    undefined /* console.log("Updating expense with data:", expenseData); */
 
     const response = await apiClient.put(
       `/expense/update/${expenseData.expenseId}`,
@@ -1342,7 +1342,7 @@ export const getTrialBalance = async (filters = {}) => {
       params.includeZero = filters.includeZero;
     }
 
-    console.log("📤 Sending GET /accounting with params:", params);
+    undefined /* console.log("📤 Sending GET /accounting with params:", params); */
     const res = await apiClient.get("/accounting/trial-balance", {params});
     return res.data || [];
   } catch (error) {
@@ -1379,7 +1379,7 @@ export const getProfitAndLoss = async (filters = {}) => {
       params.includeZero = filters.includeZero;
     }
 
-    console.log("📤 Sending GET /accounting with params:", params);
+    undefined /* console.log("📤 Sending GET /accounting with params:", params); */
     const res = await apiClient.get("/accounting/profit-loss", {params});
     return res.data || [];
   } catch (error) {
@@ -1416,7 +1416,7 @@ export const getBalanceSheet = async (filters = {}) => {
       params.includeZero = filters.includeZero;
     }
 
-    console.log("📤 Sending GET /accounting with params:", params);
+    undefined /* console.log("📤 Sending GET /accounting with params:", params); */
     const res = await apiClient.get("/accounting/balance-sheet", {params});
     return res.data || [];
   } catch (error) {
@@ -1481,7 +1481,7 @@ export const getPayrolls = async (filters = {}) => {
       params.clientId = filters.clientId;
     }
 
-    console.log("📤 Sending GET /payroll with params:", params);
+    undefined /* console.log("📤 Sending GET /payroll with params:", params); */
 
     const res = await apiClient.get("/payroll/getAllPayroll", {params});
 
@@ -1496,7 +1496,7 @@ export const getPayrolls = async (filters = {}) => {
 };
 
 export const processPayment = async (paymentData) => {
-  console.log(paymentData);
+  undefined /* console.log(paymentData); */
   try {
     const res = await apiClient.post(`/payroll/make-payment`, paymentData);
     return res.data;
@@ -1506,7 +1506,7 @@ export const processPayment = async (paymentData) => {
 };
 
 export const updatePayrollLeave = async (data) => {
-  console.log(data);
+  undefined /* console.log(data); */
   try {
     const res = await apiClient.put(
       `/payroll/update-leave/${data?.payrollId}`,
@@ -1520,7 +1520,7 @@ export const updatePayrollLeave = async (data) => {
 
 export const processAdvancePayment = async (data) => {
   try {
-    console.log(data);
+    undefined /* console.log(data); */
     const res = await apiClient.post(`/payroll/make-advance-payment`, data);
     return res.data;
   } catch (error) {
@@ -1555,7 +1555,7 @@ export const getEmployeeTransactionHistory = async (
       params.year = filters.year;
     }
 
-    console.log("📤 Fetching transactions for employee:", employeeId, params);
+    undefined /* console.log("📤 Fetching transactions for employee:", employeeId, params); */
 
     const res = await apiClient.get(`/payroll/transactions/${employeeId}`, {
       params,
@@ -1584,11 +1584,11 @@ export const getEmployeeAdvanceForMonth = async (employeeId, filters = {}) => {
       params.year = filters.year;
     }
 
-    console.log(
+    undefined /* console.log(
       "📤 Fetching Advance transactions for employee:",
       employeeId,
       params,
-    );
+    ); */
 
     const res = await apiClient.get(
       `/payroll/advance-transactions/${employeeId}`,
@@ -1608,7 +1608,7 @@ export const getEmployeeAdvanceForMonth = async (employeeId, filters = {}) => {
 };
 
 export const editPayrollSalary = async (data) => {
-  console.log(data);
+  undefined /* console.log(data); */
   try {
     const res = await apiClient.put(
       `/payroll/update-salary/${data?.payrollId}`,

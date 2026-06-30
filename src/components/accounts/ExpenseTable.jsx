@@ -1142,7 +1142,7 @@ const ExpenseTable = ({
   };
 
   const handleCreateExpense = (record, type) => {
-    console.log(record);
+    undefined /* console.log(record); */
     setSelectedExpenseType(type);
     setVoucherId(record._id);
     setManagerId(record.pettyCashHolder);
@@ -1185,10 +1185,10 @@ const ExpenseTable = ({
       giverName: values.giverName || undefined,
     };
 
-    console.log("Updating salary:", {
+    undefined /* console.log("Updating salary:", {
       recordId: selectedRecord._id,
       updateData: updateData,
-    });
+    }); */
 
     // Call the mutation with both parameters
     statusUpdateMutation.mutate({

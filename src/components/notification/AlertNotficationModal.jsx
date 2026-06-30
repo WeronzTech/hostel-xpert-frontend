@@ -57,7 +57,7 @@ const AlertNotficationModal = ({ open, onClose, onSubmit }) => {
 
   // 🟢 Handle Rent Type Change (used only to filter users)
   const handleUserGroupChange = (value) => {
-    console.log("value", value);
+    undefined /* console.log("value", value); */
     setRentType(value);
     form.setFieldsValue({ users: [] });
   };

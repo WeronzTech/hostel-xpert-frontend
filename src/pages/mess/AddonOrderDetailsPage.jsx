@@ -32,7 +32,7 @@ function AddonOrderDetailsPage() {
     if (socket) {
       // Define the handler function for the event
       const handleNewAddonBooking = (newBookingData) => {
-        console.log("Received new addon booking:", newBookingData);
+        undefined /* console.log("Received new addon booking:", newBookingData); */
 
         // Manually update the react-query cache
         queryClient.setQueryData(["addon-order-list", filter], (oldData) => {

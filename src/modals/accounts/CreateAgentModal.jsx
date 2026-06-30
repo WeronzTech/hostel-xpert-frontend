@@ -43,7 +43,7 @@ const CreateAgentModal = ({visible, onCancel, onSuccess}) => {
         : {contactNumber: values.contactNumber}),
     };
 
-    console.log("Agent creation data:", requestData);
+    undefined /* console.log("Agent creation data:", requestData); */
     addAgencyMutation.mutate(requestData);
   };
 

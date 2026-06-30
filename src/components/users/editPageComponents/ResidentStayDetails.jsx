@@ -720,7 +720,7 @@ const ResidentStayDetails = ({ resident, form }) => {
         },
       };
 
-      console.log("Form Initial Values:", initialValues);
+      undefined /* console.log("Form Initial Values:", initialValues); */
 
       // Use setTimeout to ensure form is ready
       setTimeout(() => {

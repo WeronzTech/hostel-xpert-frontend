@@ -369,7 +369,7 @@ const MonthlyRegistrationModal = ({visible, onCancel, onSuccess}) => {
 
       registerMutation.mutate(userData);
     } catch (error) {
-      console.log("Validation failed:", error);
+      undefined /* console.log("Validation failed:", error); */
 
       // Find which fields have errors
       const errorFields = error.errorFields || [];

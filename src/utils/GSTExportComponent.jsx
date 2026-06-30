@@ -624,7 +624,7 @@ const GSTExportComponent = () => {
     );
 
     try {
-      console.log(`Fetching GST data for: ${selectedMonth}/${selectedYear}`);
+      undefined /* console.log(`Fetching GST data for: ${selectedMonth}/${selectedYear}`); */
 
       // Call the API with month and year filters - CORRECTED FILTER INTEGRATION
       const apiData = await getGstReport({
@@ -632,7 +632,7 @@ const GSTExportComponent = () => {
         year: selectedYear, // This will be passed as params to the API
       });
 
-      console.log("API Response with filters:", apiData);
+      undefined /* console.log("API Response with filters:", apiData); */
 
       if (!apiData) {
         throw new Error("No data received from API");
@@ -641,7 +641,7 @@ const GSTExportComponent = () => {
       // Process the API data for GST reporting
       const gstData = processGSTData(apiData);
 
-      console.log("Processed GST Data with filters:", gstData);
+      undefined /* console.log("Processed GST Data with filters:", gstData); */
 
       let blob, filename;
 

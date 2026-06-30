@@ -120,7 +120,7 @@ const CommissionPaymentModal = ({visible, onCancel, onSuccess}) => {
           .filter((id) => id && id !== "N/A")
       ),
     ];
-    console.log(propertyIds);
+    undefined /* console.log(propertyIds); */
     const commissionData = {
       agentName: selectedAgent?.agentName,
       agencyName: selectedAgent?.agencyName,

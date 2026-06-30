@@ -58,12 +58,12 @@ export default function ManualBookingModal({open, onClose, selectedProperty}) {
         ? data.data
         : [];
 
-      console.log("All kitchens from API:", kitchensData);
-      console.log("Selected property:", selectedProperty?.name);
+      undefined /* console.log("All kitchens from API:", kitchensData); */
+      undefined /* console.log("Selected property:", selectedProperty?.name); */
 
       // If no property is selected, return ALL kitchens
       if (!selectedProperty?.id) {
-        console.log("No property selected - showing all kitchens");
+        undefined /* console.log("No property selected - showing all kitchens"); */
         return kitchensData;
       }
 
@@ -77,19 +77,19 @@ export default function ManualBookingModal({open, onClose, selectedProperty}) {
           );
           const hasProperty = propertyIds.includes(selectedProperty.id);
 
-          console.log(
+          undefined /* console.log(
             `Kitchen ${kitchen.name} property IDs:`,
             propertyIds,
             "Match:",
             hasProperty
-          );
+          ); */
           return hasProperty;
         }
 
         return false;
       });
 
-      console.log("Filtered kitchens for property:", filteredKitchens);
+      undefined /* console.log("Filtered kitchens for property:", filteredKitchens); */
       return filteredKitchens;
     },
   });
@@ -143,7 +143,7 @@ export default function ManualBookingModal({open, onClose, selectedProperty}) {
         menuId: values.menuId,
       };
 
-      console.log("Submitting booking payload:", payload);
+      undefined /* console.log("Submitting booking payload:", payload); */
       await createBooking(payload);
     } catch (error) {
       console.error("Booking submission error:", error);

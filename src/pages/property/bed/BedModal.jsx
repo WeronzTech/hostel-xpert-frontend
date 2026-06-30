@@ -80,7 +80,7 @@ const BedModal = ({
         });
       }
     } catch (errorInfo) {
-      console.log("Validation failed:", errorInfo);
+      undefined /* console.log("Validation failed:", errorInfo); */
     }
   };
 

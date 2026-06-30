@@ -3,7 +3,7 @@ import apiClient from "../../utils/apiClient.js";
 
 export const getInventory = async ({page, limit, search, kitchenId}) => {
   try {
-    console.log(kitchenId);
+    undefined /* console.log(kitchenId); */
     const params = {
       page,
       limit,
@@ -66,7 +66,7 @@ export const getCategoriesByProperty = async (propertyId, kitchenId) => {
 export const getKitchens = async (filters = {}) => {
   try {
     const res = await apiClient.get(`/inventory/kitchen`, {params: filters});
-    console.log(res.data.data);
+    undefined /* console.log(res.data.data); */
     return res.data.data || [];
   } catch (err) {
     console.error(`Error fetching kitchens:`, err);
@@ -100,7 +100,7 @@ export const getKitchenById = async (kitchenId) => {
 };
 
 export const addCategory = async (categoryData) => {
-  console.log("CategoryData in addCategory:", categoryData);
+  undefined /* console.log("CategoryData in addCategory:", categoryData); */
   try {
     const res = await apiClient.post(`/inventory/category`, categoryData);
     return res.data;
@@ -111,7 +111,7 @@ export const addCategory = async (categoryData) => {
 };
 
 export const addKitchen = async (kitchenData) => {
-  console.log("KitchenData in addKitchen:", kitchenData);
+  undefined /* console.log("KitchenData in addKitchen:", kitchenData); */
   try {
     const res = await apiClient.post(`/inventory/kitchen`, kitchenData);
     return res.data;
@@ -122,7 +122,7 @@ export const addKitchen = async (kitchenData) => {
 };
 
 export const updateKitchen = async (kitchenData) => {
-  console.log("KitchenData in updateKitchen:", kitchenData);
+  undefined /* console.log("KitchenData in updateKitchen:", kitchenData); */
   try {
     const res = await apiClient.put(
       `/inventory/kitchen/${kitchenData.id}`,
@@ -353,7 +353,7 @@ export const deleteRecipe = async (recipeId) => {
 
 export const getStaffAccordingToKitchenId = async (filter = {}) => {
   try {
-    console.log(filter);
+    undefined /* console.log(filter); */
     const res = await apiClient.get(`/staff/getAll`, {
       params: filter,
     });
@@ -366,11 +366,11 @@ export const getStaffAccordingToKitchenId = async (filter = {}) => {
 
 export const getMessOrderByPropertyId = async (filter = {}) => {
   try {
-    console.log("Filter", filter);
+    undefined /* console.log("Filter", filter); */
     const res = await apiClient.get(`/inventory/mess-booking/property`, {
       params: filter,
     });
-    console.log(res.data?.data);
+    undefined /* console.log(res.data?.data); */
     return res.data?.data;
   } catch (err) {
     console.error(`Error fetching mess order:`, err);
@@ -382,11 +382,11 @@ export const getMessOrderByPropertyId = async (filter = {}) => {
 
 export const getAddonOrderByPropertyId = async (filter = {}) => {
   try {
-    console.log("Filter xxxxxxxxx", filter);
+    undefined /* console.log("Filter xxxxxxxxx", filter); */
     const res = await apiClient.get(`/inventory/addon-booking/property`, {
       params: filter,
     });
-    console.log(res.data);
+    undefined /* console.log(res.data); */
 
     return res.data.data;
   } catch (err) {
@@ -413,7 +413,7 @@ export const getInventoryLogs = async (params = {}) => {
 
 export const updateAddonBookingStatus = async ({bookingId, status}) => {
   try {
-    console.log({bookingId, status});
+    undefined /* console.log({bookingId, status}); */
     const res = await apiClient.patch(
       `/inventory/addon-booking/${bookingId}/status`,
       {

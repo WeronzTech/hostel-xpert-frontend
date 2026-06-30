@@ -48,11 +48,11 @@ const EditKitchenModal = ({open, onClose, initialData}) => {
     form
       .validateFields()
       .then((values) => {
-        console.log("Updated form values:", values);
+        undefined /* console.log("Updated form values:", values); */
         EditKitchen.mutate(values);
       })
       .catch((info) => {
-        console.log("Validation Failed:", info);
+        undefined /* console.log("Validation Failed:", info); */
       });
   };
 

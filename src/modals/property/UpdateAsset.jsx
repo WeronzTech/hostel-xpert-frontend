@@ -164,7 +164,7 @@ const UpdateAsset = ({ isOpen, onClose, assetData }) => {
   // Initialize form with asset data when modal opens or assetData changes
   useEffect(() => {
     if (isOpen && assetData) {
-      console.log("Asset Data for form initialization:", assetData);
+      undefined /* console.log("Asset Data for form initialization:", assetData); */
 
       // Extract floorId from asset data
       const floorId = assetData.floorId?._id || assetData.floorId;
@@ -194,7 +194,7 @@ const UpdateAsset = ({ isOpen, onClose, assetData }) => {
         ),
       };
 
-      console.log("Initial form values:", initialValues);
+      undefined /* console.log("Initial form values:", initialValues); */
 
       setHasWarranty(initialValues.hasWarranty);
       setCurrentPropertyId(propId);
@@ -251,8 +251,8 @@ const UpdateAsset = ({ isOpen, onClose, assetData }) => {
     }
 
     try {
-      console.log("Form values:", values);
-      console.log("Original asset data:", assetData);
+      undefined /* console.log("Form values:", values); */
+      undefined /* console.log("Original asset data:", assetData); */
 
       // Check if assetData has an ID
       if (!assetData?._id) {
@@ -315,7 +315,7 @@ const UpdateAsset = ({ isOpen, onClose, assetData }) => {
               mimetype: invoiceFile.type,
             },
           };
-          console.log("Invoice file attached to updateData (TOP LEVEL)");
+          undefined /* console.log("Invoice file attached to updateData (TOP LEVEL)"); */
         } catch (error) {
           console.error("Failed to process invoice file:", error);
           message.error("Failed to process invoice file");
@@ -323,11 +323,11 @@ const UpdateAsset = ({ isOpen, onClose, assetData }) => {
         }
       }
 
-      console.log("Final update data to backend:", updateData);
+      undefined /* console.log("Final update data to backend:", updateData); */
 
       const response = await updateAssetMutation.mutateAsync(updateData);
 
-      console.log("API Response:", response);
+      undefined /* console.log("API Response:", response); */
 
       if (response && response.success) {
         message.success(response.message || "Asset updated successfully");

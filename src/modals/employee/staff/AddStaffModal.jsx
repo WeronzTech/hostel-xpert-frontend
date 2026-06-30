@@ -137,7 +137,7 @@ const AddStaffModal = ({kitchens, open, onClose}) => {
 
       addStaffMutation.mutate(formData);
     } catch (info) {
-      console.log("Validate Failed:", info);
+      undefined /* console.log("Validate Failed:", info); */
     }
   };
 

@@ -81,7 +81,7 @@ const EditInventoryModal = ({ open, onClose, loading, initialData }) => {
   );
 
   const handleFinish = (values) => {
-    console.log("Form submitted with values:", values);
+    undefined /* console.log("Form submitted with values:", values); */
     handleEditInventory.mutate(values);
   };
 

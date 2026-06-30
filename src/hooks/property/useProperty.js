@@ -23,7 +23,7 @@ export const registerProperty = async (propertyData) => {
 export const getAllHeavensProperties = async (data) => {
   try {
     const {propertyId, clientId} = data || {};
-    console.log("Fetching heavens property:", propertyId); // Debug log
+    undefined /* console.log("Fetching heavens property:", propertyId); */ // Debug log
 
     const response = await apiClient.get("/property/heavens-properties", {
       params: {
@@ -98,7 +98,7 @@ export const getAvailableRoomsByProperty = async (propertyId, gender) => {
     const response = await apiClient.get("/property/room/availableRooms", {
       params: {propertyId, gender},
     });
-    console.log("Fetched available rooms:", response.data);
+    undefined /* console.log("Fetched available rooms:", response.data); */
 
     console.debug("Fetched available rooms:", response.data);
     return {
@@ -126,7 +126,7 @@ export const updateRooms = async (roomId, updatedData) => {
       `/property/room/update/${roomId}`,
       updatedData,
     );
-    console.log("room updated successfully:", response.data);
+    undefined /* console.log("room updated successfully:", response.data); */
 
     return {
       rooms: response.data?.data || [],
@@ -150,7 +150,7 @@ export const deleteRooms = async ({roomId, adminName}) => {
     const response = await apiClient.delete(`/property/room/delete/${roomId}`, {
       params: {adminName}, // Pass as query
     });
-    console.log("API Delete response data", response.data);
+    undefined /* console.log("API Delete response data", response.data); */
     return response.data; // or adapt based on API
   } catch (error) {
     console.error("API Delete error:", error);
@@ -161,7 +161,7 @@ export const deleteRooms = async ({roomId, adminName}) => {
 export const getRoomOccupants = async (roomId) => {
   try {
     const response = await apiClient.get(`/property/room/occupants/${roomId}`);
-    console.log("Users fetched successfully:", response.data);
+    undefined /* console.log("Users fetched successfully:", response.data); */
 
     return {
       roomId: response.data.roomId,
@@ -271,7 +271,7 @@ export const getDashboardStats = async (propertyId, clientId) => {
       params: propertyId ? {propertyId, clientId} : {},
     });
 
-    console.log("response", response.data);
+    undefined /* console.log("response", response.data); */
     return response.data;
   } catch (error) {
     console.error("Error fetching dashboard stats:", error);
@@ -290,7 +290,7 @@ export const getDashboardStats = async (propertyId, clientId) => {
 export const createMaintenance = async (formData) => {
   try {
     // Debugging - log form data before sending
-    console.log("Creating maintenance with:", formData);
+    undefined /* console.log("Creating maintenance with:", formData); */
 
     const response = await apiClient.post(
       `/property/maintenance/create`,
@@ -786,7 +786,7 @@ export const getRentHistory = async (propertyId) => {
       type: "Property Rent",
     },
   });
-  console.log("Rent History Response:", response.data); // Debug log
+  undefined /* console.log("Rent History Response:", response.data); */ // Debug log
   return response.data?.data || [];
 };
 
@@ -881,7 +881,7 @@ export const getRentDueNotification = async (clientId) => {
     params: { clientId },
   });
 
-  console.log("Rent Notification Response:", response.data);
+  undefined /* console.log("Rent Notification Response:", response.data); */
 
   return response.data?.data || [];
 };

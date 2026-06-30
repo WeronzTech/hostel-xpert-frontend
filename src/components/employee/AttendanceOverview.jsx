@@ -217,7 +217,7 @@ const AttendanceOverview = () => {
 
   // Handle quick attendance from the table
   const handleQuickAttendance = (attendanceData) => {
-    console.log("Marking attendance:", attendanceData);
+    undefined /* console.log("Marking attendance:", attendanceData); */
     markAttendanceMutation.mutate(attendanceData);
   };
 

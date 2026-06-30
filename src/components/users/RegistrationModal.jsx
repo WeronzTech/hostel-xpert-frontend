@@ -112,7 +112,7 @@ const RegistrationModal = ({visible, onCancel, rentType}) => {
       });
     },
     onError: (error) => {
-      console.log("Registration failed:", error);
+      undefined /* console.log("Registration failed:", error); */
       messageApi.error({
         content: `${error.details}`,
         duration: 3,
@@ -228,7 +228,7 @@ const RegistrationModal = ({visible, onCancel, rentType}) => {
         registerMutation.mutate(submitData);
       })
       .catch((info) => {
-        console.log("Validation Failed:", info);
+        undefined /* console.log("Validation Failed:", info); */
       });
   };
 
@@ -258,7 +258,7 @@ const RegistrationModal = ({visible, onCancel, rentType}) => {
   const handleKitchenChange = (kitchenId, option) => {
     setSelectedKitchen(kitchenId);
     // You can also store kitchen details if needed
-    console.log("Selected kitchen:", option);
+    undefined /* console.log("Selected kitchen:", option); */
   };
 
   const disabledCheckOutDate = (current) => {

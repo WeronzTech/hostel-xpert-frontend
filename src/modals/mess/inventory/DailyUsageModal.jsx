@@ -45,7 +45,7 @@ const DailyUsageModal = ({ open, onClose, loading, inventoryItem }) => {
   }, [inventoryItem, form, open]);
 
   const handleFinish = (values) => {
-    console.log("Form values:", values);
+    undefined /* console.log("Form values:", values); */
     handleDailyUsage.mutate(values);
     form.resetFields();
   };

@@ -16,7 +16,7 @@ const TransactionsTable = ({
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const tableContainerRef = useRef(null);
-  console.log(data);
+  undefined /* console.log(data); */
   // Reset and update transactions when data or pagination changes
   useEffect(() => {
     if (pagination.page === 1) {

@@ -37,7 +37,7 @@ const EditRecipeCategoryModal = ({ open, onClose, initialData }) => {
       const data = { id: initialData._id, ...values };
       handleEditRecipeCategory.mutate(data);
     } catch (info) {
-      console.log("Validate Failed:", info);
+      undefined /* console.log("Validate Failed:", info); */
     }
   };
 

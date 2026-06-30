@@ -28,7 +28,7 @@ const MaintenanceDetailModal = ({open, onClose, data, loading}) => {
 
   if (!maintenance) return null;
 
-  console.log("Maintenance Detail modal", maintenance); // Debug log
+  undefined /* console.log("Maintenance Detail modal", maintenance); */ // Debug log
 
   const {
     issue,

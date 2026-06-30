@@ -20,11 +20,11 @@ export const ApplicantDetailsStep = ({
   isRejoin,
 }) => {
   const navigate = useNavigate();
-  console.log("ApplicantDetailsStep props:", {
+  undefined /* console.log("ApplicantDetailsStep props:", {
     formData,
     handleChange,
     handleReject,
-  });
+  }); */
 
   return (
     <Card>

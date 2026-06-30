@@ -96,7 +96,7 @@ const ConvertToAssetModal = ({
 
       convertMutation.mutate(payload);
     } catch (error) {
-      console.log("Validation error:", error);
+      undefined /* console.log("Validation error:", error); */
     }
   };
 

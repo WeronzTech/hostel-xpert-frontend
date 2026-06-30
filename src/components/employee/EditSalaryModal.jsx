@@ -21,11 +21,11 @@ const EditSalaryModal = ({visible, payroll, onCancel, onSuccess}) => {
 
   const editSalaryMutation = useMutation({
     mutationFn: (data) => {
-      console.log("🚀 Updating salary:", data);
+      undefined /* console.log("🚀 Updating salary:", data); */
       return editPayrollSalary(data);
     },
     onSuccess: (response) => {
-      console.log("✅ Salary updated successfully:", response);
+      undefined /* console.log("✅ Salary updated successfully:", response); */
       messageApi.success("Salary updated successfully");
       queryClient.invalidateQueries(["payrolls"]);
 

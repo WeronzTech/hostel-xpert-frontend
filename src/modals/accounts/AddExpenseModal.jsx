@@ -1374,7 +1374,7 @@ const AddExpenseModal = ({visible, onCancel, selectedCategory}) => {
       }
     },
     onError: (error) => {
-      console.log("Mutation error:", error);
+      undefined /* console.log("Mutation error:", error); */
       setApiError(error.message);
       messageApi.error({
         content: `${error.message}`,

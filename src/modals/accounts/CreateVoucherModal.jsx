@@ -403,7 +403,7 @@ const CreateVoucherModal = ({visible, onCancel, onSuccess}) => {
       pettyCashHolder: selectedManager,
     };
 
-    console.log("Voucher creation data:", voucherData);
+    undefined /* console.log("Voucher creation data:", voucherData); */
     addVoucherMutation.mutate(voucherData);
   };
 

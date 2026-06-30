@@ -5,7 +5,7 @@ import { Button, message, Modal } from "antd";
 const DeleteRecipeCategoryModal = ({ open, onClose, category }) => {
   const queryClient = useQueryClient();
   const [messageApi, contextHolder] = message.useMessage();
-  console.log("Category", category);
+  undefined /* console.log("Category", category); */
 
   const handleDeleteRecipeCategory = useMutation({
     mutationKey: ["delete-recipe-category"],

@@ -67,7 +67,7 @@ const CommonMediaEditForm = ({
   });
 
   const handleDeleteMedia = async (mediaItem) => {
-    console.log(mediaItem);
+    undefined /* console.log(mediaItem); */
     if (!mediaItem._id || !mediaItem.key) {
       message.error("Invalid media item - missing ID or key");
       return;
@@ -81,11 +81,11 @@ const CommonMediaEditForm = ({
         mediaIds: [mediaItem._id], // Send array of media keys to delete
       };
 
-      console.log("Deleting media:", {
+      undefined /* console.log("Deleting media:", {
         id: categoryId,
         mediaId: mediaItem.id,
         payload,
-      });
+      }); */
 
       await mutation.mutateAsync({
         id: categoryId,

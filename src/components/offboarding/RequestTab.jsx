@@ -195,7 +195,7 @@ const RequestsTab = () => {
   });
 
   const request = data?.data || [];
-  console.log(request);
+  undefined /* console.log(request); */
   // Handle search
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);

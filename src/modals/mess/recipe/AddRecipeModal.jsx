@@ -55,7 +55,7 @@ const AddRecipeModal = ({ open, onClose, kitchenId, recipeCategoryId }) => {
       const payload = { ...values, kitchenId, recipeCategoryId };
       mutate(payload);
     } catch (info) {
-      console.log("Validate Failed:", info);
+      undefined /* console.log("Validate Failed:", info); */
     }
   };
 

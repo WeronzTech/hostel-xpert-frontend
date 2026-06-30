@@ -140,7 +140,7 @@ const AddonDetailsTable = ({bookings, loading, onStatusUpdate}) => {
         const isDelivered = record.status === "Delivered";
 
         const handleConfirm = async () => {
-          console.log("Popconfirm confirmed for record:", record._id);
+          undefined /* console.log("Popconfirm confirmed for record:", record._id); */
           setLoadingId(record._id);
 
           try {
@@ -176,7 +176,7 @@ const AddonDetailsTable = ({bookings, loading, onStatusUpdate}) => {
                   type: "primary",
                   loading: loadingId === record._id,
                 }}
-                onCancel={() => console.log("Cancelled")}
+                onCancel={() => undefined /* console.log("Cancelled") */}
                 placement="left" // or "top", "bottom", "right"
               >
                 <Tooltip title="Mark as Delivered">
@@ -188,7 +188,7 @@ const AddonDetailsTable = ({bookings, loading, onStatusUpdate}) => {
                     loading={loadingId === record._id}
                     onClick={(e) => {
                       e.stopPropagation();
-                      console.log("Button clicked for record:", record._id);
+                      undefined /* console.log("Button clicked for record:", record._id); */
                     }}
                   />
                 </Tooltip>

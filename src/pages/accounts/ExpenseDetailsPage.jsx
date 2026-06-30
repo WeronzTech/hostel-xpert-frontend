@@ -993,7 +993,7 @@ const ExpenseDetailsPage = () => {
   };
 
   const handleView = (record, type) => {
-    console.log(`View ${type}:`, record);
+    undefined /* console.log(`View ${type}:`, record); */
   };
 
   return (

@@ -172,13 +172,13 @@ const Assets = () => {
   // Mutation for downloading labels
   const downloadLabelsMutation = useMutation({
     mutationFn: async (filters) => {
-      console.log("Starting PDF download with filters:", filters);
+      undefined /* console.log("Starting PDF download with filters:", filters); */
       const response = await getAssetLabelsPDF(filters);
       return response;
     },
     onSuccess: (response) => {
       try {
-        console.log("PDF download successful, creating blob...");
+        undefined /* console.log("PDF download successful, creating blob..."); */
 
         // Create blob from the response data
         const blob = new Blob([response.data], { type: "application/pdf" });
@@ -278,7 +278,7 @@ const Assets = () => {
       }
     }
 
-    console.log("Downloading labels with final filters:", filters);
+    undefined /* console.log("Downloading labels with final filters:", filters); */
     downloadLabelsMutation.mutate(filters);
   };
 

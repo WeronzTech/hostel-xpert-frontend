@@ -35,7 +35,7 @@ const AddEventModal = ({ open, onClose }) => {
       const values = await form.validateFields();
       handleAddEvent.mutate(values);
     } catch (info) {
-      console.log("Validate Failed:", info);
+      undefined /* console.log("Validate Failed:", info); */
     }
   };
 
