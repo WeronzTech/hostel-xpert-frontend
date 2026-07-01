@@ -220,15 +220,15 @@ const FloorRoomsPage = () => {
     setError(null);
 
     try {
-      console.log(`🔄 Fetching rooms for floor ID: ${floorId}`);
+      undefined /* console.log(`🔄 Fetching rooms for floor ID: ${floorId}`); */
       const response = await getRoomsByFloorId(floorId);
-      console.log("✅ Complete API Response:", response);
+      undefined /* console.log("✅ Complete API Response:", response); */
 
       // The API returns an array directly, so use it as rooms data
       const roomsData = Array.isArray(response) ? response : [];
 
-      console.log("✅ Final rooms data:", roomsData);
-      console.log(`📊 Loaded ${roomsData.length} rooms`);
+      undefined /* console.log("✅ Final rooms data:", roomsData); */
+      undefined /* console.log(`📊 Loaded ${roomsData.length} rooms`); */
 
       setRooms(roomsData);
 
@@ -253,7 +253,7 @@ const FloorRoomsPage = () => {
 
   useEffect(() => {
     if (floorId) {
-      console.log(`🏢 FloorRoomsPage mounted for floor ID: ${floorId}`);
+      undefined /* console.log(`🏢 FloorRoomsPage mounted for floor ID: ${floorId}`); */
       fetchRooms();
     } else {
       console.warn("⚠️ No floor ID provided in URL parameters");
@@ -275,11 +275,11 @@ const FloorRoomsPage = () => {
   });
 
   const handleUpdateRoom = (room) => {
-    console.log("✏️ Update room requested:", room);
+    undefined /* console.log("✏️ Update room requested:", room); */
   };
 
   const handleDeleteRoom = (room) => {
-    console.log("🗑️ Delete room requested:", room);
+    undefined /* console.log("🗑️ Delete room requested:", room); */
     fetchRooms();
   };
 

@@ -124,7 +124,7 @@ const AddonFormModal = ({
         ])
       );
 
-      console.log("Form Data Submitted:", {...cleanedValues, imageFile}); // debug log
+      undefined /* console.log("Form Data Submitted:", {...cleanedValues, imageFile}); */ // debug log
 
       // Pass both form values and the image file to the parent
       onSubmit({...cleanedValues, imageFile});

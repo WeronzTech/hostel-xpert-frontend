@@ -70,7 +70,7 @@ const AddInventoryModal = ({ open, onClose, loading }) => {
   );
 
   const handleFinish = (values) => {
-    console.log("Form submitted with values:", values);
+    undefined /* console.log("Form submitted with values:", values); */
     handleAddInventory.mutate(values);
   };
 

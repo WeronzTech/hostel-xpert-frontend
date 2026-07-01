@@ -51,7 +51,7 @@ const UpdateStockModal = ({ open, onClose, loading, inventoryItem }) => {
   }, [inventoryItem, form, open]);
 
   const handleFinish = (values) => {
-    console.log("values:", values);
+    undefined /* console.log("values:", values); */
     handleUpdateStock.mutate(values);
     form.resetFields();
   };

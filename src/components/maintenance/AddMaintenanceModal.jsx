@@ -118,9 +118,9 @@ const AddMaintenanceModal = ({ open, onClose }) => {
       }
 
       // Debugging
-      console.log("Submitting form data:");
+      undefined /* console.log("Submitting form data:"); */
       for (let [key, value] of formData.entries()) {
-        console.log(key, value);
+        undefined /* console.log(key, value); */
       }
 
       mutate(formData);
@@ -157,8 +157,8 @@ const AddMaintenanceModal = ({ open, onClose }) => {
         form={form}
         layout="vertical"
         onValuesChange={(changedValues, allValues) => {
-          console.log("Field Changed:", changedValues);
-          console.log("All Current Values:", allValues);
+          undefined /* console.log("Field Changed:", changedValues); */
+          undefined /* console.log("All Current Values:", allValues); */
 
           // If you need to handle the 'Other' logic here instead of onChange:
           if (changedValues.issue === "Other") {
@@ -180,10 +180,10 @@ const AddMaintenanceModal = ({ open, onClose }) => {
               showSearch
               onValuesChange={(changedValues) => {
                 if (changedValues.propertyId) {
-                  console.log(
+                  undefined /* console.log(
                     "Selected Property ID:",
                     changedValues.propertyId,
-                  );
+                  ); */
                 }
               }}
               optionFilterProp="label"

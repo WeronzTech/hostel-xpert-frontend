@@ -48,7 +48,7 @@ const KitchenPage = () => {
   };
 
   const handleDelete = (kitchenRecord) => {
-    console.log("Delete button clicked for:", kitchenRecord);
+    undefined /* console.log("Delete button clicked for:", kitchenRecord); */
     setIsDeleteModalOpen(true);
     setDeletingKitchen(kitchenRecord);
   };

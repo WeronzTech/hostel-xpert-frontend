@@ -236,7 +236,7 @@ const StaffTable = ({staffList, loading, onEdit, onDelete, onStatusChange}) => {
 
   // Handle submit
   const handlePaymentSubmit = (values, staff) => {
-    console.log("Payment Submitted:", {values, staff});
+    undefined /* console.log("Payment Submitted:", {values, staff}); */
     // You can replace this console.log with your API call
     setIsModalOpen(false);
   };

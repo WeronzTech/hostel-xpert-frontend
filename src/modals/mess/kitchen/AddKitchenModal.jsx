@@ -37,11 +37,11 @@ const AddKitchenModal = ({open, onClose}) => {
     form
       .validateFields()
       .then((values) => {
-        console.log("Form values:", values);
+        undefined /* console.log("Form values:", values); */
         AddKitchen.mutate(values);
       })
       .catch((info) => {
-        console.log("Validation Failed:", info);
+        undefined /* console.log("Validation Failed:", info); */
       });
   };
 

@@ -119,7 +119,7 @@ const DailyRentManagement = () => {
     }
   };
 
-  console.log(usersData);
+  undefined /* console.log(usersData); */
 
   const stats = [
     {

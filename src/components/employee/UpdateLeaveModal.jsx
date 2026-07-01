@@ -163,7 +163,7 @@ const UpdateLeaveModal = ({visible, payroll, onCancel, onSuccess}) => {
       previousLeaveDays: currentLeaveDays,
     };
 
-    console.log("Submitting leave update:", leaveData);
+    undefined /* console.log("Submitting leave update:", leaveData); */
     leaveMutation.mutate(leaveData);
   };
 

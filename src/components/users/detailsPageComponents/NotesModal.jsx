@@ -23,7 +23,7 @@ const NotesModal = ({name, userId, propertyId, isVisible, onClose}) => {
   const {user} = useSelector((state) => state.auth);
   const [form] = Form.useForm();
   const [showHistory, setShowHistory] = useState(false);
-  console.log(userId);
+  undefined /* console.log(userId); */
   // Fetch notes query
   const {
     data: notes,
@@ -34,7 +34,7 @@ const NotesModal = ({name, userId, propertyId, isVisible, onClose}) => {
     queryFn: () => getUserNotes(userId),
     enabled: showHistory && isVisible,
   });
-  console.log(notes);
+  undefined /* console.log(notes); */
   // Create note mutation
   const createNoteMutation = useMutation({
     mutationFn: createNote,

@@ -27,6 +27,7 @@ import ExpenseAnalytics from "../../components/accounts/ExpenseAnalytics";
 import dayjs from "dayjs";
 import usePersistentState from "../../hooks/usePersistentState";
 import EditExpenseModal from "../../modals/accounts/EditExpenseModal";
+import EditSalaryModal from "../../modals/accounts/EditSalaryModal";
 import {getRoleById} from "../../hooks/employee/useEmployee";
 import PayExpenseModal from "../../modals/accounts/PayExpenseModal";
 
@@ -40,6 +41,8 @@ const ExpenseDetailsPage = () => {
   const queryClient = useQueryClient();
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState(null);
+  const [editSalaryModalVisible, setEditSalaryModalVisible] = useState(false);
+  const [selectedSalary, setSelectedSalary] = useState(null);
   const [payModalVisible, setPayModalVisible] = useState(false);
   const [selectedRecordForPay, setSelectedRecordForPay] = useState(null);
   const [isPaying, setIsPaying] = useState(false);
@@ -943,15 +946,24 @@ const ExpenseDetailsPage = () => {
     deleteMutation.mutate(record._id);
   };
 
-  const handleEdit = (expense) => {
-    // console.log(expense);
-    setSelectedExpense(expense);
-    setEditModalVisible(true);
+  const handleEdit = (record, editType) => {
+    if (editType === "salary") {
+      setSelectedSalary(record);
+      setEditSalaryModalVisible(true);
+    } else {
+      setSelectedExpense(record);
+      setEditModalVisible(true);
+    }
   };
 
   const handleEditCancel = () => {
     setEditModalVisible(false);
     setSelectedExpense(null);
+  };
+
+  const handleEditSalaryCancel = () => {
+    setEditSalaryModalVisible(false);
+    setSelectedSalary(null);
   };
 
   const handlePayExpense = (record) => {
@@ -981,7 +993,7 @@ const ExpenseDetailsPage = () => {
   };
 
   const handleView = (record, type) => {
-    console.log(`View ${type}:`, record);
+    undefined /* console.log(`View ${type}:`, record); */
   };
 
   return (
@@ -1127,6 +1139,11 @@ const ExpenseDetailsPage = () => {
         visible={editModalVisible}
         onCancel={handleEditCancel}
         expenseDoc={selectedExpense}
+      />
+      <EditSalaryModal
+        visible={editSalaryModalVisible}
+        onCancel={handleEditSalaryCancel}
+        salaryRecord={selectedSalary}
       />
       <PayExpenseModal
         visible={payModalVisible}

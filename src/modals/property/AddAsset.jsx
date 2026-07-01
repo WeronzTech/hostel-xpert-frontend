@@ -370,7 +370,7 @@ const AddAsset = ({ isOpen, onClose }) => {
     }
 
     try {
-      console.log("Form values:", values);
+      undefined /* console.log("Form values:", values); */
 
       // Prepare the purchaseDetails object
       const purchaseDetails = {
@@ -409,7 +409,7 @@ const AddAsset = ({ isOpen, onClose }) => {
         };
       }
 
-      console.log("Prepared payload:", payload);
+      undefined /* console.log("Prepared payload:", payload); */
 
       // Prepare the final data object with ONLY payload and files
       const finalData = {
@@ -426,7 +426,7 @@ const AddAsset = ({ isOpen, onClose }) => {
               originalname: invoiceFile.name,
             },
           };
-          console.log("File attached to finalData");
+          undefined /* console.log("File attached to finalData"); */
         } catch (error) {
           console.error("Failed to process invoice file:", error);
           message.error("Failed to process invoice file");
@@ -440,15 +440,15 @@ const AddAsset = ({ isOpen, onClose }) => {
         // For bulk mode, add count to the finalData
         finalData.count = values.quantity || 1;
 
-        console.log("Bulk finalData to backend:", finalData);
+        undefined /* console.log("Bulk finalData to backend:", finalData); */
         response = await createMultipleAssetsMutation.mutateAsync(finalData);
       } else {
         // Single asset creation - send finalData with payload and files
-        console.log("Single finalData to backend:", finalData);
+        undefined /* console.log("Single finalData to backend:", finalData); */
         response = await createAssetMutation.mutateAsync(finalData);
       }
 
-      console.log("API Response:", response);
+      undefined /* console.log("API Response:", response); */
 
       if (response.success) {
         message.success(
@@ -532,9 +532,9 @@ const AddAsset = ({ isOpen, onClose }) => {
     const categoryId = category.id || category._id;
 
     try {
-      console.log("Deleting category with ID:", categoryId);
+      undefined /* console.log("Deleting category with ID:", categoryId); */
       const response = await deleteCategoryMutation.mutateAsync(categoryId);
-      console.log("Delete response:", response);
+      undefined /* console.log("Delete response:", response); */
 
       if (response && response.success) {
         message.success(response.message || "Category deleted successfully");

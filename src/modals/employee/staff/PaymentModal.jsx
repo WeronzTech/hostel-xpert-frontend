@@ -266,7 +266,7 @@ const PaymentModal = ({open, onCancel, staff, onSubmit, employeeList = []}) => {
       paymentMutation.mutate(paymentData);
     } catch (errorInfo) {
       if (errorInfo.errorFields) {
-        console.log("Validation failed:", errorInfo);
+        undefined /* console.log("Validation failed:", errorInfo); */
         message.error("Please fill all required fields correctly");
       } else {
         console.error("Payment failed:", errorInfo);

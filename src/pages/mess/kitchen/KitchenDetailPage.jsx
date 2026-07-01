@@ -18,7 +18,7 @@ const KitchenDetailPage = () => {
   const selectedKitchenId = useSelector(
     (state) => state.properties.selectedProperty.kitchenId,
   );
-  console.log("selectedKitchenId", selectedKitchenId);
+  undefined /* console.log("selectedKitchenId", selectedKitchenId); */
 
   const {data: kitchen} = useQuery({
     queryKey: ["kitchen-by-id", kitchenId],

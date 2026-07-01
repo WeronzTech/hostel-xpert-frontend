@@ -106,7 +106,7 @@ const useImageHandler = (form, initialImages = {}) => {
   };
 
   const handleRemove = (field) => {
-    console.log("Removing image:", field);
+    undefined /* console.log("Removing image:", field); */
 
     // ✅ Single function to handle removal
     setImages((prev) => ({

@@ -93,7 +93,7 @@ const AdvancePaymentModal = ({visible, payroll, onCancel, onSuccess}) => {
     refetchOnWindowFocus: false,
     staleTime: 5 * 60 * 1000,
   });
-  console.log(pettyCashes);
+  undefined /* console.log(pettyCashes); */
   // Fetch advance summary for selected month
   const {data: advanceSummary, isLoading: summaryLoading} = useQuery({
     queryKey: ["advanceSummary", payroll?.employeeId, selectedMonth],
@@ -158,11 +158,11 @@ const AdvancePaymentModal = ({visible, payroll, onCancel, onSuccess}) => {
 
   const advanceMutation = useMutation({
     mutationFn: (data) => {
-      console.log("🚀 Creating advance payment:", data);
+      undefined /* console.log("🚀 Creating advance payment:", data); */
       return processAdvancePayment(data);
     },
     onSuccess: (response) => {
-      console.log("✅ Advance payment success:", response);
+      undefined /* console.log("✅ Advance payment success:", response); */
       queryClient.invalidateQueries(["payrolls"]);
       queryClient.invalidateQueries(["advanceSummary", payroll?.employeeId]);
       messageApi.success("Advance payment recorded successfully");
@@ -221,7 +221,7 @@ const AdvancePaymentModal = ({visible, payroll, onCancel, onSuccess}) => {
       }),
     };
 
-    console.log("Submitting advance:", advanceData);
+    undefined /* console.log("Submitting advance:", advanceData); */
     advanceMutation.mutate(advanceData);
   };
 

@@ -36,7 +36,7 @@ const EditExpenseModal = ({visible, onCancel, expenseDoc}) => {
   const {properties, selectedProperty} = useSelector(
     (state) => state.properties,
   );
-  console.log(expenseDoc);
+  undefined /* console.log(expenseDoc); */
   const {user} = useSelector((state) => state.auth);
   const adminName = user.name;
 
@@ -102,7 +102,7 @@ const EditExpenseModal = ({visible, onCancel, expenseDoc}) => {
       }
     },
     onError: (error) => {
-      console.log("Mutation error:", error);
+      undefined /* console.log("Mutation error:", error); */
       setApiError(error.message);
       messageApi.error({
         content: `${error.message}`,
@@ -430,7 +430,7 @@ const EditExpenseModal = ({visible, onCancel, expenseDoc}) => {
         expenseData.kitchenId = values.kitchenId;
       }
 
-      console.log("Updating expense data:", expenseData);
+      undefined /* console.log("Updating expense data:", expenseData); */
 
       // Call the mutation
       updateExpenseMutation.mutate(expenseData);

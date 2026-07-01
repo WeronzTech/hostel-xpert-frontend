@@ -252,7 +252,7 @@ function AddonOrderPanel() {
   });
 
   const handleStatusUpdate = async (bookingId, status) => {
-    console.log("Attempting to update status:", { bookingId, status });
+    undefined /* console.log("Attempting to update status:", { bookingId, status }); */
 
     try {
       // This should trigger the mutation

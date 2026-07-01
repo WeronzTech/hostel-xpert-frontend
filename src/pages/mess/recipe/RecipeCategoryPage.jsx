@@ -40,7 +40,7 @@ const RecipeCategoryPage = () => {
   };
 
   const handleDelete = (recipeCategoryRecord) => {
-    console.log("Delete button clicked for:", recipeCategoryRecord);
+    undefined /* console.log("Delete button clicked for:", recipeCategoryRecord); */
     setIsDeleteModalOpen(true);
     setDeletingRecipeCategory(recipeCategoryRecord);
   };

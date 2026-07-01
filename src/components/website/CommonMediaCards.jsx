@@ -24,7 +24,7 @@ const CommonMediaCards = () => {
   });
 
   const handleEditClick = (commonMedia) => {
-    console.log(commonMedia);
+    undefined /* console.log(commonMedia); */
     setSelectedCategoryId(commonMedia.id);
     setSelectedCategory(commonMedia.category);
     setShowEditForm(true);

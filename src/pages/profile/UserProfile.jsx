@@ -40,7 +40,7 @@ const UserProfile = () => {
     queryFn: () => getClientByEmail(user?.email),
     enabled: isAdmin && !!user?.email,
   });
-  console.log("Fetched client data:", user);
+  undefined /* console.log("Fetched client data:", user); */
 
   return (
     <div style={{ padding: "24px", maxWidth: "1200px", margin: "0 auto" }}>

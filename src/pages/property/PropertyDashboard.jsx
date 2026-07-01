@@ -116,7 +116,7 @@ const PropertyDashboard = () => {
     },
     enabled: true, // Always enabled
   });
-  console.log(properties);
+  undefined /* console.log(properties); */
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentPlaceholderIndex(

@@ -204,7 +204,7 @@ const EditStaffModal = ({kitchens, open, onClose, staff}) => {
 
       handleEditStaff.mutate({id: staff._id, data: formData});
     } catch (info) {
-      console.log("Validate Failed:", info);
+      undefined /* console.log("Validate Failed:", info); */
     }
   };
 

@@ -126,7 +126,7 @@ const AdminRegistration = () => {
       setCurrentStep((prev) => prev + 1);
       smoothScrollToTop();
     } catch (error) {
-      console.log("Validation failed:", error);
+      undefined /* console.log("Validation failed:", error); */
     }
   };
 
@@ -149,12 +149,12 @@ const AdminRegistration = () => {
       // Get ALL form values (not just current step)
       const allValues = form.getFieldsValue(true);
 
-      console.log("All form values:", allValues);
-      console.log("Company Name:", allValues.companyName);
-      console.log("PrimaryAdmin:", allValues.primaryAdmin);
-      console.log("Address:", allValues.address);
-      console.log("Active Modules:", allValues.activeModules);
-      console.log("Billing Config:", allValues.billingConfig);
+      undefined /* console.log("All form values:", allValues); */
+      undefined /* console.log("Company Name:", allValues.companyName); */
+      undefined /* console.log("PrimaryAdmin:", allValues.primaryAdmin); */
+      undefined /* console.log("Address:", allValues.address); */
+      undefined /* console.log("Active Modules:", allValues.activeModules); */
+      undefined /* console.log("Billing Config:", allValues.billingConfig); */
 
       // Check if values are present
       if (!allValues.companyName) {
@@ -235,10 +235,10 @@ const AdminRegistration = () => {
         },
       };
 
-      console.log("Final submission data:", submissionData);
+      undefined /* console.log("Final submission data:", submissionData); */
 
       const response = await registerClient(submissionData);
-      console.log("Registration response:", response);
+      undefined /* console.log("Registration response:", response); */
 
       if (response && response.success) {
         messageApi.success(

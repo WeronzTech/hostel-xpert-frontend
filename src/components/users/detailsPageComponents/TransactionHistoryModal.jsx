@@ -10,6 +10,7 @@ import {
   Badge,
   Tabs,
   Space,
+  Button,
 } from "antd";
 import {
   FiDollarSign,
@@ -27,7 +28,9 @@ import {
   FiPackage,
   FiShield,
   FiSlash,
+  FiEdit,
 } from "react-icons/fi";
+import EditFeePaymentModal from "../../../modals/accounts/EditFeePaymentModal";
 import {SiRazorpay} from "react-icons/si";
 import dayjs from "dayjs";
 import {
@@ -42,6 +45,8 @@ const {TabPane} = Tabs;
 
 const TransactionHistoryModal = ({userId, visible, onClose}) => {
   const [activeTab, setActiveTab] = useState("rent");
+  const [editPaymentModalOpen, setEditPaymentModalOpen] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState(null);
 
   // Fetch all three types of transactions in parallel
   const {
@@ -207,7 +212,7 @@ const TransactionHistoryModal = ({userId, visible, onClose}) => {
     const paymentMethod =
       paymentMethodConfig[transaction.paymentMethod] ||
       paymentMethodConfig.default;
-    console.log(transaction);
+    undefined /* console.log(transaction); */
     return (
       <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-3">
         <div className="flex justify-between items-start">
@@ -286,6 +291,17 @@ const TransactionHistoryModal = ({userId, visible, onClose}) => {
               </div>
             </div>
           </div>
+          {type === "rent" && transaction.status === "Paid" && transaction.paymentMethod !== "Razorpay" && (
+            <Button
+              type="text"
+              icon={<FiEdit className="text-gray-500 hover:text-emerald-600 transition-colors" />}
+              onClick={() => {
+                setSelectedPayment(transaction);
+                setEditPaymentModalOpen(true);
+              }}
+              style={{ padding: "4px 8px" }}
+            />
+          )}
         </div>
 
         {/* Transaction details - type specific */}
@@ -670,6 +686,11 @@ const TransactionHistoryModal = ({userId, visible, onClose}) => {
           </div>
         </div>
       </div>
+      <EditFeePaymentModal
+        visible={editPaymentModalOpen}
+        onCancel={() => setEditPaymentModalOpen(false)}
+        payment={selectedPayment}
+      />
     </Modal>
   );
 };

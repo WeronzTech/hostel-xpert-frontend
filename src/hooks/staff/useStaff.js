@@ -24,7 +24,7 @@ export const addStaff = async (staffData) => {
 export const getAllStaff = async () => {
   try {
     const response = await apiClient.get("/staff/getAll");
-    console.log("Fetched available staff:", response.data.staff);
+    undefined /* console.log("Fetched available staff:", response.data.staff); */
     return response.data?.staff || [];
   } catch (error) {
     console.error("Fetching failed:", error);
@@ -62,11 +62,11 @@ export const markAttendance = async (attendanceData) => {
 
 export const getAllStaffForAttendance = async (filter = {}) => {
   try {
-    console.log("hererere", filter);
+    undefined /* console.log("hererere", filter); */
     const res = await apiClient.get(`/staff/attendance/getAll`, {
       params: filter,
     });
-    console.log(res?.data);
+    undefined /* console.log(res?.data); */
     return res.data;
   } catch (err) {
     console.error(`Error fetching staff:`, err);
@@ -90,7 +90,7 @@ export const getAllAttendance = async (params = {}) => {
 
 export const updateAttendance = async (updateData) => {
   try {
-    console.log(updateData);
+    undefined /* console.log(updateData); */
     const response = await apiClient.put("/attendance/update", updateData);
     return response.data;
   } catch (error) {
@@ -104,7 +104,7 @@ export const updateAttendance = async (updateData) => {
 
 export const getAttendanceSummary = async (params = {}) => {
   try {
-    console.log(params);
+    undefined /* console.log(params); */
     const response = await apiClient.get("/attendance/summary", { params });
     return response.data;
   } catch (error) {
@@ -119,7 +119,7 @@ export const getAttendanceSummary = async (params = {}) => {
 
 export const getAvailableAttendanceDates = async (employeeId) => {
   try {
-    console.log("Fetching available dates for employee:", employeeId);
+    undefined /* console.log("Fetching available dates for employee:", employeeId); */
     const response = await apiClient.get(
       `/attendance/availableDates/${employeeId}`,
     );

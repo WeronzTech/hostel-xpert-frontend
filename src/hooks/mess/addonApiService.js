@@ -139,7 +139,7 @@ class AddonApiService {
         }
       );
 
-      console.log(`Addon updated successfully: `, response.data); // debug log
+      undefined /* console.log(`Addon updated successfully: `, response.data); */ // debug log
       return response.data;
     } catch (error) {
       throw this.#handleApiError(error);

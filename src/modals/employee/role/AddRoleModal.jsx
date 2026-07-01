@@ -176,7 +176,7 @@ const AddRoleModal = ({open, onClose}) => {
       const values = await form.validateFields();
       handleAddRole.mutate(values);
     } catch (info) {
-      console.log("Validate Failed:", info);
+      undefined /* console.log("Validate Failed:", info); */
     }
   };
 

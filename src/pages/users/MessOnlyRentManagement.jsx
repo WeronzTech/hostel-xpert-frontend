@@ -14,7 +14,7 @@ import dayjs from "dayjs";
 
 const MessOnlyRentManagement = () => {
   const {selectedKitchen} = useSelector((state) => state.kitchens);
-  console.log(selectedKitchen);
+  undefined /* console.log(selectedKitchen); */
   // Use persistent state for filters
   const [searchTerm, setSearchTerm] = usePersistentState(
     "messOnly_searchTerm",
@@ -108,7 +108,7 @@ const MessOnlyRentManagement = () => {
     }
   };
 
-  console.log(usersData);
+  undefined /* console.log(usersData); */
 
   const stats = [
     {

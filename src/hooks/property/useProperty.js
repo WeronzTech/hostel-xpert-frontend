@@ -23,7 +23,7 @@ export const registerProperty = async (propertyData) => {
 export const getAllHeavensProperties = async (data) => {
   try {
     const {propertyId, clientId} = data || {};
-    console.log("Fetching heavens property:", propertyId); // Debug log
+    undefined /* console.log("Fetching heavens property:", propertyId); */ // Debug log
 
     const response = await apiClient.get("/property/heavens-properties", {
       params: {
@@ -93,12 +93,12 @@ export const getAllRooms = async (heavensRoomData) => {
   }
 };
 
-export const getAvailableRoomsByProperty = async (propertyId) => {
+export const getAvailableRoomsByProperty = async (propertyId, gender) => {
   try {
     const response = await apiClient.get("/property/room/availableRooms", {
-      params: {propertyId},
+      params: {propertyId, gender},
     });
-    console.log("Fetched available rooms:", response.data);
+    undefined /* console.log("Fetched available rooms:", response.data); */
 
     console.debug("Fetched available rooms:", response.data);
     return {
@@ -126,7 +126,7 @@ export const updateRooms = async (roomId, updatedData) => {
       `/property/room/update/${roomId}`,
       updatedData,
     );
-    console.log("room updated successfully:", response.data);
+    undefined /* console.log("room updated successfully:", response.data); */
 
     return {
       rooms: response.data?.data || [],
@@ -150,7 +150,7 @@ export const deleteRooms = async ({roomId, adminName}) => {
     const response = await apiClient.delete(`/property/room/delete/${roomId}`, {
       params: {adminName}, // Pass as query
     });
-    console.log("API Delete response data", response.data);
+    undefined /* console.log("API Delete response data", response.data); */
     return response.data; // or adapt based on API
   } catch (error) {
     console.error("API Delete error:", error);
@@ -161,7 +161,7 @@ export const deleteRooms = async ({roomId, adminName}) => {
 export const getRoomOccupants = async (roomId) => {
   try {
     const response = await apiClient.get(`/property/room/occupants/${roomId}`);
-    console.log("Users fetched successfully:", response.data);
+    undefined /* console.log("Users fetched successfully:", response.data); */
 
     return {
       roomId: response.data.roomId,
@@ -271,7 +271,7 @@ export const getDashboardStats = async (propertyId, clientId) => {
       params: propertyId ? {propertyId, clientId} : {},
     });
 
-    console.log("response", response.data);
+    undefined /* console.log("response", response.data); */
     return response.data;
   } catch (error) {
     console.error("Error fetching dashboard stats:", error);
@@ -290,7 +290,7 @@ export const getDashboardStats = async (propertyId, clientId) => {
 export const createMaintenance = async (formData) => {
   try {
     // Debugging - log form data before sending
-    console.log("Creating maintenance with:", formData);
+    undefined /* console.log("Creating maintenance with:", formData); */
 
     const response = await apiClient.post(
       `/property/maintenance/create`,
@@ -786,8 +786,94 @@ export const getRentHistory = async (propertyId) => {
       type: "Property Rent",
     },
   });
-  console.log("Rent History Response:", response.data); // Debug log
+  undefined /* console.log("Rent History Response:", response.data); */ // Debug log
   return response.data?.data || [];
+};
+
+export const getBedsByRoom = async (roomId) => {
+  try {
+    const response = await apiClient.get(`/property/bed/room/${roomId}`);
+    console.debug("Beds successfully fetched:", response.data);
+    return response.data?.data || [];
+  } catch (error) {
+    console.error("Fetching beds failed:", error);
+    throw {
+      message: error.response?.data?.message || "Failed to fetch beds",
+      details: error.response?.data?.errors || error.message,
+      status: error.response?.status,
+    };
+  }
+};
+
+export const getAvailableBedsByRoom = async (roomId) => {
+  try {
+    const response = await apiClient.get(`/property/bed/available/${roomId}`);
+    console.debug("Available beds successfully fetched:", response.data);
+    return response.data?.data || [];
+  } catch (error) {
+    console.error("Fetching available beds failed:", error);
+    throw {
+      message: error.response?.data?.message || "Failed to fetch available beds",
+      details: error.response?.data?.errors || error.message,
+      status: error.response?.status,
+    };
+  }
+};
+
+export const createBed = async (bedData) => {
+  try {
+    const response = await apiClient.post("/property/bed", bedData);
+    return response.data;
+  } catch (error) {
+    console.error("Create bed failed:", error);
+    throw {
+      message: error.response?.data?.message || "Failed to create bed",
+      details: error.response?.data?.errors || error.message,
+      status: error.response?.status,
+    };
+  }
+};
+
+export const updateBed = async (bedData, bedId) => {
+  try {
+    const response = await apiClient.put(`/property/bed/${bedId}`, bedData);
+    return response.data;
+  } catch (error) {
+    console.error("Update bed failed:", error);
+    throw {
+      message: error.response?.data?.message || "Failed to update bed",
+      details: error.response?.data?.errors || error.message,
+      status: error.response?.status,
+    };
+  }
+};
+
+export const deleteBed = async (bedId) => {
+  try {
+    const response = await apiClient.delete(`/property/bed/${bedId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Delete bed failed:", error);
+    throw {
+      message: error.response?.data?.message || "Failed to delete bed",
+      details: error.response?.data?.errors || error.message,
+      status: error.response?.status,
+    };
+  }
+};
+
+export const convertBedsToAssets = async (data) => {
+  try {
+    const response = await apiClient.post("/property/bed/convert-to-assets", data);
+    return response.data;
+  } catch (error) {
+    console.error("Convert beds failed:", error);
+    throw {
+      message: error.response?.data?.message || "Failed to convert beds to assets",
+      details: error.response?.data?.errors || error.message,
+      status: error.response?.status,
+    };
+  }
 };
 
 export const getRentDueNotification = async (clientId) => {
@@ -795,7 +881,7 @@ export const getRentDueNotification = async (clientId) => {
     params: { clientId },
   });
 
-  console.log("Rent Notification Response:", response.data);
+  undefined /* console.log("Rent Notification Response:", response.data); */
 
   return response.data?.data || [];
 };

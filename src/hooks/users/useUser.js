@@ -45,7 +45,7 @@ export const registerMonthlyUser = async (registerData) => {
 
 export const getUnapprovedHeavensResidents = async (propertyId) => {
   try {
-    console.log("fetched heavens residents:", propertyId); // Debug log
+    undefined /* console.log("fetched heavens residents:", propertyId); */ // Debug log
     const response = await apiClient.get("/user/pending-approvals", {
       params: {propertyId},
     });
@@ -69,7 +69,7 @@ export const getResidentById = async (id) => {
   try {
     console.debug("fetched heavens resident:", id); // Debug log
     const response = await apiClient.get(`/user/${id}`);
-    console.log("API Response Data:", response.data);
+    undefined /* console.log("API Response Data:", response.data); */
     return response.data.data;
   } catch (error) {
     console.error("Fetching failed:", error);
@@ -154,7 +154,7 @@ export const getUsers = async ({
 export const updateResidentByAdmin = async (id, formData) => {
   try {
     for (let [key, value] of formData.entries()) {
-      console.log(key, value);
+      undefined /* console.log(key, value); */
     }
 
     const response = await apiClient.put(`/user/${id}`, formData);
@@ -176,9 +176,9 @@ export const updateResidentByAdmin = async (id, formData) => {
 };
 
 export const rejectResident = async (id, adminName) => {
-  console.log(adminName);
+  undefined /* console.log(adminName); */
   try {
-    console.log("Rejecting resident:", id);
+    undefined /* console.log("Rejecting resident:", id); */
     const response = await apiClient.delete(`/user/${id}/reject`, {
       params: {updatedBy: adminName},
     });
@@ -338,7 +338,7 @@ export const handleBlockStatus = async (
 
 export const rejoinUser = async (id, rejoinData) => {
   try {
-    console.log("Rejoining user:", id, rejoinData);
+    undefined /* console.log("Rejoining user:", id, rejoinData); */
 
     const response = await apiClient.put(`/user/${id}/rejoin`, rejoinData);
 
@@ -408,7 +408,7 @@ export const getActivityLogs = async ({
 
 export const createNote = async (noteData) => {
   try {
-    console.log("Creating note:", noteData);
+    undefined /* console.log("Creating note:", noteData); */
     const response = await apiClient.post("/reminder", noteData);
     console.debug("Note created successfully:", response.data);
     return response.data;
@@ -431,7 +431,7 @@ export const getUserNotes = async (userId) => {
   try {
     console.debug("Fetching notes for user:", userId);
     const response = await apiClient.get(`/reminder/${userId}`);
-    console.log("Notes fetched successfully:", response.data);
+    undefined /* console.log("Notes fetched successfully:", response.data); */
     return response.data;
   } catch (error) {
     console.error("Fetching notes failed:", error);
@@ -836,7 +836,7 @@ export const getAllAttendanceByDate = async ({
   propertyId,
 }) => {
   try {
-    console.log({date, search, propertyId});
+    undefined /* console.log({date, search, propertyId}); */
     const response = await apiClient.get("/user/attendance/all", {
       params: {
         date,

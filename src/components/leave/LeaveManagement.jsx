@@ -351,7 +351,7 @@ const LeaveManagement = ({selectedProperty, queryClient}) => {
           size="small"
           type="primary"
           onClick={() => {
-            console.log(record);
+            undefined /* console.log(record); */
             setSelectedLeave(record);
             if (isMobile) {
               setMobileDrawerVisible(true);

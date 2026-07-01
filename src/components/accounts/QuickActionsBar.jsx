@@ -129,7 +129,7 @@ const QuickActionsBar = () => {
   };
 
   const handleCommissionPaymentSuccess = () => {
-    console.log("Commission paid successfully!");
+    undefined /* console.log("Commission paid successfully!"); */
   };
 
   const handleAgentModalClose = () => {
@@ -141,11 +141,11 @@ const QuickActionsBar = () => {
   };
 
   const handleAgentCreationSuccess = () => {
-    console.log("Agent created successfully!");
+    undefined /* console.log("Agent created successfully!"); */
   };
 
   const handleAllocateCreationSuccess = () => {
-    console.log("Users assigned to related agent successfully!");
+    undefined /* console.log("Users assigned to related agent successfully!"); */
   };
 
   const handleVoucherModalClose = () => {
@@ -153,7 +153,7 @@ const QuickActionsBar = () => {
   };
 
   const handleVoucherCreationSuccess = (voucherData) => {
-    console.log("Voucher created successfully:", voucherData);
+    undefined /* console.log("Voucher created successfully:", voucherData); */
   };
 
   return (

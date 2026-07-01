@@ -91,7 +91,7 @@ const PropertyEditForm = ({visible, onClose, onSuccess, contentId}) => {
   // Initialize form with edit data
   useEffect(() => {
     if (editData) {
-      console.log("Edit Data received:", editData);
+      undefined /* console.log("Edit Data received:", editData); */
       const property = properties.find((p) => p._id === editData.propertyId);
       setSelectedProperty(property);
 
@@ -138,10 +138,10 @@ const PropertyEditForm = ({visible, onClose, onSuccess, contentId}) => {
 
   // Handle delete existing image
   const handleDeleteExistingImage = (url) => {
-    console.log("Deleting image:", url);
+    undefined /* console.log("Deleting image:", url); */
     setImagesToDelete((prev) => {
       const newList = [...prev, url];
-      console.log("Images to delete:", newList);
+      undefined /* console.log("Images to delete:", newList); */
       return newList;
     });
   };
@@ -230,9 +230,9 @@ const PropertyEditForm = ({visible, onClose, onSuccess, contentId}) => {
     });
 
     // Log FormData for debugging
-    console.log("FormData contents:");
+    undefined /* console.log("FormData contents:"); */
     for (let [key, value] of formData.entries()) {
-      console.log(key, value);
+      undefined /* console.log(key, value); */
     }
 
     updateWebsiteContentMutation.mutate({

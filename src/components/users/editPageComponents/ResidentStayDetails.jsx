@@ -650,23 +650,26 @@
 // };
 
 // export default ResidentStayDetails;
-import {Row, Col, Form, Select, DatePicker, InputNumber, Button} from "antd";
+import { Row, Col, Form, Select, DatePicker, InputNumber, Button } from "antd";
 import dayjs from "dayjs";
-import {useQuery} from "@tanstack/react-query";
-import {getAvailableRoomsByProperty} from "../../../hooks/property/useProperty";
-import {useState, useEffect} from "react";
-import {useSelector} from "react-redux";
-import {ExtendStayModal} from "../../checkout/ExtendStayModal";
-import {RentUpdateModal} from "../../checkout/RentUpdateModal";
-import {getKitchens} from "../../../hooks/inventory/useInventory";
+import { useQuery } from "@tanstack/react-query";
+import {
+  getAvailableRoomsByProperty,
+  getAvailableBedsByRoom,
+} from "../../../hooks/property/useProperty";
+import { useState, useEffect, useMemo } from "react";
+import { useSelector } from "react-redux";
+import { ExtendStayModal } from "../../checkout/ExtendStayModal";
+import { RentUpdateModal } from "../../checkout/RentUpdateModal";
+import { getKitchens } from "../../../hooks/inventory/useInventory";
 
 const PAYMENT_STATUSES = [
-  {value: "pending", label: "Pending"},
-  {value: "paid", label: "Paid"},
+  { value: "pending", label: "Pending" },
+  { value: "paid", label: "Paid" },
 ];
 
-const ResidentStayDetails = ({resident, form}) => {
-  const {properties} = useSelector((state) => state.properties);
+const ResidentStayDetails = ({ resident, form }) => {
+  const { properties } = useSelector((state) => state.properties);
   const userType = resident?.userType || "student";
   const [selectedPropertyId, setSelectedPropertyId] = useState(
     resident?.stayDetails?.propertyId,
@@ -717,7 +720,7 @@ const ResidentStayDetails = ({resident, form}) => {
         },
       };
 
-      console.log("Form Initial Values:", initialValues);
+      undefined /* console.log("Form Initial Values:", initialValues); */
 
       // Use setTimeout to ensure form is ready
       setTimeout(() => {
@@ -727,15 +730,15 @@ const ResidentStayDetails = ({resident, form}) => {
   }, [resident, form]);
 
   // Fetch available rooms when property is selected (only for non-mess users)
-  const {data: availableRoomsData, isLoading: loadingRooms} = useQuery({
-    queryKey: ["available-rooms", selectedPropertyId],
-    queryFn: () => getAvailableRoomsByProperty(selectedPropertyId),
+  const { data: availableRoomsData, isLoading: loadingRooms } = useQuery({
+    queryKey: ["available-rooms", selectedPropertyId, resident?.personalDetails?.gender],
+    queryFn: () => getAvailableRoomsByProperty(selectedPropertyId, resident?.personalDetails?.gender),
     enabled: !!selectedPropertyId && userType !== "messOnly",
     staleTime: 1000 * 60 * 5,
   });
 
   // Fetch kitchens for mess only users
-  const {data: kitchens, isLoading: kitchensLoading} = useQuery({
+  const { data: kitchens, isLoading: kitchensLoading } = useQuery({
     queryKey: ["kitchens"],
     queryFn: () => getKitchens({}),
     enabled: userType === "messOnly",
@@ -745,6 +748,38 @@ const ResidentStayDetails = ({resident, form}) => {
   const availableSharingTypes = [
     ...new Set(availableRooms.map((room) => room.sharingType).filter(Boolean)),
   ];
+
+  const selectedRoomId = Form.useWatch(["stayDetails", "roomId"], form);
+
+  // Fetch available beds when room is selected
+  const { data: availableBeds = [], isLoading: loadingBeds } = useQuery({
+    queryKey: ["available-beds", selectedRoomId],
+    queryFn: async () => {
+      if (!selectedRoomId) return [];
+      const response = await getAvailableBedsByRoom(selectedRoomId);
+      return Array.isArray(response) ? response : response?.data || [];
+    },
+    enabled: !!selectedRoomId && userType !== "messOnly",
+  });
+
+  const bedOptions = useMemo(() => {
+    const options = (availableBeds || []).map((bed) => ({
+      value: bed._id,
+      label: bed.name,
+    }));
+
+    // If the resident has a bed currently assigned, make sure it is in the options
+    const currentBedId = resident?.stayDetails?.bedId;
+    const currentBedName = resident?.stayDetails?.bedName;
+    if (currentBedId && !options.some((opt) => opt.value === currentBedId)) {
+      options.unshift({
+        value: currentBedId,
+        label: currentBedName || "Current Bed",
+      });
+    }
+
+    return options;
+  }, [availableBeds, resident]);
 
   // Handle property change (only for non-mess users)
   const handlePropertyChange = (propertyId) => {
@@ -761,6 +796,9 @@ const ResidentStayDetails = ({resident, form}) => {
         propertyName: selectedProperty?.name || "",
         sharingType: undefined,
         roomNumber: undefined,
+        roomId: undefined,
+        bedId: undefined,
+        bedName: undefined,
       },
     });
   };
@@ -785,6 +823,9 @@ const ResidentStayDetails = ({resident, form}) => {
       stayDetails: {
         sharingType: type,
         roomNumber: undefined,
+        roomId: undefined,
+        bedId: undefined,
+        bedName: undefined,
       },
     });
   };
@@ -797,6 +838,8 @@ const ResidentStayDetails = ({resident, form}) => {
         roomNumber: selectedRoom?.roomNo,
         roomId: selectedRoom?._id,
         propertyId: selectedRoom?.propertyId,
+        bedId: undefined,
+        bedName: undefined,
       },
     });
   };
@@ -890,7 +933,7 @@ const ResidentStayDetails = ({resident, form}) => {
           <Form.Item
             label={<span className="text-base">Property Name</span>}
             name={["stayDetails", "propertyId"]}
-            rules={[{required: true, message: "Please select property"}]}
+            rules={[{ required: true, message: "Please select property" }]}
           >
             <Select
               size="large"
@@ -910,7 +953,7 @@ const ResidentStayDetails = ({resident, form}) => {
           <Form.Item
             label={<span className="text-base">Kitchen</span>}
             name={["messDetails", "kitchenId"]}
-            rules={[{required: true, message: "Please select kitchen"}]}
+            rules={[{ required: true, message: "Please select kitchen" }]}
           >
             <Select
               size="large"
@@ -945,7 +988,9 @@ const ResidentStayDetails = ({resident, form}) => {
             <Form.Item
               label={<span className="text-base">Sharing Type</span>}
               name={["stayDetails", "sharingType"]}
-              rules={[{required: true, message: "Please select sharing type"}]}
+              rules={[
+                { required: true, message: "Please select sharing type" },
+              ]}
             >
               <Select
                 size="large"
@@ -972,19 +1017,53 @@ const ResidentStayDetails = ({resident, form}) => {
           >
             <Form.Item
               label={<span className="text-base">Room Number</span>}
-              name={["stayDetails", "roomNumber"]}
-              rules={[{required: true, message: "Please select room number"}]}
+              name={["stayDetails", "roomId"]}
+              rules={[{ required: true, message: "Please select room number" }]}
             >
               <Select
                 size="large"
                 placeholder="Select room number"
                 options={availableRooms
                   .filter((room) => room.sharingType === selectedSharingType)
-                  .map((room) => ({value: room._id, label: room.roomNo}))}
+                  .map((room) => ({ value: room._id, label: room.roomNo }))}
                 showSearch
                 loading={loadingRooms}
                 disabled={!selectedSharingType}
                 onChange={handleRoomChange}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col
+            xs={24}
+            sm={12}
+            md={12}
+            lg={6}
+            xl={6}
+            className="sm:mt-0 md:mt-2"
+          >
+            <Form.Item
+              label={<span className="text-base">Bed Number</span>}
+              name={["stayDetails", "bedId"]}
+              rules={[{ required: true, message: "Please select bed" }]}
+            >
+              <Select
+                size="large"
+                placeholder="Select bed"
+                options={bedOptions}
+                showSearch
+                loading={loadingBeds}
+                disabled={!selectedRoomId}
+                onChange={(bedId) => {
+                  const selectedBed = bedOptions.find(
+                    (opt) => opt.value === bedId,
+                  );
+                  form.setFieldsValue({
+                    stayDetails: {
+                      bedName: selectedBed?.label,
+                    },
+                  });
+                }}
               />
             </Form.Item>
           </Col>
@@ -997,7 +1076,7 @@ const ResidentStayDetails = ({resident, form}) => {
           <Form.Item
             label={<span className="text-base">Check-in Date</span>}
             name={["stayDetails", "checkInDate"]}
-            rules={[{required: true, message: "Please select date"}]}
+            rules={[{ required: true, message: "Please select date" }]}
           >
             <DatePicker
               size="large"
@@ -1013,7 +1092,7 @@ const ResidentStayDetails = ({resident, form}) => {
           <Form.Item
             label={<span className="text-base">Join Date</span>}
             name={["stayDetails", "joinDate"]}
-            rules={[{required: true, message: "Please select date"}]}
+            rules={[{ required: true, message: "Please select date" }]}
           >
             <DatePicker size="large" className="w-full" format="DD-MM-YYYY" />
           </Form.Item>
@@ -1030,7 +1109,9 @@ const ResidentStayDetails = ({resident, form}) => {
           <Form.Item
             label={<span className="text-base">Check-out Date</span>}
             name={["stayDetails", "checkOutDate"]}
-            rules={[{required: true, message: "Please select check-out date"}]}
+            rules={[
+              { required: true, message: "Please select check-out date" },
+            ]}
           >
             <DatePicker
               size="large"
@@ -1065,7 +1146,7 @@ const ResidentStayDetails = ({resident, form}) => {
           <Form.Item
             label={<span className="text-base">Rent/Day (₹)</span>}
             name={["stayDetails", "dailyRent"]}
-            rules={[{required: true, message: "Please enter amount"}]}
+            rules={[{ required: true, message: "Please enter amount" }]}
           >
             <InputNumber
               size="large"
@@ -1107,7 +1188,9 @@ const ResidentStayDetails = ({resident, form}) => {
           <Form.Item
             label={<span className="text-base">Payment Status</span>}
             name="paymentStatus"
-            rules={[{required: true, message: "Please select payment status"}]}
+            rules={[
+              { required: true, message: "Please select payment status" },
+            ]}
           >
             <Select
               size="large"
@@ -1131,7 +1214,7 @@ const ResidentStayDetails = ({resident, form}) => {
           <Form.Item
             label={<span className="text-base">Mess Start Date</span>}
             name={["messDetails", "messStartDate"]}
-            rules={[{required: true, message: "Please select start date"}]}
+            rules={[{ required: true, message: "Please select start date" }]}
           >
             <DatePicker
               disabled
@@ -1147,7 +1230,7 @@ const ResidentStayDetails = ({resident, form}) => {
           <Form.Item
             label={<span className="text-base">Mess End Date</span>}
             name={["messDetails", "messEndDate"]}
-            rules={[{required: true, message: "Please select end date"}]}
+            rules={[{ required: true, message: "Please select end date" }]}
           >
             <DatePicker
               size="large"
@@ -1182,7 +1265,7 @@ const ResidentStayDetails = ({resident, form}) => {
           <Form.Item
             label={<span className="text-base">Rate/Day (₹)</span>}
             name={["messDetails", "rent"]}
-            rules={[{required: true, message: "Please enter amount"}]}
+            rules={[{ required: true, message: "Please enter amount" }]}
           >
             <InputNumber
               size="large"
@@ -1222,7 +1305,9 @@ const ResidentStayDetails = ({resident, form}) => {
           <Form.Item
             label={<span className="text-base">Payment Status</span>}
             name="paymentStatus"
-            rules={[{required: true, message: "Please select payment status"}]}
+            rules={[
+              { required: true, message: "Please select payment status" },
+            ]}
           >
             <Select
               size="large"
@@ -1245,7 +1330,7 @@ const ResidentStayDetails = ({resident, form}) => {
           <Form.Item
             label={<span className="text-base">Monthly Rent (₹)</span>}
             name={["financialDetails", "monthlyRent"]}
-            rules={[{required: true, message: "Please enter amount"}]}
+            rules={[{ required: true, message: "Please enter amount" }]}
           >
             <InputNumber
               size="large"
@@ -1263,7 +1348,7 @@ const ResidentStayDetails = ({resident, form}) => {
           <Form.Item
             label={<span className="text-base">Refundable Deposit (₹)</span>}
             name={["stayDetails", "refundableDeposit"]}
-            rules={[{required: true, message: "Please enter deposit amount"}]}
+            rules={[{ required: true, message: "Please enter deposit amount" }]}
           >
             <InputNumber
               size="large"
@@ -1298,7 +1383,9 @@ const ResidentStayDetails = ({resident, form}) => {
           <Form.Item
             label={<span className="text-base">Deposit Status</span>}
             name={["stayDetails", "depositStatus"]}
-            rules={[{required: true, message: "Please select deposit status"}]}
+            rules={[
+              { required: true, message: "Please select deposit status" },
+            ]}
           >
             <Select
               size="large"
@@ -1311,7 +1398,9 @@ const ResidentStayDetails = ({resident, form}) => {
           <Form.Item
             label={<span className="text-base">Payment Status</span>}
             name="paymentStatus"
-            rules={[{required: true, message: "Please select payment status"}]}
+            rules={[
+              { required: true, message: "Please select payment status" },
+            ]}
           >
             <Select
               size="large"

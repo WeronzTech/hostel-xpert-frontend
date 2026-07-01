@@ -7,6 +7,7 @@ export const RoomAssignmentStep = ({
   formData,
   sharingTypes,
   filteredRooms,
+  availableBeds = [],
   handleSharingTypeChange,
   handleChange,
   handleReject,
@@ -17,8 +18,8 @@ export const RoomAssignmentStep = ({
   const selectedRoom = filteredRooms.find(
     (room) => room._id === formData.roomId
   );
-  console.log(filteredRooms);
-  console.log(selectedRoom);
+  undefined /* console.log(filteredRooms); */
+  undefined /* console.log(selectedRoom); */
   return (
     <Card>
       <div
@@ -100,6 +101,33 @@ export const RoomAssignmentStep = ({
                 } - ${room.vacantSlot} ${
                   room.vacantSlot === 1 ? "bed" : "beds"
                 } available`}
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
+
+        {/* Bed Selection Dropdown */}
+        <Form.Item label="Available Beds" style={{marginBottom: 16}}>
+          <Select
+            name="bedId"
+            value={formData.bedId || ""}
+            onChange={(value) => {
+              handleChange({
+                target: {
+                  name: "bedId",
+                  value,
+                },
+              });
+            }}
+            style={{width: "100%"}}
+            disabled={!formData.roomId}
+          >
+            <Select.Option value="" label="Select a bed">
+              Select a bed
+            </Select.Option>
+            {availableBeds.map((bed) => (
+              <Select.Option key={bed._id} value={bed._id} label={bed.name}>
+                {bed.name}
               </Select.Option>
             ))}
           </Select>

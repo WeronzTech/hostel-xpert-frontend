@@ -87,7 +87,7 @@ const AddExpenseFromVoucher = ({
       }
     },
     onError: (error) => {
-      console.log("Mutation error:", error);
+      undefined /* console.log("Mutation error:", error); */
       setApiError(error.message);
       messageApi.error({
         content: `${error.message}`,
@@ -134,12 +134,12 @@ const AddExpenseFromVoucher = ({
   const addExpenseMutation = useMutation({
     mutationFn: addExpense,
     onMutate: () => {
-      console.log("Mutation started - setting loading state");
+      undefined /* console.log("Mutation started - setting loading state"); */
       setIsSubmitting(true);
       setApiError("");
     },
     onSuccess: (data) => {
-      console.log("Mutation success:", data);
+      undefined /* console.log("Mutation success:", data); */
       if (data.success) {
         messageApi.success({
           content: `${data.message}`,

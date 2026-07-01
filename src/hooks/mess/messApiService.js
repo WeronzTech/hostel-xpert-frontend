@@ -26,7 +26,7 @@ class MessApiService {
    * @throws {Error} If property ID is missing or API call fails
    */
   async getMessMenu(kitchenId) {
-    console.log(`Mess API Service: ${kitchenId}`); // Debug log
+    undefined /* console.log(`Mess API Service: ${kitchenId}`); */ // Debug log
 
     try {
       const response = await apiClient.get(`inventory/mess/weekly-menu`, {
@@ -83,7 +83,7 @@ class MessApiService {
   async updatedMenuData(updatedMenuData) {
     try {
       //console.log("Sending menuData to backend:", updatedMenuData); // debug log
-      console.log("Update menu", updatedMenuData);
+      undefined /* console.log("Update menu", updatedMenuData); */
       const response = await apiClient.patch(
         `/inventory/mess/weekly-menu`,
         updatedMenuData
@@ -147,7 +147,7 @@ class MessApiService {
       const response = await apiClient.get(`inventory/daily-requirement/get`, {
         params: {kitchenId, date},
       });
-      console.log(response.data);
+      undefined /* console.log(response.data); */
 
       if (response.data?.statusCode || response.data?.success) {
         return response.data;
@@ -171,7 +171,7 @@ class MessApiService {
           },
         }
       );
-      console.log(response.data);
+      undefined /* console.log(response.data); */
 
       if (response.data?.statusCode || response.data?.success) {
         return response.data;

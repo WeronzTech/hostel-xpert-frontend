@@ -435,7 +435,7 @@ export const PaymentTermsStep = ({
   isRejoin,
 }) => {
   const navigate = useNavigate();
-  console.log(formData);
+  undefined /* console.log(formData); */
   
   // Handle number inputs to prevent wheel from changing values
   const handleNumberInput = (e) => {

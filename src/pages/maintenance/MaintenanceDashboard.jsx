@@ -107,7 +107,7 @@ const MaintenanceDashboard = () => {
   const totalCount = pendingCount + ongoingCount + resolvedCount;
 
   socket?.on("new-maintenance", (data) => {
-    console.log("maintenance_data", data);
+    undefined /* console.log("maintenance_data", data); */
   });
 
   useEffect(() => {
@@ -183,7 +183,7 @@ const MaintenanceDashboard = () => {
     if (!socket) return;
 
     const handleNewMaintenance = (newMaintenanceData) => {
-      console.log("New maintenance record received:", newMaintenanceData);
+      undefined /* console.log("New maintenance record received:", newMaintenanceData); */
       messageApi.info("A new maintenance request has been submitted!");
 
       // Update the cache for the 'Pending' tab's data list
@@ -377,7 +377,7 @@ const MaintenanceDashboard = () => {
           onRowClick={handleRowClick}
           loading={isLoading}
           onAssignConfirm={(record, values) => {
-            console.log("Assign confirmed:", record, values);
+            undefined /* console.log("Assign confirmed:", record, values); */
           }}
         />
 

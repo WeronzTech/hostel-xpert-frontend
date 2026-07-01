@@ -57,10 +57,12 @@ const MonthlyRegistrationModal = ({visible, onCancel, onSuccess}) => {
     enabled: !!currentProperty?._id,
   });
 
+  const gender = Form.useWatch("gender", form);
+
   // Fetch available rooms for the selected property
   const {data: availableRooms, isLoading: roomsLoading} = useQuery({
-    queryKey: ["availableRooms", currentProperty?._id],
-    queryFn: () => getAvailableRoomsByProperty(currentProperty?._id),
+    queryKey: ["availableRooms", currentProperty?._id, gender],
+    queryFn: () => getAvailableRoomsByProperty(currentProperty?._id, gender),
     enabled: !!currentProperty?._id,
   });
 
@@ -326,6 +328,7 @@ const MonthlyRegistrationModal = ({visible, onCancel, onSuccess}) => {
         "contact",
         "password",
         "userType",
+        "gender",
         // Stay tab fields
         ["stayDetails", "propertyId"],
         ["stayDetails", "propertyName"],
@@ -358,12 +361,15 @@ const MonthlyRegistrationModal = ({visible, onCancel, onSuccess}) => {
           refundableDeposit:
             Number(values.financialDetails?.refundableDeposit) || 0,
         },
+        personalDetails: {
+          gender: values.gender,
+        },
         registeredBy: user?._id,
       };
 
       registerMutation.mutate(userData);
     } catch (error) {
-      console.log("Validation failed:", error);
+      undefined /* console.log("Validation failed:", error); */
 
       // Find which fields have errors
       const errorFields = error.errorFields || [];
@@ -581,6 +587,20 @@ const MonthlyRegistrationModal = ({visible, onCancel, onSuccess}) => {
                       prefix={<LockOutlined />}
                       placeholder="Password"
                     />
+                  </Form.Item>
+                </Col>
+
+                <Col span={24}>
+                  <Form.Item
+                    name="gender"
+                    label="Gender"
+                    rules={[{required: true, message: "Please select gender"}]}
+                  >
+                    <Select placeholder="Select gender">
+                      <Option value="Male">Male</Option>
+                      <Option value="Female">Female</Option>
+                      <Option value="Other">Other</Option>
+                    </Select>
                   </Form.Item>
                 </Col>
               </Row>
