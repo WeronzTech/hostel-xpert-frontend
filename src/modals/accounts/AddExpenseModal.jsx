@@ -1343,7 +1343,10 @@ const AddExpenseModal = ({visible, onCancel, selectedCategory}) => {
     "OTHERS",
   ];
 
-  const paymentMethods = ["Cash", "UPI", "Bank Transfer", "Card", "Petty Cash"];
+ const paymentMethods =
+  user?.role?.name === "Admin"
+    ? ["Cash", "UPI", "Bank Transfer", "Card", "Petty Cash"]
+    : ["Petty Cash"];
 
   // Fetch kitchens
   const {data: kitchens} = useQuery({
