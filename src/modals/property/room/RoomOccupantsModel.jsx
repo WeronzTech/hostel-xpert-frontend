@@ -1,14 +1,25 @@
-import {useEffect} from "react";
-import {Modal, message, Typography, Grid, Tag, Avatar, List, Space} from "antd";
-import {useQuery} from "@tanstack/react-query";
-import {getRoomOccupants} from "../../../hooks/property/useProperty";
+import { useEffect } from "react";
+import {
+  Modal,
+  message,
+  Typography,
+  Grid,
+  Tag,
+  Avatar,
+  List,
+  Space,
+} from "antd";
+import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
+import { getRoomOccupants } from "../../../hooks/property/useProperty";
 
-const {Text, Title} = Typography;
-const {useBreakpoint} = Grid;
+const { Text, Title } = Typography;
+const { useBreakpoint } = Grid;
 
-const RoomOccupantsModal = ({roomId, visible, onClose}) => {
+const RoomOccupantsModal = ({ roomId, visible, onClose }) => {
   const screens = useBreakpoint();
-  const {data, isLoading, isError, error, refetch} = useQuery({
+  const navigate = useNavigate();
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["roomOccupants", roomId],
     queryFn: () => getRoomOccupants(roomId),
     enabled: !!visible && !!roomId,
@@ -62,16 +73,34 @@ const RoomOccupantsModal = ({roomId, visible, onClose}) => {
   };
 
   const renderListItem = (occupant) => {
-    const {occupantDetails} = occupant;
+    const { occupantDetails } = occupant;
     return (
       <List.Item
+        onClick={() => {
+          const userId =
+            occupantDetails?._id ||
+            occupantDetails?.id ||
+            occupant?._id ||
+            occupant?.id ||
+            occupant?.userId;
+          console.log("UserId", userId, occupantDetails, occupant);
+          if (userId) {
+            navigate(`/resident/${userId}`);
+            if (onClose) onClose();
+          } else {
+            message.warning("User ID not found.");
+          }
+        }}
         style={{
-          padding: "12px 0",
+          padding: "12px 16px",
           borderBottom: "1px solid #f0f0f0",
           display: "flex",
           alignItems: "center",
           gap: "12px",
+          cursor: "pointer",
+          borderRadius: "6px",
         }}
+        className="hover:bg-gray-50 transition-colors"
       >
         <Avatar
           style={{
@@ -84,7 +113,7 @@ const RoomOccupantsModal = ({roomId, visible, onClose}) => {
         >
           {getInitials(occupantDetails.name)}
         </Avatar>
-        <div style={{flex: 1, minWidth: 0}}>
+        <div style={{ flex: 1, minWidth: 0 }}>
           <div
             style={{
               display: "flex",
@@ -92,14 +121,14 @@ const RoomOccupantsModal = ({roomId, visible, onClose}) => {
               alignItems: "center",
             }}
           >
-            <Text strong ellipsis style={{maxWidth: "60%"}}>
+            <Text strong ellipsis style={{ maxWidth: "60%" }}>
               {occupantDetails.name || "N/A"}
             </Text>
-            <div style={{marginLeft: 8}}>
+            <div style={{ marginLeft: 8 }}>
               {getPaymentStatusTag(occupantDetails.paymentStatus)}
             </div>
           </div>
-          <Space size={[8, 16]} style={{marginTop: 4}}>
+          <Space size={[8, 16]} style={{ marginTop: 4 }}>
             {getUserTypeTag(occupantDetails.userType)}
             <Text type="secondary">{occupantDetails.contact || "N/A"}</Text>
           </Space>
@@ -111,7 +140,7 @@ const RoomOccupantsModal = ({roomId, visible, onClose}) => {
   return (
     <Modal
       title={
-        <Title level={4} style={{marginBottom: 0}}>
+        <Title level={4} style={{ marginBottom: 0 }}>
           Room Occupants
         </Title>
       }
@@ -128,13 +157,13 @@ const RoomOccupantsModal = ({roomId, visible, onClose}) => {
       }}
     >
       {isLoading && (
-        <div style={{textAlign: "center", padding: "24px"}}>
+        <div style={{ textAlign: "center", padding: "24px" }}>
           <Text>Loading occupants...</Text>
         </div>
       )}
 
       {!isLoading && occupants.length === 0 && (
-        <div style={{textAlign: "center", padding: "24px"}}>
+        <div style={{ textAlign: "center", padding: "24px" }}>
           <Text type="secondary">No occupants found for this room.</Text>
         </div>
       )}
@@ -150,7 +179,7 @@ const RoomOccupantsModal = ({roomId, visible, onClose}) => {
                   pageSize: 10,
                   showSizeChanger: false,
                   simple: true,
-                  style: {marginTop: "16px"},
+                  style: { marginTop: "16px" },
                 }
               : false
           }
