@@ -83,7 +83,7 @@ const RoomOccupantsModal = ({ roomId, visible, onClose }) => {
             occupant?._id ||
             occupant?.id ||
             occupant?.userId;
-          console.log("UserId", userId, occupantDetails, occupant);
+          // console.log("UserId", userId, occupantDetails, occupant);
           if (userId) {
             navigate(`/resident/${userId}`);
             if (onClose) onClose();
